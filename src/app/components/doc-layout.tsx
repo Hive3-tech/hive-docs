@@ -1,12 +1,17 @@
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import { TopNav } from "./top-nav";
 import { LeftSidebar } from "./left-sidebar";
 import { BackToTop } from "./back-to-top";
 import { Footer } from "./footer";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function DocLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-background">

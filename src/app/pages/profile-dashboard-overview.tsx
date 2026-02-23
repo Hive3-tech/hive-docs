@@ -4,14 +4,12 @@ import {
   BookOpen,
   Briefcase,
   Calendar,
-  CheckSquare,
   ChevronLeft,
   ChevronRight,
   CreditCard,
   FileText,
   Settings,
   Sparkles,
-  Target,
   UserCheck,
   UserCircle,
   Users,
@@ -136,7 +134,10 @@ export function ProfileDashboardOverviewPage() {
             </p>
 
             <div className="grid md:grid-cols-3 gap-4">
-              <div className="rounded-xl border border-border p-4">
+              <Link
+                to="/events-guide"
+                className="rounded-xl border border-border p-4 hover:border-[#6B01B6] hover:bg-accent/50 transition-colors"
+              >
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-[#6B01B6]" />
                   Events
@@ -144,9 +145,12 @@ export function ProfileDashboardOverviewPage() {
                 <p className="text-sm text-muted-foreground">
                   Create events, edit details, and manage enrollments.
                 </p>
-              </div>
+              </Link>
 
-              <div className="rounded-xl border border-border p-4">
+              <Link
+                to="/courses-guide"
+                className="rounded-xl border border-border p-4 hover:border-[#6B01B6] hover:bg-accent/50 transition-colors"
+              >
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-[#6B01B6]" />
                   Courses
@@ -154,9 +158,12 @@ export function ProfileDashboardOverviewPage() {
                 <p className="text-sm text-muted-foreground">
                   Build courses, update lessons, and check course analytics.
                 </p>
-              </div>
+              </Link>
 
-              <div className="rounded-xl border border-border p-4">
+              <Link
+                to="/content-guide"
+                className="rounded-xl border border-border p-4 hover:border-[#6B01B6] hover:bg-accent/50 transition-colors"
+              >
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-[#6B01B6]" />
                   Content
@@ -164,35 +171,18 @@ export function ProfileDashboardOverviewPage() {
                 <p className="text-sm text-muted-foreground">
                   Publish profile content and manage your existing posts.
                 </p>
-              </div>
+              </Link>
 
-              <div className="rounded-xl border border-border p-4">
+              <Link
+                to="/jobs-guide"
+                className="rounded-xl border border-border p-4 hover:border-[#6B01B6] hover:bg-accent/50 transition-colors"
+              >
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-[#6B01B6]" />
                   Jobs
                 </h3>
                 <p className="text-sm text-muted-foreground">Post jobs and review applications.</p>
-              </div>
-
-              <div className="rounded-xl border border-border p-4">
-                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-[#6B01B6]" />
-                  Quests
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Available in community workflows for Swarm+ use cases.
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-border p-4">
-                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                  <CheckSquare className="w-4 h-4 text-[#6B01B6]" />
-                  Tasks
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Available in community workflows for Swarm+ use cases.
-                </p>
-              </div>
+              </Link>
             </div>
           </section>
 

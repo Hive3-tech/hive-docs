@@ -150,7 +150,10 @@ export function CommunitiesOverviewPage() {
               The same dashboard also contains management panels for published community work.
             </p>
             <div className="grid md:grid-cols-3 gap-4">
-              <div className="rounded-xl border border-border p-4">
+              <Link
+                to="/events-guide"
+                className="rounded-xl border border-border p-4 hover:border-[#6B01B6] hover:bg-accent/50 transition-colors"
+              >
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-[#6B01B6]" />
                   Events
@@ -158,8 +161,11 @@ export function CommunitiesOverviewPage() {
                 <p className="text-sm text-muted-foreground">
                   Create events, edit details, and manage enrollments.
                 </p>
-              </div>
-              <div className="rounded-xl border border-border p-4">
+              </Link>
+              <Link
+                to="/courses-guide"
+                className="rounded-xl border border-border p-4 hover:border-[#6B01B6] hover:bg-accent/50 transition-colors"
+              >
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-[#6B01B6]" />
                   Courses
@@ -167,8 +173,11 @@ export function CommunitiesOverviewPage() {
                 <p className="text-sm text-muted-foreground">
                   Build courses, update lessons, and review analytics.
                 </p>
-              </div>
-              <div className="rounded-xl border border-border p-4">
+              </Link>
+              <Link
+                to="/content-guide"
+                className="rounded-xl border border-border p-4 hover:border-[#6B01B6] hover:bg-accent/50 transition-colors"
+              >
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-[#6B01B6]" />
                   Content
@@ -176,8 +185,11 @@ export function CommunitiesOverviewPage() {
                 <p className="text-sm text-muted-foreground">
                   Publish and manage community content.
                 </p>
-              </div>
-              <div className="rounded-xl border border-border p-4">
+              </Link>
+              <Link
+                to="/jobs-guide"
+                className="rounded-xl border border-border p-4 hover:border-[#6B01B6] hover:bg-accent/50 transition-colors"
+              >
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-[#6B01B6]" />
                   Jobs
@@ -185,8 +197,11 @@ export function CommunitiesOverviewPage() {
                 <p className="text-sm text-muted-foreground">
                   Post jobs and review applications.
                 </p>
-              </div>
-              <div className="rounded-xl border border-border p-4">
+              </Link>
+              <Link
+                to="/quests-guide"
+                className="rounded-xl border border-border p-4 hover:border-[#6B01B6] hover:bg-accent/50 transition-colors"
+              >
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <Target className="w-4 h-4 text-[#6B01B6]" />
                   Quests
@@ -194,8 +209,11 @@ export function CommunitiesOverviewPage() {
                 <p className="text-sm text-muted-foreground">
                   Launch and manage quests using community quest credits.
                 </p>
-              </div>
-              <div className="rounded-xl border border-border p-4">
+              </Link>
+              <Link
+                to="/quests-and-tasks"
+                className="rounded-xl border border-border p-4 hover:border-[#6B01B6] hover:bg-accent/50 transition-colors"
+              >
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <CheckSquare className="w-4 h-4 text-[#6B01B6]" />
                   Tasks
@@ -203,7 +221,7 @@ export function CommunitiesOverviewPage() {
                 <p className="text-sm text-muted-foreground">
                   Tasks are available in community dashboard workflows.
                 </p>
-              </div>
+              </Link>
             </div>
           </section>
 
