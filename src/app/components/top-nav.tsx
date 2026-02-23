@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router";
 import { Search, Moon, Sun, Menu, ExternalLink } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
+import hive3Logo from "../../assets/hive3-logo.svg";
 
 export function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { theme, setTheme } = useTheme();
@@ -27,7 +28,7 @@ export function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   }, []);
 
   const navItems = [
-    { label: "Getting Started", path: "/get-started" },
+    { label: "Getting Started", path: "/" },
     { label: "Wallets", path: "/circle-wallet" },
     { label: "API Reference", path: "/api-reference" },
   ];
@@ -45,11 +46,9 @@ export function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 mr-4">
-          <div className="w-8 h-8 bg-gradient-to-br from-[#6B01B6] to-[#512DA8] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">H</span>
-          </div>
-          <span className="font-semibold text-lg bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">
-            Hive3 docs
+          <img src={hive3Logo} alt="Hive3" className="h-8 w-auto dark:invert" />
+          <span className="font-semibold text-lg text-foreground">
+            DOCS
           </span>
         </Link>
 
