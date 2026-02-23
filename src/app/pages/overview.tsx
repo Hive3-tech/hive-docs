@@ -13,6 +13,7 @@ import { RightSidebar } from "../components/right-sidebar";
 export function OverviewPage() {
   const tocItems = [
     { id: "what-is-hive3", label: "What is Hive3" },
+    { id: "quick-start", label: "Quick Start Steps" },
     { id: "key-features", label: "Key Features" },
     { id: "membership-tiers", label: "Membership Tiers" },
     { id: "explore-the-docs", label: "Explore the Docs" },
@@ -85,16 +86,13 @@ export function OverviewPage() {
   return (
     <div className="flex">
       <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
-        <div className="text-sm text-muted-foreground mb-6">
-          Introduction / <span className="text-foreground">Overview</span>
-        </div>
+        <div className="text-sm text-muted-foreground mb-6">Getting Started</div>
 
         <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">
-          Hive3 Documentation
+          Getting Started with Hive3
         </h1>
         <p className="text-xl text-muted-foreground mb-10">
-          Hive3 is a Web3 community platform for launching, operating, and scaling
-the kinds of communities where people learn, create, and earn together.
+          Start here for a full platform overview and your first setup steps in Hive3.
         </p>
 
         <section id="what-is-hive3" className="mb-12">
@@ -104,6 +102,36 @@ the kinds of communities where people learn, create, and earn together.
             and wallet-aware identity features into one operational flow for members,
             creators, and organizations.
           </p>
+        </section>
+
+        <section id="quick-start" className="mb-16">
+          <h2 className="text-3xl font-semibold mb-6">Quick Start Steps</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="rounded-lg border border-border bg-card p-4">
+              <p className="font-semibold">Step 1: Create your account</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Sign up and finish your basic profile setup.
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-card p-4">
+              <p className="font-semibold">Step 2: Set up your wallet</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Link an external wallet or continue with your built-in Circle wallet.
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-card p-4">
+              <p className="font-semibold">Step 3: Explore your dashboards</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Open your profile and community dashboards to learn available actions.
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-card p-4">
+              <p className="font-semibold">Step 4: Choose your subscription tier</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Review tier capabilities before enabling advanced creator or community workflows.
+              </p>
+            </div>
+          </div>
         </section>
 
         <section id="key-features" className="mb-16">
@@ -156,7 +184,7 @@ the kinds of communities where people learn, create, and earn together.
               to="/communities-overview"
               className="p-4 border border-border rounded-lg hover:border-[#6B01B6] hover:bg-accent transition-colors"
             >
-              <p className="font-semibold">Communities (Swarm)</p>
+              <p className="font-semibold">Communities</p>
               <p className="text-sm text-muted-foreground mt-1">
                 Manage community lifecycle, members, and moderation.
               </p>
@@ -165,13 +193,13 @@ the kinds of communities where people learn, create, and earn together.
               to="/circle-wallet"
               className="p-4 border border-border rounded-lg hover:border-[#6B01B6] hover:bg-accent transition-colors"
             >
-              <p className="font-semibold">Wallets & Web3</p>
+              <p className="font-semibold">Wallet & Credentials</p>
               <p className="text-sm text-muted-foreground mt-1">
                 Configure Circle wallets and external wallet linking.
               </p>
             </Link>
             <Link
-              to="/api-overview"
+              to="/api-reference"
               className="p-4 border border-border rounded-lg hover:border-[#6B01B6] hover:bg-accent transition-colors"
             >
               <p className="font-semibold">Developer Reference</p>
@@ -183,11 +211,11 @@ the kinds of communities where people learn, create, and earn together.
 
           <div className="grid md:grid-cols-2 gap-4 mt-2">
             <Link
-              to="/get-started"
+              to="/honey-bee-profile-dashboard-overview"
               className="inline-flex justify-center items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] text-white rounded-lg hover:opacity-90 transition-opacity"
             >
               <Rocket className="w-5 h-5" />
-              Get started in minutes
+              Start with your profile dashboard
             </Link>
           </div>
         </section>

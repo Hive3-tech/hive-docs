@@ -1,4 +1,6 @@
 import { Copy, Check } from "lucide-react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useState } from "react";
 
 interface CodeBlockProps {
@@ -9,11 +11,31 @@ interface CodeBlockProps {
 export function CodeBlock({ code, language }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
 
+  const normalizeLanguage = (value: string) => {
+    const normalized = value.toLowerCase().trim();
+
+    if (["curl", "bash", "sh", "shell", "zsh", "console", "terminal"].includes(normalized)) {
+      return "bash";
+    }
+
+    if (["fetch", "node", "nodejs", "js"].includes(normalized)) {
+      return "javascript";
+    }
+
+    if (normalized === "http") {
+      return "bash";
+    }
+
+    return normalized || "bash";
+  };
+
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const normalizedLanguage = normalizeLanguage(language);
 
   return (
     <div className="relative group">
@@ -31,9 +53,30 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
       </div>
       <div className="bg-[#1e1e1e] rounded-lg p-4 overflow-x-auto">
         <div className="text-xs text-gray-400 mb-2">{language}</div>
-        <pre className="text-sm text-gray-100">
-          <code>{code}</code>
-        </pre>
+        <div className="overflow-x-auto rounded-b-lg">
+          <SyntaxHighlighter
+            language={normalizedLanguage}
+            style={oneDark}
+            customStyle={{
+              margin: 0,
+              padding: "0.75rem 1rem",
+              background: "#1e1e1e",
+              borderRadius: 0,
+              fontSize: "0.875rem",
+              lineHeight: "1.5rem",
+            }}
+            codeTagProps={{
+              style: {
+                fontFamily: "Monaco, Menlo, 'Ubuntu Mono', Consolas, 'source-code-pro', monospace",
+              },
+            }}
+            showLineNumbers={false}
+            wrapLines
+            wrapLongLines
+          >
+            {code}
+          </SyntaxHighlighter>
+        </div>
       </div>
     </div>
   );

@@ -13,7 +13,8 @@ Each file exports a single page component used in `routes.tsx`.
 ## File Organization
 
 - Flat file structure — one file per page (e.g., `communities-overview.tsx`)
-- If a page section grows complex, keep it in the same file — don't split into sub-components unless over 300 lines
+- Soft warning at 300 lines, hard error at 350 lines (ignore blank/comment-only lines)
+- If a page section grows complex, split into local sub-components before hitting the hard cap
 - Page filenames use kebab-case matching their route path
 
 ## Content Guidelines

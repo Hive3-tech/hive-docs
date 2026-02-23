@@ -16,7 +16,7 @@ export function CreatingEventsPage() {
     <div className="flex">
       <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
         <div className="text-sm text-muted-foreground mb-6">
-          Honey Bee (Profile) / <span className="text-foreground">Creating Events</span>
+          Your Profile / <span className="text-foreground">Creating Events</span>
         </div>
 
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">

@@ -10,7 +10,9 @@
 
 ## File Organization
 - Flat structure: one page file per route.
-- Prefer keeping page content inside the page file until it becomes unwieldy; if split is needed, keep helper components local to the page file first.
+- Prefer keeping page content inside the page file until it approaches the soft line budget.
+- Soft warning at 300 lines, hard error at 350 lines (excluding blank/comment-only lines); split before hard cap.
+- If split is needed, keep helper components local to the page module first.
 - Keep route filenames in kebab-case matching route segments.
 
 ## Content Rules

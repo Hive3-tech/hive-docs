@@ -19,3 +19,7 @@
 - Use existing `shadcn`/Radix components under `ui/` as dependencies.
 - Prefer composition over editing library internals.
 - Keep import paths consistent with existing project patterns.
+
+## Line Budget Guardrail
+- Soft warning at 300 lines, hard error at 350 lines (excluding blank/comment-only lines).
+- If a component file grows past 300 lines, extract focused subcomponents or utilities.

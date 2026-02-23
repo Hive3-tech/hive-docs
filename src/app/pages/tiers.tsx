@@ -111,15 +111,15 @@ export function TiersPage() {
     <div className="flex">
       <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
         <div className="text-sm text-muted-foreground mb-6">
-          Membership Tiers / <span className="text-foreground">Tiers Overview</span>
+          Hive3 Features / <span className="text-foreground">Subscriptions</span>
         </div>
 
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">
-          Membership Tiers Overview
+          Subscriptions
         </h1>
         <p className="text-lg text-muted-foreground mb-10">
-          Your tier determines what you can unlock inside Hive3. Every higher tier includes
-          everything from lower tiers.
+          Your subscription tier determines what you can unlock inside Hive3. Every higher tier
+          includes everything from lower tiers.
         </p>
 
         <section id="worker-bee" className="space-y-4 mb-12">
@@ -250,17 +250,17 @@ export function TiersPage() {
 
         <div className="flex items-center justify-between mt-16 pt-8 border-t border-border">
           <Link
-            to="/"
+            to="/managing-members"
             className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
-            Overview
+            Members
           </Link>
           <Link
-            to="/honey-bee-profile-dashboard-overview"
+            to="/events-guide"
             className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
           >
-            Honey Bee profile
+            Events Guide
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

@@ -87,7 +87,7 @@ export function CommunitiesGuidePage() {
             
             <CodeBlock
               language="bash"
-              code={`curl -X POST https://api.hive3.com/api/v1/communities \\
+              code={`curl -X POST https://api.hive3.tech/api/v1/communities \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{

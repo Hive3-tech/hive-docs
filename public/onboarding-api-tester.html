@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hive Onboarding API Request Tester</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        padding: 2rem;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+
+      .page {
+        max-width: 880px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 12px 35px rgb(15 23 42 / 12%);
+        border: 1px solid #e2e8f0;
+      }
+
+      h1 {
+        margin: 0 0 0.75rem;
+        font-size: 1.75rem;
+      }
+
+      p.description {
+        margin: 0 0 1.5rem;
+        color: #475569;
+      }
+
+      .grid {
+        display: grid;
+        gap: 0.85rem;
+      }
+
+      label {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #334155;
+      }
+
+      input,
+      textarea,
+      button {
+        width: 100%;
+        box-sizing: border-box;
+        font: inherit;
+        border-radius: 8px;
+      }
+
+      input,
+      textarea {
+        border: 1px solid #cbd5e1;
+        padding: 0.65rem 0.75rem;
+        color: #0f172a;
+        background: #fff;
+      }
+
+      textarea {
+        min-height: 120px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+
+      .row {
+        display: grid;
+        gap: 0.5rem;
+      }
+
+      .muted {
+        color: #64748b;
+        font-size: 0.85rem;
+      }
+
+      .row-2 {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+
+      button {
+        margin-top: 0.4rem;
+        border: 0;
+        background: #0f172a;
+        color: #fff;
+        font-weight: 600;
+        padding: 0.8rem;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #1e293b;
+      }
+
+      .status {
+        margin-top: 1rem;
+        font-weight: 600;
+      }
+
+      .success {
+        color: #047857;
+      }
+
+      .error {
+        color: #b91c1c;
+      }
+
+      pre {
+        margin: 0.7rem 0 0;
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 1rem;
+        border-radius: 10px;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .link {
+        margin-top: 0.65rem;
+      }
+
+      .hint {
+        margin-top: 0.65rem;
+        color: #334155;
+        background: #ecfeff;
+        border: 1px solid #a5f3fc;
+        border-left: 4px solid #0891b2;
+        border-radius: 8px;
+        padding: 0.75rem;
+      }
+
+      .hint strong {
+        display: block;
+        margin-bottom: 0.2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+    <h1>Onboarding API Request Tester</h1>
+      <p class="description">
+        POST <code>/api/v1/communities/onboard</code> using an API key. Update fields below then click
+        <strong>Run onboarding</strong>.
+      </p>
+      <div class="hint">
+        <strong>Important</strong>
+        200 means a one-time <code>redirect_url</code> was created. Existing users are connected only after they use
+        the returned link and complete the login/consent step.
+      </div>
+      <div id="originHint" class="hint" style="display: none">
+        <strong>Notice</strong>
+        You are loading this file from a local file origin. If requests still fail, serve this file from the docs
+        dev server (for example <code>http://localhost:5173/onboarding-api-tester.html</code>) so the origin is
+        not <code>null</code>.
+      </div>
+
+      <div class="grid">
+        <div class="row">
+          <label for="apiBaseUrl">API base URL</label>
+          <input
+            id="apiBaseUrl"
+            type="url"
+            value="http://localhost:8080"
+            placeholder="http://localhost:8080"
+          />
+          <span class="muted">Use your local/test backend URL, e.g. http://localhost:8080 or http://host.docker.internal:8080. Full URL should include protocol.</span>
+        </div>
+
+        <div class="row">
+          <label for="apiKey">API key (Bearer)</label>
+          <input id="apiKey" placeholder="hive_..." />
+          <span class="muted">Find your key in Hive and paste it here.</span>
+        </div>
+
+        <div class="row-2">
+          <div class="row">
+            <label for="email">Email *</label>
+            <input id="email" type="email" value="partner_user@example.com" />
+          </div>
+          <div class="row">
+            <label for="username">Username</label>
+            <input id="username" value="partner_user" />
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="displayName">Display name</label>
+          <input id="displayName" value="Partner User" />
+        </div>
+
+        <div class="row">
+          <label for="profileImageUrl">Profile image URL</label>
+          <input
+            id="profileImageUrl"
+            value="https://cdn.example.com/avatar.png"
+            placeholder="https://..."
+          />
+        </div>
+
+        <div class="row">
+          <label for="bannerImageUrl">Banner image URL</label>
+          <input
+            id="bannerImageUrl"
+            value="https://cdn.example.com/banner.png"
+            placeholder="https://..."
+          />
+        </div>
+
+        <button id="runButton">Run onboarding request</button>
+      </div>
+
+      <div class="grid">
+        <div class="row">
+        <span id="status" class="status"></span>
+        <span id="urlOut" class="muted"></span>
+      </div>
+
+        <div class="row">
+          <h3 style="margin: 0">Request body sent</h3>
+          <pre id="requestBody"></pre>
+        </div>
+
+        <div class="row">
+          <h3 style="margin: 0">Response</h3>
+          <pre id="responseBody"></pre>
+          <div id="redirectLink" class="link"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const statusEl = document.getElementById("status");
+      const requestBodyEl = document.getElementById("requestBody");
+      const responseBodyEl = document.getElementById("responseBody");
+      const redirectLinkEl = document.getElementById("redirectLink");
+      const urlOut = document.getElementById("urlOut");
+      const runButton = document.getElementById("runButton");
+      const baseUrlInput = document.getElementById("apiBaseUrl");
+      const originHintEl = document.getElementById("originHint");
+
+      const defaultBaseUrl = window.location.hostname === "localhost"
+        ? "http://localhost:8080"
+        : "http://localhost:8080";
+
+      if (!baseUrlInput.value) {
+        baseUrlInput.value = defaultBaseUrl;
+      }
+
+      if (window.location.origin === "null") {
+        originHintEl.style.display = "block";
+      }
+
+      function getPayload() {
+        return {
+          email: document.getElementById("email").value.trim(),
+          username: document.getElementById("username").value.trim(),
+          display_name: document.getElementById("displayName").value.trim(),
+          profile_image_url: document.getElementById("profileImageUrl").value.trim(),
+          banner_image_url: document.getElementById("bannerImageUrl").value.trim(),
+        };
+      }
+
+      function looksLikeAPIKey(key) {
+        return typeof key === "string" && /^hive_[A-Za-z0-9]{48}$/.test(key.trim());
+      }
+
+      function getErrorHint(status, bodyText) {
+        const normalizedBody = bodyText.toLowerCase();
+        const hints = {
+          400: "Validation failed. Confirm request body uses snake_case fields and valid email. Required: email.",
+          401: "Authorization failed. Confirm you're using a current `hive_...` key (post-rotation keys are one-time visible) and posting to `/api/v1/communities/onboard` on the same backend where the key was created.",
+          403: "Forbidden. Confirm key owner is community owner/admin and community tier is `swarm` or `royal`.",
+          404: "Endpoint not found. Confirm URL is `/api/v1/communities/onboard` with `/api` prefixed.",
+          500: "Server error. Retry and capture requestId from backend logs if this persists.",
+        };
+
+        if (hints[status]) {
+          return hints[status];
+        }
+
+        if (normalizedBody.includes("invalid api key")) {
+          return "Authorization still looks wrong. Confirm key has no spaces/newlines and is unchanged from the dashboard.";
+        }
+
+        if (normalizedBody.includes("community tier") || normalizedBody.includes("not eligible")) {
+          return "That community is not eligible for API key onboarding. Promote it to Swarm or Royal.";
+        }
+
+        if (normalizedBody.includes("admin access required")) {
+          return "The key user must be community owner/admin at key creation time.";
+        }
+
+        return "Check backend logs with the same request time for exact error message.";
+      }
+
+      function setStatus(message, isError = false) {
+        statusEl.textContent = message;
+        statusEl.className = isError ? "status error" : "status success";
+      }
+
+      runButton.addEventListener("click", async () => {
+        const apiBaseUrl = baseUrlInput.value.trim().replace(/\/$/, "");
+        const apiKey = document.getElementById("apiKey").value.trim();
+        const payload = getPayload();
+
+        if (!apiKey) {
+          setStatus("API key is required.", true);
+          return;
+        }
+        if (!looksLikeAPIKey(apiKey)) {
+          setStatus("API key format looks invalid. Expected `hive_` + 48 chars.", true);
+          return;
+        }
+        if (!payload.email) {
+          setStatus("Email is required.", true);
+          return;
+        }
+
+        const endpoint = `${apiBaseUrl}/api/v1/communities/onboard`;
+        const requestBody = JSON.stringify(payload, null, 2);
+        requestBodyEl.textContent = requestBody;
+        responseBodyEl.textContent = "";
+        redirectLinkEl.innerHTML = "";
+        urlOut.textContent = endpoint;
+        setStatus("Running onboarding request...");
+
+        try {
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${apiKey}`,
+            },
+            body: requestBody,
+          });
+
+          const text = await response.text();
+          let parsed;
+          try {
+            parsed = JSON.parse(text);
+            responseBodyEl.textContent = JSON.stringify(parsed, null, 2);
+          } catch (_e) {
+            responseBodyEl.textContent = text || "<empty response>";
+          }
+
+          if (!response.ok) {
+            setStatus(`Error: HTTP ${response.status} ${response.statusText}`, true);
+            const hint = getErrorHint(response.status, text);
+            responseBodyEl.textContent = `${responseBodyEl.textContent}\n\nHint: ${hint}`;
+            return;
+          }
+
+          setStatus(`Success: HTTP ${response.status} ${response.statusText}`);
+
+          const redirectUrl =
+            parsed && typeof parsed === "object" ? parsed.redirect_url || parsed.redirectUrl : null;
+          if (typeof redirectUrl === "string" && redirectUrl.trim() !== "") {
+            redirectLinkEl.innerHTML = `
+              <a href="${redirectUrl}" target="_blank" rel="noreferrer">Open generated onboarding URL</a>
+            `;
+            window.open(redirectUrl, "_blank", "noopener");
+          }
+        } catch (err) {
+          const msg = String(err?.message || "").toLowerCase();
+          let hint = "Check that the API base URL is reachable from this browser and the domain resolves.";
+          if (msg.includes("failed to fetch")) {
+            hint =
+              "Request could not be sent. Confirm the endpoint is running and that this page origin is allowed by backend CORS. For local docs on 5173, CORS should include http://localhost:5173 (and http://127.0.0.1:5173).";
+          }
+          setStatus(`Request failed: ${err.message}`, true);
+          responseBodyEl.textContent = `Error details: ${err.message}\n\nHint: ${hint}`;
+        }
+      });
+    </script>
+  </body>
+</html>

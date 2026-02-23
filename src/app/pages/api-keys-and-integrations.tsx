@@ -1,172 +1,103 @@
 import { RightSidebar } from "../components/right-sidebar";
-import { Callout, Step, InlineCode, CodeBlock } from "../components/doc-components";
-import { ChevronLeft, ChevronRight, KeyRound, Lock, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
+import { Callout, CodeBlock, InlineCode } from "../components/doc-components";
+import { ChevronLeft, ChevronRight, KeyRound, ShieldCheck } from "lucide-react";
 import { Link } from "react-router";
 
 export function APIKeysAndIntegrationsPage() {
   const tocItems = [
-    { id: "who", label: "Access & purpose" },
-    { id: "create", label: "Create keys" },
-    { id: "view", label: "Prefix and metadata" },
-    { id: "rotate", label: "Rotate keys" },
-    { id: "revoke", label: "Revoke keys" },
-    { id: "security", label: "Integration usage" },
+    { id: "overview", label: "What this page is for" },
+    { id: "get-key", label: "Get your API key" },
+    { id: "use-key", label: "Use as Bearer token" },
+    { id: "notes", label: "Important notes" },
   ];
 
   return (
     <div className="flex">
       <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
         <div className="text-sm text-muted-foreground mb-6">
-          Communities (Swarm) / <span className="text-foreground">API Keys & Integrations</span>
+          Developer Reference / <span className="text-foreground">API Keys</span>
         </div>
 
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">
-          API Keys & Integrations
+          API Keys
         </h1>
-        <p className="text-lg text-muted-foreground mb-10">
-          Issue and manage community API keys used by onboarding links and external automation tooling.
+        <p className="text-lg text-muted-foreground mb-12">
+          Generate a community API key and use it as your Bearer token for Hive3 API calls.
         </p>
 
-        <section id="who" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Access and purpose</h2>
-          <Callout type="info" title="Tier">
-            Page is shown for Swarm tier only; non-Swarm users see a locked state card.
-          </Callout>
-          <p className="text-muted-foreground">
-            Use community API keys for:
-          </p>
-          <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-            <li>Onboarding link generation for external systems.</li>
-            <li>Community-level integrations that need trusted signed access.</li>
-          </ul>
-        </section>
-
-        <section id="create" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Create API keys with custom names</h2>
-          <div className="space-y-6">
-            <Step number={1} title="Open modal">
-              Click <InlineCode>Create key</InlineCode> on community key page.
-            </Step>
-            <Step number={2} title="Set name">
-              Enter a descriptive name for lifecycle and ownership tracking.
-            </Step>
-            <Step number={3} title="Save full value">
-              On create, copy/store the full key value immediately after generation.
-            </Step>
-          </div>
-          <Callout type="warning" title="Usage note">
-            Key rows render only a visible prefix. Store the full key once generated.
-          </Callout>
-          <CodeBlock
-            language="text"
-            code={`click Create key
-enter name
-create
-copy and store secret value once`}
-          />
-        </section>
-
-        <section id="view" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Prefix and metadata visibility</h2>
-          <p className="text-muted-foreground">
-            The table shows:
-          </p>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2 flex items-center gap-2">
-                <KeyRound className="w-4 h-4 text-[#6B01B6]" />
-                Prefix
-              </div>
-              <p className="text-sm text-muted-foreground">
-                List items show masked value with visible <InlineCode>keyPrefix</InlineCode> only.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2">Created and last used</div>
-              <p className="text-sm text-muted-foreground">
-                Created date and last-used timestamp are displayed for lifecycle decisions.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section id="rotate" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Rotate lifecycle</h2>
-          <div className="space-y-6">
-            <Step number={1} title="Review dependency">
-              Rotation requires an existing active key and immediate reuse with minimal downtime.
-            </Step>
-            <Step number={2} title="Rotate">
-              Confirm rotate action to create a new key and invalidate the previous key.
-            </Step>
-            <Step number={3} title="Store new key">
-              Copy the newly returned full key and deploy to downstream systems.
-            </Step>
-          </div>
-          <Callout type="warning" title="Security posture">
-            Rotating immediately invalidates previous key usage and should be coordinated with all clients.
-          </Callout>
-        </section>
-
-        <section id="revoke" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Revoke keys</h2>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <div className="font-semibold mb-2 flex items-center gap-2">
-              <Trash2 className="w-4 h-4 text-[#6B01B6]" />
-              One-way disable
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Revoke is permanent; integrations using this key stop immediately.
+        <div className="space-y-12">
+          <section id="overview">
+            <h2 className="text-2xl font-semibold mb-4">What this page is for</h2>
+            <p className="text-muted-foreground mb-4">
+              The API Keys page is used to create integration keys for your community so external
+              systems can call Hive3 APIs securely.
             </p>
-          </div>
-          <Callout type="error" title="Irreversible action">
-            After confirm revoke, you must issue a new key for continued integration traffic.
-          </Callout>
-          <CodeBlock
-            language="text"
-            code={`open key row
-choose Rotate or Revoke
-confirm in dialog`}
-          />
-        </section>
+            <Callout type="info" title="Tier access">
+              API key management is available for Swarm and Royal Hive communities.
+            </Callout>
+          </section>
 
-        <section id="security" className="space-y-4">
-          <h2 className="text-2xl font-semibold">Integration purpose and security</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+          <section id="get-key">
+            <h2 className="text-2xl font-semibold mb-4">Get your API key</h2>
             <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#6B01B6]" />
-                Onboarding links
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Expose keys only in trusted service calls for onboarding and link generation.
+              <p className="font-semibold mb-2 flex items-center gap-2">
+                <KeyRound className="w-4 h-4 text-[#6B01B6]" />
+                Create key flow
               </p>
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li>Open your community dashboard and go to API Keys.</li>
+                <li>Click <InlineCode>Create key</InlineCode>.</li>
+                <li>Enter a key name and confirm.</li>
+                <li>Copy and store the full key immediately. It is only shown once.</li>
+              </ul>
             </div>
+          </section>
+
+          <section id="use-key">
+            <h2 className="text-2xl font-semibold mb-4">Use as Bearer token</h2>
+            <p className="text-muted-foreground mb-4">
+              Send the API key in your authorization header for API requests:
+            </p>
+            <CodeBlock
+              language="bash"
+              code={`curl -X POST https://api.hive3.tech/api/v1/communities/onboard \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"email":"user@example.com"}'`}
+            />
+          </section>
+
+          <section id="notes">
+            <h2 className="text-2xl font-semibold mb-4">Important notes</h2>
             <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2 flex items-center gap-2">
-                <RefreshCw className="w-4 h-4 text-[#6B01B6]" />
-                Secret handling
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Rotate on suspected leak and immediately revoke old secrets.
-              </p>
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li>Only one active community API key is supported at a time.</li>
+                <li>Rotate or revoke keys immediately if you suspect exposure.</li>
+                <li>Do not embed keys in public client apps.</li>
+              </ul>
             </div>
-          </div>
-        </section>
+            <Callout type="warning" title="Security reminder">
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4" />
+                Treat your API key like a password and store it in your backend secret manager.
+              </span>
+            </Callout>
+          </section>
+        </div>
 
         <div className="flex items-center justify-between mt-16 pt-8 border-t border-border">
           <Link
-            to="/quests-and-tasks"
+            to="/linking-external-wallets"
             className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
-            Quests & Tasks
+            Linking External Wallets
           </Link>
           <Link
-            to="/events-guide"
+            to="/api-reference"
             className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
           >
-            Events Guide
+            Onboard
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

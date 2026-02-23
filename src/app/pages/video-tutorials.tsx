@@ -116,11 +116,11 @@ export function VideoTutorialsPage() {
         {/* Page Navigation */}
         <div className="flex items-center justify-between mt-16 pt-8 border-t border-border">
           <Link
-            to="/authentication"
+            to="/api-reference"
             className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
-            Authentication
+            API Reference
           </Link>
           <Link
             to="/changelog"

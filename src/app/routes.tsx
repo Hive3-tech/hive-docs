@@ -4,10 +4,13 @@ import { DocLayout } from "./components/doc-layout";
 import { createStubDocPage } from "./pages/stub-doc-page";
 import { orderedDocPages } from "./doc-navigation";
 import { OverviewPage } from "./pages/overview";
-import { GetStartedPage } from "./pages/get-started";
 import { TiersPage } from "./pages/tiers";
 import { ProfileDashboardOverviewPage } from "./pages/profile-dashboard-overview";
 import { ProfileAccountSettingsPage } from "./pages/profile-account-settings";
+import { AccountSettingsPage } from "./pages/account-settings";
+import { ProfilePayPalPage } from "./pages/profile-paypal";
+import { ProfileCommunitiesPage } from "./pages/profile-communities";
+import { ProfileCollaboratorsPage } from "./pages/profile-collaborators";
 import { CreatingEventsPage } from "./pages/creating-events";
 import { CreatingCoursesPage } from "./pages/creating-courses";
 import { CreatingContentPage } from "./pages/creating-content";
@@ -21,9 +24,7 @@ import { AISettingsPage } from "./pages/ai-settings";
 import { PayPalAndSubscriptionsPage } from "./pages/paypal-and-subscriptions";
 import { ManagingMembersPage } from "./pages/managing-members";
 import { QuestsAndTasksPage } from "./pages/quests-and-tasks";
-import { ApiOverviewPage } from "./pages/api-overview";
 import { APIKeysAndIntegrationsPage } from "./pages/api-keys-and-integrations";
-import { AuthenticationPage } from "./pages/api-auth";
 import { PayPalIntegrationPage } from "./pages/paypal-integration";
 import { OnboardingLinkSetupPage } from "./pages/onboarding-link-setup";
 import { AIAssistantSetupPage } from "./pages/ai-assistant-setup";
@@ -36,16 +37,19 @@ import { ContentGuidePage } from "./pages/content-guide";
 import { CredentialsAndNFTsPage } from "./pages/credentials-and-nfts";
 import { CircleWalletPage } from "./pages/circle-wallet";
 import { LinkingExternalWalletsPage } from "./pages/linking-external-wallets";
-import { CredentialsExplainedPage } from "./pages/credentials-explained";
 import { NotFoundPage } from "./pages/not-found";
 import { DocsRouteErrorBoundary } from "./pages/route-error";
 
 const customPages: Record<string, ComponentType> = {
   "/": OverviewPage,
-  "/get-started": GetStartedPage,
   "/membership-tiers": TiersPage,
   "/honey-bee-profile-dashboard-overview": ProfileDashboardOverviewPage,
   "/profile-and-account-settings": ProfileAccountSettingsPage,
+  "/account-settings": AccountSettingsPage,
+  "/profile-paypal": ProfilePayPalPage,
+  "/profile-ai": AIAssistantSetupPage,
+  "/profile-communities": ProfileCommunitiesPage,
+  "/profile-collaborators": ProfileCollaboratorsPage,
   "/creating-events": CreatingEventsPage,
   "/creating-courses": CreatingCoursesPage,
   "/creating-content": CreatingContentPage,
@@ -59,9 +63,7 @@ const customPages: Record<string, ComponentType> = {
   "/paypal-and-subscriptions": PayPalAndSubscriptionsPage,
   "/managing-members": ManagingMembersPage,
   "/quests-and-tasks": QuestsAndTasksPage,
-  "/api-overview": ApiOverviewPage,
-  "/authentication": AuthenticationPage,
-  "/onboarding-link-setup": OnboardingLinkSetupPage,
+  "/api-reference": OnboardingLinkSetupPage,
   "/api-keys-and-integrations": APIKeysAndIntegrationsPage,
   "/paypal-integration": PayPalIntegrationPage,
   "/ai-assistant-setup": AIAssistantSetupPage,
@@ -74,7 +76,7 @@ const customPages: Record<string, ComponentType> = {
   "/credentials-and-nfts": CredentialsAndNFTsPage,
   "/circle-wallet": CircleWalletPage,
   "/linking-external-wallets": LinkingExternalWalletsPage,
-  "/credentials-explained": CredentialsExplainedPage,
+  "/credentials-explained": CredentialsAndNFTsPage,
 };
 
 const pageRoutes = orderedDocPages.map((page, index) => {
@@ -95,6 +97,18 @@ const pageRoutes = orderedDocPages.map((page, index) => {
   };
 });
 
+const legacyRoutes = [
+  { path: "/get-started", Component: OverviewPage },
+  { path: "/creating-events", Component: CreatingEventsPage },
+  { path: "/creating-courses", Component: CreatingCoursesPage },
+  { path: "/creating-content", Component: CreatingContentPage },
+  { path: "/creating-jobs", Component: CreatingJobsPage },
+  { path: "/credentials-explained", Component: CredentialsAndNFTsPage },
+  { path: "/paypal-integration", Component: PayPalIntegrationPage },
+  { path: "/ai-assistant-setup", Component: AIAssistantSetupPage },
+  { path: "/managing-collaborators", Component: ManagingCollaboratorsPage },
+];
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -111,10 +125,14 @@ export const router = createBrowserRouter([
           Component: route.Component,
         };
       }),
-      {
-        path: "*",
-        Component: NotFoundPage,
-      },
+      ...legacyRoutes.map((route) => ({
+        path: route.path.slice(1),
+        Component: route.Component,
+      })),
     ],
+  },
+  {
+    path: "*",
+    Component: NotFoundPage,
   },
 ]);

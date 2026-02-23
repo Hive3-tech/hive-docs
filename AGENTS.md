@@ -30,6 +30,11 @@
 - Keep `strict: true` and resolve imports with explicit paths.
 - Prefer explicit types and consistent exports.
 
+## Line Budget Guardrail
+- Soft warning threshold: 300 lines per file (blank lines and comment-only lines ignored).
+- Hard error threshold: 350 lines per file (blank lines and comment-only lines ignored).
+- When a file approaches 300 lines, split by responsibility (layout, content blocks, helpers) rather than weakening lint rules.
+
 ## Conventions
 - Keep generated/content-specific placeholders labeled as temporary until replaced with real Hive3 feature details.
 - Use `Callout`, `Step`, `InlineCode`, and `CodeBlock` primitives from doc components.

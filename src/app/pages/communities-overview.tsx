@@ -1,135 +1,220 @@
-import { RightSidebar } from "../components/right-sidebar";
-import { Callout, Step, InlineCode } from "../components/doc-components";
-import { ChevronLeft, ChevronRight, CheckCircle2, Lock, Shield, Users } from "lucide-react";
-import { Link } from "react-router";
+import { RightSidebar } from '../components/right-sidebar';
+import { Callout } from '../components/doc-components';
+import {
+  BookOpen,
+  Briefcase,
+  Calendar,
+  CheckSquare,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  FileText,
+  KeyRound,
+  MessageCircle,
+  Shield,
+  Sparkles,
+  Target,
+  UserCog,
+  Users,
+} from 'lucide-react';
+import { Link } from 'react-router';
 
 export function CommunitiesOverviewPage() {
   const tocItems = [
-    { id: "overview", label: "Overview" },
-    { id: "requirements", label: "Access and limits" },
-    { id: "what-you-get", label: "Community feature map" },
-    { id: "start-here", label: "Get started path" },
-    { id: "next-steps", label: "Next actions" },
+    { id: 'dashboard-home', label: 'Dashboard home' },
+    { id: 'settings-cards', label: 'Settings cards' },
+    { id: 'workspace', label: 'Creator workspace' },
+    { id: 'access', label: 'Access notes' },
+  ];
+
+  const settingsCards = [
+    {
+      title: 'Community Settings',
+      subtitle: 'Edit community',
+      to: '/community-settings',
+      icon: Shield,
+      iconStyle: 'bg-emerald-100 text-emerald-600',
+      note: 'Branding, access, and community profile controls',
+    },
+    {
+      title: 'Permissions',
+      subtitle: 'Manage permissions',
+      to: '/admins-and-moderators',
+      icon: UserCog,
+      iconStyle: 'bg-blue-100 text-blue-600',
+      note: 'Owner, admin, and moderator role controls',
+    },
+    {
+      title: 'Chat Settings',
+      subtitle: 'Manage chat',
+      to: '/chat-settings',
+      icon: MessageCircle,
+      iconStyle: 'bg-blue-100 text-blue-600',
+      note: 'Channel behavior and moderation settings',
+    },
+    {
+      title: 'PayPal',
+      subtitle: 'Payments & Subscriptions',
+      to: '/paypal-and-subscriptions',
+      icon: CreditCard,
+      iconStyle: 'bg-blue-100 text-blue-600',
+      note: 'Same core setup flow as Link Paypal account',
+    },
+    {
+      title: 'AI',
+      subtitle: 'AI Assistant',
+      to: '/ai-settings',
+      icon: Sparkles,
+      iconStyle: 'bg-purple-100 text-purple-600',
+      note: 'Same core setup flow as Community AI Assistant',
+    },
+    {
+      title: 'Members',
+      subtitle: 'Manage members',
+      to: '/managing-members',
+      icon: Users,
+      iconStyle: 'bg-amber-100 text-amber-600',
+      note: 'Member list, role filters, and pending application review',
+    },
+    {
+      title: 'API Keys',
+      subtitle: 'Integrations & onboarding API',
+      to: '/api-keys-and-integrations',
+      icon: KeyRound,
+      iconStyle: 'bg-indigo-100 text-indigo-600',
+      note: 'Available for Swarm community operations',
+    },
   ];
 
   return (
     <div className="flex">
       <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
         <div className="text-sm text-muted-foreground mb-6">
-          Communities (Swarm) / <span className="text-foreground">Communities Overview</span>
+          Communities / <span className="text-foreground">Community Dashboard Overview</span>
         </div>
 
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">
-          Communities Overview
+          Community Dashboard Overview
         </h1>
-        <p className="text-lg text-muted-foreground mb-10">
-          Swarm communities are where moderators and owners run paid or open membership spaces with
-          unified settings, memberships, automations, and integrations.
+        <p className="text-lg text-muted-foreground mb-12">
+          This is the community command center for settings, permissions, members, monetization, AI,
+          and integrations.
         </p>
 
-        <section id="overview" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">What a community includes</h2>
-          <p className="text-muted-foreground">
-            A community includes a home profile, moderation surface, membership controls, optional
-            PayPal/subscription plans, AI configuration, and integration points for chat tooling.
-            You can manage all of these from <InlineCode>/community/:id/dashboard</InlineCode>.
-          </p>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2 flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#6B01B6]" />
-                Member lifecycle
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Invite or view members, evaluate pending applications, and remove users when needed.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2 flex items-center gap-2">
-                <Shield className="w-4 h-4 text-[#6B01B6]" />
-                Governance
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Assign moderators/admins, manage access settings, and control public/community metadata.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#6B01B6]" />
-                Monetization
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Attach PayPal, publish subscriptions, and gate access based on membership or approval flow.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2 flex items-center gap-2">
-                <Lock className="w-4 h-4 text-[#6B01B6]" />
-                Integrations
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Enable community AI, create API keys, and synchronize chat with Discord/Telegram bots.
-              </p>
-            </div>
-          </div>
-        </section>
+        <div className="space-y-12">
+          <section id="dashboard-home">
+            <h2 className="text-2xl font-semibold mb-4">Dashboard home</h2>
+            <p className="text-muted-foreground">
+              Your community dashboard gives you one place to run settings, member operations,
+              monetization, and content workflows.
+            </p>
+          </section>
 
-        <section id="requirements" className="mb-12 space-y-4">
-          <h2 className="text-2xl font-semibold">Access and limits</h2>
-          <Callout type="info" title="Swarm-only">
-            Community docs and management controls are available only on the Swarm tier.
-          </Callout>
-          <div className="space-y-4">
-            <Step number={1} title="Swarm membership required">
-              You must be on Swarm to open <InlineCode>My Communities</InlineCode> and create a community.
-            </Step>
-            <Step number={2} title="Single owned community">
-              A user can own one community at a time for this version. The UI disables creating a second one when
-              <InlineCode>userAlreadyOwnsCommunity</InlineCode> is true.
-            </Step>
-          </div>
-        </section>
+          <section id="settings-cards">
+            <h2 className="text-2xl font-semibold mb-4">Settings cards</h2>
+            <p className="text-muted-foreground mb-6">
+              These links mirror the Community Dashboard action cards from the app.
+            </p>
 
-        <section id="what-you-get" className="mb-12 space-y-4">
-          <h2 className="text-2xl font-semibold">Community admin surface map</h2>
-          <p className="text-muted-foreground">
-            Each dashboard card maps to a dedicated settings page in these docs:
-          </p>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-              <li>Community Settings → <Link to="/community-settings" className="text-[#6B01B6] hover:underline">/community-settings</Link></li>
-              <li>Admins & Moderators → <Link to="/admins-and-moderators" className="text-[#6B01B6] hover:underline">/admins-and-moderators</Link></li>
-              <li>Chat Settings → <Link to="/chat-settings" className="text-[#6B01B6] hover:underline">/chat-settings</Link></li>
-              <li>PayPal & Subscriptions → <Link to="/paypal-and-subscriptions" className="text-[#6B01B6] hover:underline">/paypal-and-subscriptions</Link></li>
-              <li>AI Settings → <Link to="/ai-settings" className="text-[#6B01B6] hover:underline">/ai-settings</Link></li>
-              <li>Managing Members → <Link to="/managing-members" className="text-[#6B01B6] hover:underline">/managing-members</Link></li>
-              <li>API Keys & Integrations → <Link to="/api-keys-and-integrations" className="text-[#6B01B6] hover:underline">/api-keys-and-integrations</Link></li>
-            </ul>
-          </div>
-        </section>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {settingsCards.map(card => {
+                const Icon = card.icon;
+                return (
+                  <Link
+                    key={card.title}
+                    to={card.to}
+                    className="rounded-xl border border-border bg-card p-5 hover:border-[#6B01B6] hover:bg-accent/50 transition-colors"
+                  >
+                    <div
+                      className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 ${card.iconStyle}`}
+                    >
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-semibold">{card.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{card.subtitle}</p>
+                    <p className="text-xs text-[#6B01B6] mt-3 font-medium">{card.note}</p>
+                  </Link>
+                );
+              })}
+            </div>
 
-        <section id="start-here" className="mb-12 space-y-4">
-          <h2 className="text-2xl font-semibold">Get started flow</h2>
-          <div className="space-y-4">
-            <Step number={1} title="Create your community">
-              Open profile dashboard communities area and create your first community.
-            </Step>
-            <Step number={2} title="Define access and branding">
-              Open community settings and configure handle, visibility, images, description, and policies.
-            </Step>
-            <Step number={3} title="Configure integrations">
-              Connect AI, chat, PayPal, and optional API keys before inviting your first members.
-            </Step>
-          </div>
-        </section>
+            <Callout type="info" title="Shared setup note">
+              Community PayPal and AI setup use the same core workflow patterns as your profile
+              guides, with community ownership context.
+            </Callout>
+          </section>
 
-        <section id="next-steps" className="space-y-4">
-          <h2 className="text-2xl font-semibold">Next actions</h2>
-          <Callout type="success" title="Recommended order">
-            Start with <InlineCode>Creating a Community</InlineCode>, then define policy in <InlineCode>Community Settings</InlineCode>,
-            then set up moderation and integrations.
-          </Callout>
-        </section>
+          <section id="workspace">
+            <h2 className="text-2xl font-semibold mb-4">Creator workspace</h2>
+            <p className="text-muted-foreground mb-6">
+              The same dashboard also contains management panels for published community work.
+            </p>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="rounded-xl border border-border p-4">
+                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-[#6B01B6]" />
+                  Events
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Create events, edit details, and manage enrollments.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-[#6B01B6]" />
+                  Courses
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Build courses, update lessons, and review analytics.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-[#6B01B6]" />
+                  Content
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Publish and manage community content.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-[#6B01B6]" />
+                  Jobs
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Post jobs and review applications.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                  <Target className="w-4 h-4 text-[#6B01B6]" />
+                  Quests
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Launch and manage quests using community quest credits.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                  <CheckSquare className="w-4 h-4 text-[#6B01B6]" />
+                  Tasks
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Tasks are available in community dashboard workflows.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section id="access">
+            <h2 className="text-2xl font-semibold mb-4">Access notes</h2>
+            <Callout type="info" title="Tier and visibility">
+              Community management is designed for Swarm community operators. API keys and advanced
+              integration controls are exposed for eligible community contexts.
+            </Callout>
+          </section>
+        </div>
 
         <div className="flex items-center justify-between mt-16 pt-8 border-t border-border">
           <Link

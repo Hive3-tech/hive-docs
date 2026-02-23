@@ -1,154 +1,163 @@
-import { RightSidebar } from "../components/right-sidebar";
-import { Callout, Step, InlineCode, CodeBlock } from "../components/doc-components";
-import { ChevronLeft, ChevronRight, AlertCircle, KeyRound, UserCheck } from "lucide-react";
-import { Link } from "react-router";
+import { RightSidebar } from '../components/right-sidebar';
+import { Callout } from '../components/doc-components';
+import { AlertCircle, ChevronLeft, ChevronRight, Crown, Shield, Star, UserPlus } from 'lucide-react';
+import { Link } from 'react-router';
 
 export function AdminsAndModeratorsPage() {
   const tocItems = [
-    { id: "overview", label: "Role model" },
-    { id: "assign", label: "Assign roles" },
-    { id: "change", label: "Promote and demote" },
-    { id: "search", label: "Search dialog" },
-    { id: "remove", label: "Remove role" },
+    { id: 'at-a-glance', label: 'What this page controls' },
+    { id: 'role-levels', label: 'Role levels' },
+    { id: 'add-permission', label: 'Add a new permission' },
+    { id: 'manage-existing-roles', label: 'Manage existing roles' },
+    { id: 'remove-role', label: 'Remove a role' },
+    { id: 'helpful-notes', label: 'Helpful notes' },
+    { id: 'save-and-next', label: 'Save and next' },
   ];
 
   return (
     <div className="flex">
       <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
         <div className="text-sm text-muted-foreground mb-6">
-          Communities (Swarm) / <span className="text-foreground">Admins & Moderators</span>
+          Communities / <span className="text-foreground">Permissions</span>
         </div>
 
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">
-          Admins & Moderators
+          Permissions
         </h1>
-        <p className="text-lg text-muted-foreground mb-10">
-          Configure who can administer and moderate a community from role-specific permission controls.
+        <p className="text-lg text-muted-foreground mb-12">
+          Manage who helps run your community by assigning, updating, and removing role-based
+          access.
         </p>
 
-        <section id="overview" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Role model</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full border border-border rounded-lg">
-              <thead className="bg-card">
-                <tr>
-                  <th className="text-left p-3 text-sm font-semibold">Role</th>
-                  <th className="text-left p-3 text-sm font-semibold">Responsibilities</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                <tr className="border-t border-border">
-                  <td className="p-3">Owner</td>
-                  <td className="p-3 text-muted-foreground">Full control of the community and ownership context.</td>
-                </tr>
-                <tr className="border-t border-border">
-                  <td className="p-3">Admin</td>
-                  <td className="p-3 text-muted-foreground">
-                    Manage community content, settings, and assign admin/moderator roles.
-                  </td>
-                </tr>
-                <tr className="border-t border-border">
-                  <td className="p-3">Moderator</td>
-                  <td className="p-3 text-muted-foreground">
-                    Moderate content and member actions under admin policy.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <Callout type="info" title="Owner row behavior">
-            Owner entries are shown in the list and are not editable in-place to avoid accidental privilege downgrades.
-          </Callout>
-        </section>
+        <div className="space-y-12">
+          <section id="at-a-glance">
+            <h2 className="text-2xl font-semibold mb-4">What this page controls</h2>
+            <p className="text-muted-foreground mb-4">
+              Use this page to manage your community team with role-based permissions.
+            </p>
+            <Callout type="info" title="Access note">
+              This page is intended for users who already have community management access.
+            </Callout>
+          </section>
 
-        <section id="assign" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Assign roles</h2>
-          <div className="space-y-6">
-            <Step number={1} title="Open role assignment">
-              Click <InlineCode>New Permission</InlineCode> in the permissions view.
-            </Step>
-            <Step number={2} title="Search by account">
-              Select a user from the search input.
-            </Step>
-            <Step number={3} title="Choose role">
-              Select <InlineCode>Admin</InlineCode> or <InlineCode>Moderator</InlineCode>, then submit.
-            </Step>
-          </div>
-          <CodeBlock
-            language="text"
-            code={`click New Permission
-search user
-choose admin or moderator
-Assign Role`}
-          />
-          <Callout type="warning" title="Search is live">
-            Results are pulled from global user search; only selected users receive role assignment.
-          </Callout>
-        </section>
-
-        <section id="change" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Promote and demote</h2>
-          <p className="text-muted-foreground">
-            Existing members listed in Admin/Moderator sections can be moved between roles with the role select control.
-          </p>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2 flex items-center gap-2">
-                <UserCheck className="w-4 h-4 text-[#6B01B6]" />
-                Upgrade
+          <section id="role-levels">
+            <h2 className="text-2xl font-semibold mb-4">Role levels</h2>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-[#6B01B6]" />
+                  Owner
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Full control of the community. Owner entries are visible in the list and are
+                  read-only on this page.
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Change a <InlineCode>Moderator</InlineCode> to <InlineCode>Admin</InlineCode>.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2 flex items-center gap-2">
-                <UserCheck className="w-4 h-4 text-[#6B01B6]" />
-                Demote
+
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-[#6B01B6]" />
+                  Admin
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Can manage community content, events, and courses, and can assign admin and
+                  moderator roles. Admin access also includes sending direct messages on the
+                  platform.
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Change an <InlineCode>Admin</InlineCode> to <InlineCode>Moderator</InlineCode>.
-              </p>
+
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <Star className="w-4 h-4 text-[#6B01B6]" />
+                  Moderator
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Can create, edit, and remove community posts.
+                </p>
+              </div>
             </div>
-          </div>
-        </section>
+            <Callout type="warning" title="Important">
+              You can assign Admin and Moderator from this page. Owner is not assignable here.
+            </Callout>
+          </section>
 
-        <section id="search" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Search dialog details</h2>
-          <p className="text-muted-foreground">
-            The assignment dialog uses a searchable typeahead and returns a selected profile card.
-            The modal shows selected user and role description before save.
-          </p>
-          <Callout type="info" title="Clear user flow">
-            You can clear a selection and restart the assignment without closing the dialog.
-          </Callout>
-        </section>
+          <section id="add-permission">
+            <h2 className="text-2xl font-semibold mb-4">Add a new permission</h2>
+            <div className="rounded-lg border border-border bg-card p-4">
+              <p className="font-semibold mb-2 flex items-center gap-2">
+                <UserPlus className="w-4 h-4 text-[#6B01B6]" />
+                New Permission flow
+              </p>
+              <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
+                <li>Click New Permission.</li>
+                <li>Search by name or @handle and select the user.</li>
+                <li>Choose Moderator or Admin.</li>
+                <li>Click Assign Role to apply the role.</li>
+              </ol>
+            </div>
+            <p className="text-sm text-muted-foreground mt-4">
+              You can clear the selected user and pick someone else before assigning.
+            </p>
+          </section>
 
-        <section id="remove" className="space-y-4">
-          <h2 className="text-2xl font-semibold">Remove role</h2>
-          <div className="space-y-6">
-            <Step number={1} title="Select member row">
-              Open the row action for an admin/moderator.
-            </Step>
-            <Step number={2} title="Remove">
-              Click <InlineCode>Remove</InlineCode>. This removes role assignment from the community.
-            </Step>
-          </div>
-          <Callout type="error" title="Keep security in mind">
-            Removing a role revokes management privileges but does not delete the community.
-          </Callout>
-          <div className="mt-4 inline-flex items-center gap-2 text-sm text-muted-foreground">
-            <AlertCircle className="w-4 h-4 text-[#6B01B6]" />
-            Use owner-only actions for high-risk users.
-          </div>
-          <CodeBlock
-            language="text"
-            code={`admin panel
-open admin row
-click Remove
-confirm mutation`}
-          />
-        </section>
+          <section id="manage-existing-roles">
+            <h2 className="text-2xl font-semibold mb-4">Manage existing roles</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2">Update role level</p>
+                <p className="text-sm text-muted-foreground">
+                  In Admin and Moderator sections, use the role dropdown to switch between Admin
+                  and Moderator.
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2">Role visibility</p>
+                <p className="text-sm text-muted-foreground">
+                  Role sections appear when there are members in that role, and each row shows when
+                  that role was assigned.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section id="remove-role">
+            <h2 className="text-2xl font-semibold mb-4">Remove a role</h2>
+            <div className="rounded-lg border border-border bg-card p-4">
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li>Use Remove on an Admin or Moderator row to revoke that role.</li>
+                <li>Owner rows cannot be removed from this page.</li>
+                <li>Removing a role only removes role access, not the user account.</li>
+              </ul>
+            </div>
+          </section>
+
+          <section id="helpful-notes">
+            <h2 className="text-2xl font-semibold mb-4">Helpful notes</h2>
+            <div className="space-y-4">
+              <Callout type="info" title="Role summary cards">
+                The top cards show current counts for Owners, Admins, and Moderators.
+              </Callout>
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-[#6B01B6]" />
+                  Common assignment messages
+                </p>
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                  <li>You cannot assign a role to yourself.</li>
+                  <li>You cannot assign the same role the user already has.</li>
+                  <li>If permissions fail to load, you may not have role-management access.</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section id="save-and-next">
+            <h2 className="text-2xl font-semibold mb-4">Save and next</h2>
+            <Callout type="success" title="No Save button needed">
+              Role actions apply right away when you assign, change, or remove a role.
+            </Callout>
+          </section>
+        </div>
 
         <div className="flex items-center justify-between mt-16 pt-8 border-t border-border">
           <Link

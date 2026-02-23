@@ -27,11 +27,9 @@ export function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   }, []);
 
   const navItems = [
-    { label: "Get Started", path: "/get-started" },
-    { label: "Communities", path: "/communities" },
-    { label: "Courses", path: "/courses" },
+    { label: "Getting Started", path: "/get-started" },
+    { label: "Wallets", path: "/circle-wallet" },
     { label: "API Reference", path: "/api-reference" },
-    { label: "Changelog", path: "/changelog" },
   ];
 
   return (
@@ -98,7 +96,7 @@ export function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
 
           {/* Go to App Button */}
           <a
-            href="https://app.hive3.com"
+            href="https://app.hive3.tech"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] text-white rounded-lg hover:opacity-90 transition-opacity text-sm"

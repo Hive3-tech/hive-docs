@@ -1,191 +1,201 @@
-import { RightSidebar } from "../components/right-sidebar";
-import { Callout, Step, InlineCode, CodeBlock } from "../components/doc-components";
-import { ArrowUpRight, ChevronLeft, ChevronRight, CircleDollarSign, Coins, ShieldCheck, Wallet } from "lucide-react";
-import { Link } from "react-router";
+import { RightSidebar } from '../components/right-sidebar';
+import { Callout, Step, InlineCode } from '../components/doc-components';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Coins,
+  Copy,
+  RefreshCcw,
+  Send,
+  ShieldCheck,
+  Wallet,
+} from 'lucide-react';
+import { Link } from 'react-router';
 
 export function CircleWalletPage() {
   const tocItems = [
-    { id: "overview", label: "How it works" },
-    { id: "lifecycle", label: "Lifecycle and chain" },
-    { id: "funds", label: "Balances and assets" },
-    { id: "transfer", label: "Transfer behavior" },
-    { id: "status", label: "Status and troubleshooting" },
-    { id: "routes", label: "Route map" },
+    { id: 'overview', label: 'What Circle Wallet is' },
+    { id: 'where-found', label: 'Where to find it' },
+    { id: 'actions', label: 'What you can do' },
+    { id: 'transfer', label: 'Send ETH from Circle Wallet' },
+    { id: 'default-wallet', label: 'Default wallet and credentials' },
+    { id: 'status', label: 'If your wallet shows unavailable' },
+    { id: 'tips', label: 'Best practices' },
   ];
 
   return (
     <div className="flex">
       <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
         <div className="text-sm text-muted-foreground mb-6">
-          Wallets & Web3 / <span className="text-foreground">Circle Wallet</span>
+          Wallet & Credentials / <span className="text-foreground">Circle Wallet</span>
         </div>
 
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">
           Circle Wallet
         </h1>
         <p className="text-lg text-muted-foreground mb-12">
-          Hive3 ships with a managed wallet that is created automatically and stays attached to your account.
+          Circle Wallet is your built-in Hive3 wallet. It is created for your account automatically
+          and gives you a ready-to-use home base for wallet actions.
         </p>
 
         <div className="space-y-12">
           <section id="overview">
-            <h2 className="text-2xl font-semibold mb-4">How it works</h2>
-            <Callout type="info" title="Auto-created wallet">
-              Circle wallet is provisioned when needed, so you do not need to manually set up a smart wallet to use
-              app features that rely on it.
+            <h2 className="text-2xl font-semibold mb-4">What Circle Wallet is</h2>
+            <Callout type="info" title="Automatic setup">
+              You do not need to create this wallet manually. Hive3 prepares it for your account.
             </Callout>
             <p className="text-muted-foreground mt-4">
-              A Circle wallet is generated per Hive3 account and is reused for the life of your profile. It behaves as a
-              managed control surface so creators can transact without configuring infrastructure on day one.
+              Think of Circle Wallet as your account-native wallet for core Hive3 workflows. It
+              stays linked to your account and can be used alongside any external wallets you link.
             </p>
             <div className="grid md:grid-cols-2 gap-4 mt-4">
               <div className="rounded-lg border border-border bg-card p-4">
                 <div className="font-semibold mb-2 flex items-center gap-2">
                   <Wallet className="w-4 h-4 text-[#6B01B6]" />
-                  Account binding
+                  Account-linked
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  The wallet is attached to your Hive3 identity, not to one browser profile.
+                  Your Circle Wallet is attached to your Hive3 account, not to one browser session.
                 </p>
               </div>
               <div className="rounded-lg border border-border bg-card p-4">
                 <div className="font-semibold mb-2 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-[#6B01B6]" />
-                  Managed lifecycle
+                  Managed experience
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  It is used for platform operations like viewing balances, initiating transfers, and funding workflows.
+                  Hive3 handles the wallet plumbing so you can focus on your creator and community
+                  workflows.
                 </p>
               </div>
             </div>
           </section>
 
-          <section id="lifecycle">
-            <h2 className="text-2xl font-semibold mb-4">Lifecycle and chain</h2>
-            <Step number={1} title="Creation trigger">
-              Created when the account initializes wallet access in the product, often via profile wallet view.
-            </Step>
-            <Step number={2} title="Chain routing">
-              Runs on Base mainnet or Base Sepolia depending on environment.
-            </Step>
-            <Step number={3} title="Active connection">
-              Used through the wallet modal where balances and transfer controls are shown.
-            </Step>
-            <p className="text-muted-foreground mt-4">
-              Environment selection is controlled by backend/frontend chain config (testnet mode uses Base Sepolia).
+          <section id="where-found">
+            <h2 className="text-2xl font-semibold mb-4">Where to find it</h2>
+            <p className="text-muted-foreground">
+              Open your wallet management controls from your profile experience. In that modal, you
+              will see your default wallet, Circle Wallet details, and linked external wallets in
+              one place.
             </p>
           </section>
 
-          <section id="funds">
-            <h2 className="text-2xl font-semibold mb-4">Balances and assets</h2>
-            <div className="grid md:grid-cols-2 gap-4">
+          <section id="actions">
+            <h2 className="text-2xl font-semibold mb-4">What you can do</h2>
+            <div className="grid md:grid-cols-3 gap-4">
               <div className="rounded-lg border border-border bg-card p-4">
                 <div className="font-semibold mb-2 flex items-center gap-2">
-                  <Coins className="w-4 h-4 text-[#6B01B6]" />
-                  Native and token balances
+                  <Copy className="w-4 h-4 text-[#6B01B6]" />
+                  Copy wallet address
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  The wallet supports ETH and USDC balances directly in the same interface.
+                  View your short address and copy the full address directly from the Circle Wallet
+                  card.
                 </p>
-                <ul className="mt-3 text-sm text-muted-foreground list-disc list-inside space-y-1">
-                  <li>ETH balance shown as chain-native funds.</li>
-                  <li>USDC is shown as token balance.</li>
-                </ul>
               </div>
               <div className="rounded-lg border border-border bg-card p-4">
                 <div className="font-semibold mb-2 flex items-center gap-2">
-                  <CircleDollarSign className="w-4 h-4 text-[#6B01B6]" />
-                  Activity support
+                  <Coins className="w-4 h-4 text-[#6B01B6]" />
+                  Check balances
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  View current holdings and initiate outgoing transfers from the same dialog where you confirm default wallet state.
+                  See ETH and USDC balances in the same panel where you manage your wallets.
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-4">
+                <div className="font-semibold mb-2 flex items-center gap-2">
+                  <Send className="w-4 h-4 text-[#6B01B6]" />
+                  Transfer ETH
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Use the Transfer action from Circle Wallet to send ETH to another wallet address.
                 </p>
               </div>
             </div>
           </section>
 
           <section id="transfer">
-            <h2 className="text-2xl font-semibold mb-4">Transfer behavior</h2>
-            <Callout type="warning" title="Transfers are irreversible">
-              Outgoing sends from Circle wallet do not support rollback. Confirm recipient and amount before sending.
+            <h2 className="text-2xl font-semibold mb-4">Send ETH from Circle Wallet</h2>
+            <Callout type="warning" title="Double-check before sending">
+              Transfers are irreversible. Confirm wallet address and amount before you click Send.
             </Callout>
-            <p className="text-muted-foreground mt-4">
-              Before submitting a transfer, the interface reserves approximately <InlineCode>0.00005 ETH</InlineCode> as gas buffer.
-              You can only send up to <InlineCode>balance - 0.00005 ETH</InlineCode>.
-            </p>
-            <div className="mt-6 rounded-lg border border-border bg-card p-4">
-              <h3 className="font-semibold mb-2">Transfer checks</h3>
-              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                <li>Destination must be a valid wallet address.</li>
-                <li>Amount must be greater than 0 and within transferable balance.</li>
-                <li>Circle wallet must be accessible in the current environment.</li>
-              </ul>
+            <div className="space-y-4 mt-4">
+              <Step number={1} title="Open Manage Wallets">
+                In your profile wallet panel, open the Circle Wallet actions menu.
+              </Step>
+              <Step number={2} title="Select Transfer">
+                Choose <InlineCode>Transfer</InlineCode>.
+              </Step>
+              <Step number={3} title="Enter destination and amount">
+                Add a valid destination address and your ETH amount, or use{' '}
+                <InlineCode>Max</InlineCode>.
+              </Step>
+              <Step number={4} title="Review and send">
+                Confirm the warning prompt, then send your transfer.
+              </Step>
             </div>
-            <CodeBlock
-              language="text"
-              code={`Circle Wallet Transfer Flow:
-1) Open Wallet Management
-2) Click Transfer
-3) Enter destination + amount
-4) Confirm transfer`}
-            />
+            <p className="text-sm text-muted-foreground mt-4">
+              The Max option leaves a small gas reserve (about <InlineCode>0.00005 ETH</InlineCode>
+              ) so your wallet can still process network fees.
+            </p>
+          </section>
+
+          <section id="default-wallet">
+            <h2 className="text-2xl font-semibold mb-4">Default wallet and credentials</h2>
+            <p className="text-muted-foreground mb-4">
+              You can set Circle Wallet as your default wallet, or keep an external wallet as
+              default. Your default wallet is used for wallet-first credential workflows.
+            </p>
+            <Callout type="info" title="You can switch anytime">
+              In Manage Wallets, use <InlineCode>Set as Default</InlineCode> on Circle Wallet or
+              any linked Web3 wallet.
+            </Callout>
+            <div className="mt-3 text-sm">
+              <Link to="/credentials-and-nfts" className="text-[#6B01B6] hover:underline">
+                Open Credentials guide
+              </Link>
+            </div>
           </section>
 
           <section id="status">
-            <h2 className="text-2xl font-semibold mb-4">Status and troubleshooting</h2>
-            <Callout type="info" title="Possible status messages">
-              If your wallet status is flagged, the app can show reasons like project mismatch,
-              blockchain mismatch, or temporary service issues.
+            <h2 className="text-2xl font-semibold mb-4">If your wallet shows unavailable</h2>
+            <Callout type="info" title="Use Reconnect first">
+              If Circle Wallet is unavailable in your current environment, click{' '}
+              <InlineCode>Reconnect</InlineCode> from the wallet actions menu.
             </Callout>
-            <p className="text-muted-foreground mb-4">
-              If a wallet is inaccessible, use the reconnect action in wallet management before trying again.
-            </p>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-border bg-card p-4">
-                <div className="font-semibold mb-2">Inaccessible</div>
-                <p className="text-sm text-muted-foreground">
-                  Indicates the wallet cannot be validated against current runtime conditions.
-                </p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4">
-                <div className="font-semibold mb-2">Reconnect</div>
-                <p className="text-sm text-muted-foreground">
-                  Reconnect from the Circle wallet menu to refresh chain/project binding.
-                </p>
-              </div>
+            <div className="rounded-lg border border-border bg-card p-4 mt-4">
+              <p className="font-semibold mb-2 flex items-center gap-2">
+                <RefreshCcw className="w-4 h-4 text-[#6B01B6]" />
+                Common reasons you may see
+              </p>
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li>Wallet environment mismatch (example: test vs production context).</li>
+                <li>Temporary Circle service availability issue.</li>
+                <li>Wallet validation needs a fresh reconnect.</li>
+              </ul>
             </div>
           </section>
 
-          <section id="routes">
-            <h2 className="text-2xl font-semibold mb-4">Route map</h2>
-            <CodeBlock
-              language="text"
-              code={`Profile settings wallet modal
-/profile/dashboard
-/profile/:userId
-/notifications`}
-            />
-            <p className="text-sm text-muted-foreground mt-4">
-              In addition to transfer controls, the wallet screen is your source of truth for Circle wallet status,
-              chain context, and active default wallet selection.
-            </p>
-            <div className="mt-4">
-              <a
-                href="https://www.circle.com"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-[#6B01B6] hover:text-[#512DA8]"
-              >
-                Learn more about Circle <ArrowUpRight className="w-4 h-4" />
-              </a>
-            </div>
+          <section id="tips">
+            <h2 className="text-2xl font-semibold mb-4">Best practices</h2>
+            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+              <li>Verify destination addresses carefully before sending.</li>
+              <li>Keep a small ETH balance available for gas fees.</li>
+              <li>Use copy actions instead of typing wallet addresses manually.</li>
+              <li>
+                If your wallet state looks stale, reconnect and refresh your profile wallet panel.
+              </li>
+            </ul>
           </section>
         </div>
 
         <div className="flex items-center justify-between mt-16 pt-8 border-t border-border">
-          <Link to="/credentials-and-nfts" className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors">
+          <Link
+            to="/credentials-and-nfts"
+            className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
+          >
             <ChevronLeft className="w-4 h-4" />
-            Credentials & NFTs
+            Credentials
           </Link>
           <Link
             to="/linking-external-wallets"

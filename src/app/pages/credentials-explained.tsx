@@ -1,6 +1,6 @@
 import { RightSidebar } from "../components/right-sidebar";
 import { Callout, Step, InlineCode, CodeBlock } from "../components/doc-components";
-import { Award, ChevronLeft, CheckCircle2, CircleAlert, Eye, Link2 } from "lucide-react";
+import { Award, ChevronLeft, ChevronRight, CheckCircle2, CircleAlert, Eye, Link2 } from "lucide-react";
 import { Link } from "react-router";
 
 export function CredentialsExplainedPage() {
@@ -17,7 +17,7 @@ export function CredentialsExplainedPage() {
     <div className="flex">
       <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
         <div className="text-sm text-muted-foreground mb-6">
-          Wallets & Web3 / <span className="text-foreground">Credentials Explained</span>
+          Wallet & Credentials / <span className="text-foreground">Credentials Explained</span>
         </div>
 
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">
@@ -161,10 +161,10 @@ export function CredentialsExplainedPage() {
             Linking External Wallets
           </Link>
           <Link
-            to="/api-overview"
+            to="/api-keys-and-integrations"
             className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
           >
-            API Overview
+            API Keys
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

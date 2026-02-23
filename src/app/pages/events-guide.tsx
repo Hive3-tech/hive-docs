@@ -1,182 +1,266 @@
-import { RightSidebar } from "../components/right-sidebar";
-import { Callout, Step, InlineCode, CodeBlock } from "../components/doc-components";
-import { CalendarClock, ChevronLeft, ChevronRight, Globe, Hotel, ListChecks } from "lucide-react";
-import { Link } from "react-router";
+import { RightSidebar } from '../components/right-sidebar';
+import { Callout, Step } from '../components/doc-components';
+import {
+  CalendarClock,
+  ChevronLeft,
+  ChevronRight,
+  CircleDollarSign,
+  Globe,
+  ShieldCheck,
+  Ticket,
+  Users,
+} from 'lucide-react';
+import { Link } from 'react-router';
 
 export function EventsGuidePage() {
   const tocItems = [
-    { id: "overview", label: "Overview" },
-    { id: "metaverse", label: "Metaverse model" },
-    { id: "lifecycle", label: "Lifecycle" },
-    { id: "types", label: "Event types" },
-    { id: "access", label: "Enrollment and management" },
-    { id: "routes", label: "Route map" },
+    { id: 'overview', label: 'What events include' },
+    { id: 'where-to-start', label: 'Where to start' },
+    { id: 'create-flow', label: 'Create flow (5 steps)' },
+    { id: 'types-and-capacity', label: 'Event type and capacity' },
+    { id: 'access-and-monetization', label: 'Access and monetization' },
+    { id: 'attendee-experience', label: 'Attendee experience' },
+    { id: 'manage-events', label: 'Manage existing events' },
   ];
 
   return (
     <div className="flex">
       <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
         <div className="text-sm text-muted-foreground mb-6">
-          Platform Features / <span className="text-foreground">Events Guide</span>
+          Hive3 Features / <span className="text-foreground">Events Guide</span>
         </div>
 
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">
           Events Guide
         </h1>
         <p className="text-lg text-muted-foreground mb-12">
-          Create, publish, and manage IRL or metaverse events from the same event workflow.
+          Plan, publish, and run events from one workflow, whether you host from your profile or
+          from a community.
         </p>
 
         <div className="space-y-12">
           <section id="overview">
-            <h2 className="text-2xl font-semibold mb-4">Overview</h2>
-            <Callout type="info" title="Tier requirement">
-              Event creation and event dashboard workflows require Honey Bee or above.
-            </Callout>
-            <p className="text-muted-foreground mt-4">
-              Hive3 event flow is built around a multi-step form and includes both access control and optional reward settings.
-              Community flows can launch the same create screen using shared entity state from dashboard actions.
+            <h2 className="text-2xl font-semibold mb-4">What events include</h2>
+            <p className="text-muted-foreground mb-4">
+              Events in Hive3 are built for full lifecycle management: setup, RSVP or applications,
+              access control, attendance, and post-publish updates.
             </p>
             <div className="grid md:grid-cols-2 gap-4 mt-4">
               <div className="rounded-lg border border-border bg-card p-4">
                 <div className="font-semibold mb-2 flex items-center gap-2">
                   <CalendarClock className="w-4 h-4 text-[#6B01B6]" />
-                  Publish stages
+                  One workflow
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Fill metadata, pick an event type, configure access, optionally attach rewards, then publish.
+                  Use the same 5-step builder to create a personal event or a community event.
                 </p>
               </div>
               <div className="rounded-lg border border-border bg-card p-4">
                 <div className="font-semibold mb-2 flex items-center gap-2">
-                  <ListChecks className="w-4 h-4 text-[#6B01B6]" />
-                  Lifecycle thinking
+                  <Users className="w-4 h-4 text-[#6B01B6]" />
+                  RSVP + access controls
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Lifecycle is commonly: create → manage enrollments → run/live event → attendance and follow-up actions.
+                  Decide whether people RSVP instantly or apply first, then add subscription or
+                  ticket requirements if needed.
                 </p>
               </div>
             </div>
+            <Callout type="info" title="Good to know">
+              New tickets and subscriptions are available when PayPal is connected, and rewards are
+              optional when you want attendance credentials.
+            </Callout>
           </section>
 
-          <section id="metaverse">
-            <h2 className="text-2xl font-semibold mb-4">Metaverse model</h2>
-            <div className="space-y-6">
-              <Step number={1} title="Swarm access">
-                Swarm communities share a metaverse world with other Swarms.
-              </Step>
-              <Step number={2} title="Royal customization">
-                Royal Hive members can use custom-world branding for higher isolation.
-              </Step>
-              <Step number={3} title="Rental model">
-                Metaverse spaces are available as hourly rental slots for event schedules.
-              </Step>
-            </div>
-            <Callout type="warning" title="Metaverse event limits">
-              Max 35 participants for metaverse events. For larger sessions: <InlineCode>Need more seats? Contact us for larger metaverse parties!</InlineCode>
+          <section id="where-to-start">
+            <h2 className="text-2xl font-semibold mb-4">Where to start</h2>
+            <p className="text-muted-foreground mb-4">
+              You can start event creation from two places, both using the same form:
+            </p>
+            <Callout type="info" title="Membership entry points">
+              <ul className="list-disc list-inside space-y-1">
+                <li>Profile dashboard event creation is a Honey Bee+ workflow.</li>
+                <li>Community dashboard event creation is available in Swarm community workflows.</li>
+              </ul>
             </Callout>
             <div className="grid md:grid-cols-2 gap-4 mt-4">
               <div className="rounded-lg border border-border bg-card p-4">
                 <div className="font-semibold mb-2 flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-[#6B01B6]" />
-                  Event URL behavior
+                  <Users className="w-4 h-4 text-[#6B01B6]" />
+                  Your Profile dashboard
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  IRL requires a user-supplied event link; metaverse mode generates event URL automatically.
+                  Use your Events section to launch new events and manage your created event list.
                 </p>
               </div>
               <div className="rounded-lg border border-border bg-card p-4">
                 <div className="font-semibold mb-2 flex items-center gap-2">
-                  <Hotel className="w-4 h-4 text-[#6B01B6]" />
-                  Capacity behavior
+                  <ShieldCheck className="w-4 h-4 text-[#6B01B6]" />
+                  Community dashboard
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Metaverse participant cap is enforced in form validation and reflected in event capacity fields.
+                  Use the Events section to create events tied to your community and manage community
+                  enrollment.
                 </p>
               </div>
             </div>
           </section>
 
-          <section id="lifecycle">
-            <h2 className="text-2xl font-semibold mb-4">Event lifecycle</h2>
-            <p className="text-muted-foreground mb-4">
-              For all event workflows, lifecycle management is typically:
-            </p>
+          <section id="create-flow">
+            <h2 className="text-2xl font-semibold mb-4">Create flow (5 steps)</h2>
             <div className="space-y-6">
-              <Step number={1} title="Create">
-                Start with <InlineCode>/create/event</InlineCode>, complete the 5-step form.
+              <Step number={1} title="Basic Info">
+                Add event thumbnail/banner, event title, short description, detailed description,
+                badges (up to 5), timezone, and start/end date and time.
               </Step>
-              <Step number={2} title="Manage enrollments">
-                Use enrollment management for pending approvals and status updates.
+              <Step number={2} title="Event Type">
+                Choose IRL or Metaverse, set your event link behavior, and set participant capacity.
               </Step>
-              <Step number={3} title="Run">
-                Manage event state and attendance from event detail and attendee views.
+              <Step number={3} title="Event Access">
+                Choose enrollment mode (auto-enroll or apply), add optional subscription
+                requirements, and optionally enable a one-time event ticket.
+              </Step>
+              <Step number={4} title="Rewards">
+                Optionally add a credential reward for attendance or completion. This step is
+                optional.
+              </Step>
+              <Step number={5} title="Review">
+                Confirm details before publishing. You can still return and edit after publishing.
               </Step>
             </div>
-            <Callout type="success" title="Community launch">
-              Community dashboards open the same create page with <InlineCode>state: {`{ communityId }`}</InlineCode>.
+          </section>
+
+          <section id="types-and-capacity">
+            <h2 className="text-2xl font-semibold mb-4">Event type and capacity</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="rounded-lg border border-border bg-card p-4">
+                <div className="font-semibold mb-2 flex items-center gap-2">
+                  <CalendarClock className="w-4 h-4 text-[#6B01B6]" />
+                  IRL event
+                </div>
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                  <li>Requires an event link (venue map, Zoom link, Discord link, and similar).</li>
+                  <li>Can use unlimited participants or a fixed participant cap.</li>
+                </ul>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-4">
+                <div className="font-semibold mb-2 flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-[#6B01B6]" />
+                  Metaverse event
+                </div>
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                  <li>Event URL is generated automatically.</li>
+                  <li>Capacity is required and currently capped at 35 participants.</li>
+                </ul>
+              </div>
+            </div>
+            <Callout type="warning" title="Metaverse capacity limit">
+              Metaverse events currently support up to 35 participants by default. Need more than
+              35 seats? Contact support to request expanded capacity.
             </Callout>
           </section>
 
-          <section id="types">
-            <h2 className="text-2xl font-semibold mb-4">Event type specifics</h2>
+          <section id="access-and-monetization">
+            <h2 className="text-2xl font-semibold mb-4">Access and monetization</h2>
             <p className="text-muted-foreground mb-4">
-              Type selection changes field behavior and operational expectations:
+              You can combine enrollment rules and payment requirements for each event.
             </p>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-3 gap-4">
               <div className="rounded-lg border border-border bg-card p-4">
-                <div className="font-semibold mb-2">IRL</div>
-                <p className="text-sm text-muted-foreground">Require <InlineCode>Event Link</InlineCode> to external room or venue URL.</p>
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#6B01B6]" />
+                  Enrollment mode
+                </p>
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                  <li>Auto-enroll: people RSVP immediately.</li>
+                  <li>Apply for entry: people wait for approval.</li>
+                </ul>
               </div>
               <div className="rounded-lg border border-border bg-card p-4">
-                <div className="font-semibold mb-2">Metaverse</div>
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <CircleDollarSign className="w-4 h-4 text-[#6B01B6]" />
+                  Subscription gate
+                </p>
                 <p className="text-sm text-muted-foreground">
-                  Auto-generates event URL with participant cap validation and ticketing options.
+                  Require one of your existing subscriptions to RSVP. This is optional.
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <Ticket className="w-4 h-4 text-[#6B01B6]" />
+                  One-time ticket
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Optional paid ticket with amount, currency, quantity, and status controls.
                 </p>
               </div>
             </div>
+            <Callout type="info" title="PayPal requirement for tickets and subscriptions">
+              Connect PayPal first to enable one-time tickets and subscription gating. Use{' '}
+              <Link to="/profile-paypal" className="underline">
+                Link Paypal account
+              </Link>{' '}
+              for profile events, or{' '}
+              <Link to="/paypal-and-subscriptions" className="underline">
+                PayPal Integration
+              </Link>{' '}
+              for community events.
+            </Callout>
           </section>
 
-          <section id="access">
-            <h2 className="text-2xl font-semibold mb-4">Enrollment and management</h2>
+          <section id="attendee-experience">
+            <h2 className="text-2xl font-semibold mb-4">Attendee experience</h2>
             <p className="text-muted-foreground mb-4">
-              Access can be direct/auto-enroll or application-based, depending on your event access configuration.
+              On the event page, attendees see status, schedule, organizer details, and the correct
+              RSVP action based on your setup.
             </p>
-            <div className="space-y-6">
-              <Step number={1} title="Auto enroll">
-                Immediate approvals when open flow is configured.
-              </Step>
-              <Step number={2} title="Apply first">
-                Manual review workflow for approval-based events.
-              </Step>
-              <Step number={3} title="Post-publish controls">
-                Edit and enrollment routes are available from owner actions while event remains managed.
-              </Step>
+            <div className="rounded-lg border border-border bg-card p-4">
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li>Event status is shown as Upcoming, Live Now, or Completed.</li>
+                <li>RSVP flow changes based on auto-enroll or approval-based mode.</li>
+                <li>If access is gated, attendees are prompted to subscribe or buy a ticket.</li>
+                <li>When event is live and attendee is accepted, they can click Enter Event.</li>
+                <li>Attendance can be recorded before entry when rewards are enabled.</li>
+                <li>About section supports rich text and PDF attachments.</li>
+              </ul>
             </div>
           </section>
 
-          <section id="routes">
-            <h2 className="text-2xl font-semibold mb-4">Route map</h2>
-            <CodeBlock
-              language="text"
-              code={`/create/event
-/event/{id}
-/event/{id}/edit
-/event/{id}/enrollments`}
-            />
-            <p className="text-sm text-muted-foreground mt-4">
-              Community launch flow also uses state context from <InlineCode>/community/{`{id}`}/dashboard</InlineCode> actions.
+          <section id="manage-events">
+            <h2 className="text-2xl font-semibold mb-4">Manage existing events</h2>
+            <p className="text-muted-foreground mb-4">
+              After publishing, you can keep events updated and moderate access from your dashboard
+              tools.
             </p>
+            <div className="space-y-4">
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2">Events list tools</p>
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                  <li>Search events by title or description.</li>
+                  <li>Filter by All, IRL, Metaverse, Finished, Upcoming, or Live.</li>
+                  <li>My Events groups by Live, RSVP&apos;d, Created, and Completed.</li>
+                </ul>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2">Creator controls</p>
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                  <li>Edit event details and access settings.</li>
+                  <li>Manage enrollments by All, Pending, Approved, and Denied.</li>
+                  <li>Approve or deny applications for apply-based events.</li>
+                  <li>Use Delete to retire an event and remove it from active workflows.</li>
+                </ul>
+              </div>
+            </div>
           </section>
         </div>
 
         <div className="flex items-center justify-between mt-16 pt-8 border-t border-border">
           <Link
-            to="/quests-and-tasks"
+            to="/managing-members"
             className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
-            Quests & Tasks
+            Members
           </Link>
           <Link
             to="/courses-guide"

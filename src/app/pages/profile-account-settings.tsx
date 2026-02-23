@@ -1,61 +1,70 @@
-import { RightSidebar } from "../components/right-sidebar";
-import { Callout, Step, InlineCode } from "../components/doc-components";
+import { RightSidebar } from '../components/right-sidebar';
+import { Callout } from '../components/doc-components';
 import {
+  AtSign,
+  BadgeCheck,
   ChevronLeft,
   ChevronRight,
   Camera,
-  Megaphone,
-  Settings,
+  MailCheck,
   Shield,
+  Sparkles,
   UserCircle,
-} from "lucide-react";
-import { Link } from "react-router";
+} from 'lucide-react';
+import { Link } from 'react-router';
 
 export function ProfileAccountSettingsPage() {
   const tocItems = [
-    { id: "profile-update", label: "Profile update flow" },
-    { id: "privacy", label: "Privacy & visibility" },
-    { id: "account-controls", label: "Account controls" },
-    { id: "honey-tier", label: "Honey Bee requirements" },
-    { id: "next", label: "Next steps" },
+    { id: 'at-a-glance', label: 'What this page controls' },
+    { id: 'profile-basics', label: 'Images and profile info' },
+    { id: 'handle', label: 'Handle' },
+    { id: 'email-verification', label: 'Email verification' },
+    { id: 'badges', label: 'Badges explained' },
+    { id: 'privacy-and-subscriptions', label: 'Privacy and subscriptions' },
+    { id: 'save-and-next', label: 'Save and next' },
   ];
 
   return (
     <div className="flex">
       <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
         <div className="text-sm text-muted-foreground mb-6">
-          Honey Bee (Profile) / <span className="text-foreground">Profile & Account Settings</span>
+          Your Profile / <span className="text-foreground">Profile Settings</span>
         </div>
 
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">
-          Profile & Account Settings
+          Profile Settings
         </h1>
         <p className="text-lg text-muted-foreground mb-12">
-          Manage your public profile, social identity fields, and account-level preferences.
+          Customize how your profile looks, how people access it, and how your subscription-based
+          profile options behave.
         </p>
 
         <div className="space-y-12">
-          <section id="profile-update">
-            <h2 className="text-2xl font-semibold mb-4">Profile update flow</h2>
+          <section id="at-a-glance">
+            <h2 className="text-2xl font-semibold mb-4">What this page controls</h2>
             <p className="text-muted-foreground mb-4">
-              Open from the dashboard via <InlineCode>/profile/dashboard</InlineCode> →{" "}
-              <InlineCode>/profile/settings</InlineCode>.
-              The page includes:
+              Use this page when you want to update your identity, improve your profile quality, and
+              set audience access rules.
             </p>
+            <Callout type="info" title="Membership note">
+              Privacy and subscription-gated profile modes are Honey Bee+ features (Honey Bee,
+              Swarm, and Royal Hive).
+            </Callout>
+          </section>
 
+          <section id="profile-basics">
+            <h2 className="text-2xl font-semibold mb-4">Images and profile info</h2>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="rounded-lg border border-border bg-card p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Camera className="w-4 h-4 text-[#6B01B6]" />
-                  <span className="font-semibold">Media & identity</span>
+                  <span className="font-semibold">Profile images</span>
                 </div>
                 <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                  <li>Upload profile picture</li>
-                  <li>Upload banner image</li>
-                  <li>Edit display name</li>
-                  <li>Short bio + full profile bio</li>
-                  <li>Set your public handle</li>
-                  <li>Add social links</li>
+                  <li>Upload or replace your profile picture.</li>
+                  <li>Upload or replace your banner image.</li>
+                  <li>Remove profile image if needed.</li>
+                  <li>Use recommended image proportions for best results.</li>
                 </ul>
               </div>
 
@@ -65,112 +74,119 @@ export function ProfileAccountSettingsPage() {
                   <span className="font-semibold">Profile details</span>
                 </div>
                 <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                  <li>Location field</li>
-                  <li>Bio rich text and attachments</li>
-                  <li>Badge list and display options</li>
-                  <li>Email verification status indicator</li>
+                  <li>Display name, short bio, and full bio.</li>
+                  <li>Upload a PDF or markdown file to generate your full bio.</li>
+                  <li>Location and social links.</li>
                 </ul>
               </div>
             </div>
 
-            <div className="mt-6 space-y-4">
-              <Step number={1} title="Edit values in the Profile Settings form">
-                Update profile fields and click Save.
-              </Step>
-              <Step number={2} title="Validate and persist">
-                Updates are saved through the profile mutation and reflected after refresh.
-              </Step>
-              <Step number={3} title="Return">
-                On success, users are returned to the profile page.
-              </Step>
+            <p className="text-sm text-muted-foreground mt-6">
+              Update your profile sections, set your access and visibility preferences, then save
+              your changes to apply updates.
+            </p>
+          </section>
+
+          <section id="handle">
+            <h2 className="text-2xl font-semibold mb-4">Handle</h2>
+            <div className="rounded-lg border border-border bg-card p-4">
+              <p className="font-semibold mb-2 flex items-center gap-2">
+                <AtSign className="w-4 h-4 text-[#6B01B6]" />
+                Your @username identity
+              </p>
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li>Your handle is your public @name on Hive3.</li>
+                <li>Use Save Handle to apply a new handle after availability check.</li>
+                <li>Use Cancel to revert to your current handle.</li>
+              </ul>
             </div>
           </section>
 
-          <section id="privacy">
-            <h2 className="text-2xl font-semibold mb-4">Privacy & visibility</h2>
-            <p className="text-muted-foreground mb-4">
-              Privacy settings are also managed in <InlineCode>/profile/settings</InlineCode> and are
-              feature-gated for Honey Bee users.
-            </p>
+          <section id="email-verification">
+            <h2 className="text-2xl font-semibold mb-4">Email verification</h2>
+            <div className="rounded-lg border border-border bg-card p-4">
+              <p className="font-semibold mb-2 flex items-center gap-2">
+                <MailCheck className="w-4 h-4 text-[#6B01B6]" />
+                Verification status
+              </p>
+              <p className="text-sm text-muted-foreground">
+                This section shows your current email verification status. At the moment, this page
+                is a status indicator and does not include resend or re-verify actions.
+              </p>
+            </div>
+          </section>
 
+          <section id="badges">
+            <h2 className="text-2xl font-semibold mb-4">Badges explained</h2>
+            <div className="rounded-lg border border-border bg-card p-4">
+              <p className="font-semibold mb-2 flex items-center gap-2">
+                <BadgeCheck className="w-4 h-4 text-[#6B01B6]" />
+                What is a badge?
+              </p>
+              <p className="text-sm text-muted-foreground mb-3">
+                A badge is a quick identity label on your profile that helps others understand your
+                focus, such as creator, designer, or entrepreneur.
+              </p>
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li>You can select up to 5 badges.</li>
+                <li>
+                  Available categories include Developer, Designer, Creator, Artist, Writer,
+                  Entrepreneur, Investor, and Other.
+                </li>
+                <li>
+                  If you select Other, you can add a custom badge label (up to 24 characters).
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <section id="privacy-and-subscriptions">
+            <h2 className="text-2xl font-semibold mb-4">Privacy and subscriptions</h2>
             <div className="space-y-4">
               <Callout type="info" title="Profile access modes">
                 <ul className="list-disc list-inside text-sm space-y-1">
-                  <li><InlineCode>open</InlineCode> – anyone can follow immediately.</li>
-                  <li><InlineCode>private</InlineCode> – follow requests need approval.</li>
-                  <li><InlineCode>open-subscription</InlineCode> – follows require paid plan.</li>
-                  <li><InlineCode>private-subscription</InlineCode> – approval + plan required.</li>
+                  <li>Open: anyone can follow immediately.</li>
+                  <li>Private: follow requests need approval.</li>
+                  <li>Open + Subscription: paid plan required.</li>
+                  <li>Private + Subscription: approval and paid plan required.</li>
                 </ul>
               </Callout>
 
               <div className="rounded-lg border border-border bg-card p-4">
                 <p className="font-semibold mb-2 flex items-center gap-2">
                   <Shield className="w-4 h-4 text-[#6B01B6]" />
-                  Additional profile visibility controls
+                  Additional visibility controls
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  You can also toggle collaborator count display and set custom follower count override.
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                  <li>Show or hide collaborator count on your profile.</li>
+                  <li>Set a custom follower count display, or leave empty for automatic count.</li>
+                </ul>
+              </div>
+
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#6B01B6]" />
+                  Subscription-gated profile access
                 </p>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Subscription access modes are only available when you have at least one active
+                  subscription plan in your PayPal setup, and you must choose that plan before
+                  saving.
+                </p>
+                <div className="flex flex-wrap gap-3 text-sm">
+                  <Link to="/profile-paypal" className="text-[#6B01B6] hover:underline">
+                    Hive3 PayPal setup guide
+                  </Link>
+                </div>
               </div>
             </div>
           </section>
 
-          <section id="account-controls">
-            <h2 className="text-2xl font-semibold mb-4">Account settings</h2>
-            <p className="text-muted-foreground mb-4">
-              Open <InlineCode>/settings</InlineCode> from the dashboard or profile settings for:
-            </p>
-            <ul className="text-muted-foreground list-disc list-inside space-y-2">
-              <li>Subscription plan summary and upgrade link.</li>
-              <li>Theme and display preferences.</li>
-              <li>System notification controls.</li>
-            </ul>
-            <Callout type="success" title="Authentication note">
-              If your account was created through OAuth, password changes are handled through that provider
-              flow. The in-app account page currently focuses on app-level preferences and plan management.
+          <section id="save-and-next">
+            <h2 className="text-2xl font-semibold mb-4">Save and next</h2>
+            <Callout type="success" title="Before you leave this page">
+              Save all changes to apply your latest profile settings and privacy preferences.
             </Callout>
-          </section>
-
-          <section id="honey-tier">
-            <h2 className="text-2xl font-semibold mb-4">Honey Bee requirements</h2>
-            <p className="text-muted-foreground mb-4">
-              Some profile privacy controls are displayed behind <InlineCode>TierGatedSection</InlineCode> for
-              <InlineCode>requiredTier=&quot;honey&quot;</InlineCode>.
-            </p>
-            <p className="text-muted-foreground">
-              If your subscription is below Honey Bee, the UI prompts an upgrade rather than blocking the whole
-              profile page experience.
-            </p>
-          </section>
-
-          <section id="next">
-            <h2 className="text-2xl font-semibold mb-4">Next steps</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <Link
-                to="/creating-events"
-                className="rounded-lg border border-border bg-card p-4 hover:border-[#6B01B6] hover:bg-accent transition-colors"
-              >
-                <div className="font-semibold flex items-center gap-2">
-                  <Megaphone className="w-4 h-4" />
-                  Creating Events
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Learn how to publish profile-level events and handle enrollment.
-                </p>
-              </Link>
-              <Link
-                to="/paypal-integration"
-                className="rounded-lg border border-border bg-card p-4 hover:border-[#6B01B6] hover:bg-accent transition-colors"
-              >
-                <div className="font-semibold flex items-center gap-2">
-                  <Settings className="w-4 h-4" />
-                  PayPal Integration
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Configure payouts, products, and subscriptions.
-                </p>
-              </Link>
-            </div>
           </section>
         </div>
 
@@ -183,10 +199,10 @@ export function ProfileAccountSettingsPage() {
             Profile Dashboard Overview
           </Link>
           <Link
-            to="/creating-events"
+            to="/account-settings"
             className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
           >
-            Creating Events
+            Account Settings
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -195,5 +211,4 @@ export function ProfileAccountSettingsPage() {
       <RightSidebar items={tocItems} />
     </div>
   );
-
 }

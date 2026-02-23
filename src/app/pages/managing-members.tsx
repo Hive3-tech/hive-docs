@@ -1,152 +1,199 @@
-import { RightSidebar } from "../components/right-sidebar";
-import { Callout, Step, InlineCode, CodeBlock } from "../components/doc-components";
-import { ChevronLeft, ChevronRight, Search, ShieldCheck, Users } from "lucide-react";
-import { Link } from "react-router";
+import { RightSidebar } from '../components/right-sidebar';
+import { Callout } from '../components/doc-components';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Mail,
+  Search,
+  Shield,
+  UserCheck,
+  Users,
+} from 'lucide-react';
+import { Link } from 'react-router';
 
 export function ManagingMembersPage() {
   const tocItems = [
-    { id: "open", label: "Open members page" },
-    { id: "filters", label: "Search and filter" },
-    { id: "applications", label: "Pending applications" },
-    { id: "remove", label: "Remove and actions" },
-    { id: "tips", label: "Management tips" },
+    { id: 'at-a-glance', label: 'What this page controls' },
+    { id: 'member-overview', label: 'Member overview cards' },
+    { id: 'search-and-filter', label: 'Search and filter' },
+    { id: 'pending-applications', label: 'Pending applications' },
+    { id: 'member-list', label: 'Member list view' },
+    { id: 'member-actions', label: 'Member row actions' },
+    { id: 'save-and-next', label: 'Save and next' },
   ];
 
   return (
     <div className="flex">
       <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
         <div className="text-sm text-muted-foreground mb-6">
-          Communities (Swarm) / <span className="text-foreground">Managing Members</span>
+          Communities / <span className="text-foreground">Members</span>
         </div>
 
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">
-          Managing Members
+          Members
         </h1>
-        <p className="text-lg text-muted-foreground mb-10">
-          Review active members, evaluate pending applications, and remove users from a community context.
+        <p className="text-lg text-muted-foreground mb-12">
+          Review your member roster, filter by role, and process pending join requests from one
+          page.
         </p>
 
-        <section id="open" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Open members management</h2>
-          <p className="text-muted-foreground">
-            Open from <InlineCode>/community/:id/members</InlineCode>, accessible via dashboard card <InlineCode>Members</InlineCode>.
-          </p>
-          <Callout type="info" title="Two views">
-            The page has a member list mode and a pending application mode toggle.
-          </Callout>
-        </section>
+        <div className="space-y-12">
+          <section id="at-a-glance">
+            <h2 className="text-2xl font-semibold mb-4">What this page controls</h2>
+            <p className="text-muted-foreground mb-4">
+              The Members page gives you two main views: your current community members and your
+              pending applications queue.
+            </p>
+            <Callout type="info" title="Access note">
+              This page is part of community management and includes a quick Back to Dashboard
+              button in the header.
+            </Callout>
+          </section>
 
-        <section id="filters" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Search, role filters, and quick actions</h2>
-          <div className="space-y-6">
-            <Step number={1} title="Search">
-              Use search bar for member name or <InlineCode>@handle</InlineCode>.
-            </Step>
-            <Step number={2} title="Filter by role">
-              Filter list by role to isolate Owners, Admins, Moderators, or Members.
-            </Step>
-            <Step number={3} title="Toggle application mode">
-              Turn on <InlineCode>Pending</InlineCode> to see pending join requests instead of existing members.
-            </Step>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2 flex items-center gap-2">
-                <Search className="w-4 h-4 text-[#6B01B6]" />
-                Search and role filter
+          <section id="member-overview">
+            <h2 className="text-2xl font-semibold mb-4">Member overview cards</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#6B01B6]" />
+                  Total Members
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Shows how many members are currently in your community.
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Search is case-insensitive and updates list instantly.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2">Application pending badge</div>
-              <p className="text-sm text-muted-foreground">
-                The header action shows pending count and allows one-step switch to applications.
-              </p>
-            </div>
-          </div>
-        </section>
 
-        <section id="applications" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Pending applications</h2>
-          <div className="space-y-6">
-            <Step number={1} title="Review applicant cards">
-              Open pending mode and inspect each card for name, contact, and date.
-            </Step>
-            <Step number={2} title="Approve">
-              Approve grants access according to current community rules and updates list state.
-            </Step>
-            <Step number={3} title="Deny">
-              Deny closes request and removes pending item from queue.
-            </Step>
-          </div>
-          <Callout type="warning" title="Application state">
-            Approve/deny actions call dedicated approve/deny mutations and update list state on success.
-          </Callout>
-          <CodeBlock
-            language="text"
-            code={`/community/:id/members
-toggle Pending applications
-approve | deny`}
-          />
-        </section>
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <UserCheck className="w-4 h-4 text-[#6B01B6]" />
+                  Active Members
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Shows active member count from the current member list.
+                </p>
+              </div>
 
-        <section id="remove" className="space-y-4 mb-12">
-          <h2 className="text-2xl font-semibold">Remove members and other row actions</h2>
-          <p className="text-muted-foreground">
-            In member list rows, use the action menu to send message/change role or remove member.
-          </p>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2">Remove from menu</div>
-              <p className="text-sm text-muted-foreground">
-                Use dropdown action for member deletion from current community.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="font-semibold mb-2">Role-aware controls</div>
-              <p className="text-sm text-muted-foreground">
-                Role changes for non-membership actions are handled under permissions pages.
-              </p>
-            </div>
-          </div>
-        </section>
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-[#6B01B6]" />
+                  Staff Members
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Counts Owner, Admin, and Moderator roles.
+                </p>
+              </div>
 
-        <section id="tips" className="space-y-4">
-          <h2 className="text-2xl font-semibold">Management tips</h2>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-              <li>Review pending applications quickly after opening a community.</li>
-              <li>Use filters before removing or contacting users at high scale.</li>
-              <li>Keep subscription/gated communities in private mode until onboarding is stable.</li>
-            </ul>
-          </div>
-          <Callout type="success" title="Cross-reference">
-            Member counts and role assignments are managed on <Link to="/community-settings" className="text-[#6B01B6] hover:underline">Community Settings</Link> and
-            <Link to="/admins-and-moderators" className="text-[#6B01B6] hover:underline ml-1"> Admins & Moderators</Link>.
-          </Callout>
-          <Callout type="info" title="Access control note">
-            <span className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4" />
-              Remove operations are visible to users with admin-level management privileges.
-            </span>
-          </Callout>
-        </section>
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2">Premium Subscribers</p>
+                <p className="text-sm text-muted-foreground">
+                  This card is currently shown as N/A on the page.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section id="search-and-filter">
+            <h2 className="text-2xl font-semibold mb-4">Search and filter</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <Search className="w-4 h-4 text-[#6B01B6]" />
+                  Search members
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Search by member name or @handle to quickly find people in larger communities.
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="font-semibold mb-2 flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-[#6B01B6]" />
+                  Role filter
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Filter by role (Owner, Admin, Moderator, Member) when you are in member list
+                  view.
+                </p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mt-4">
+              When you switch to Pending applications, the role filter is hidden and search updates
+              to application-focused search.
+            </p>
+          </section>
+
+          <section id="pending-applications">
+            <h2 className="text-2xl font-semibold mb-4">Pending applications</h2>
+            <div className="rounded-lg border border-border bg-card p-4">
+              <p className="font-semibold mb-2 flex items-center gap-2">
+                <Mail className="w-4 h-4 text-[#6B01B6]" />
+                Pending queue workflow
+              </p>
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li>Use the Pending button to switch from members to application review mode.</li>
+                <li>Each card shows applicant name, email, profile image/initials, and applied time.</li>
+                <li>Approve accepts the request and adds the person to your community.</li>
+                <li>Deny declines the request and removes it from the pending queue.</li>
+              </ul>
+            </div>
+            <Callout type="success" title="No save step needed">
+              Approve and Deny actions apply immediately.
+            </Callout>
+          </section>
+
+          <section id="member-list">
+            <h2 className="text-2xl font-semibold mb-4">Member list view</h2>
+            <p className="text-muted-foreground mb-4">
+              The page adapts by device: table layout on desktop and card layout on mobile.
+            </p>
+            <div className="rounded-lg border border-border bg-card p-4">
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li>Member identity: avatar, name, and @handle (when available).</li>
+                <li>Role: visual badge for Owner, Admin, Moderator, or Member.</li>
+                <li>Joined date: when the member entered the community.</li>
+                <li>Subscription status: shown in the Subscription column on each row/card.</li>
+                <li>Status badge: Active or Inactive.</li>
+              </ul>
+            </div>
+          </section>
+
+          <section id="member-actions">
+            <h2 className="text-2xl font-semibold mb-4">Member row actions</h2>
+            <p className="text-muted-foreground">
+              A three-dot action menu is visible on member rows and cards for moderation workflows.
+              Role assignment and role changes should be handled from{' '}
+              <Link to="/admins-and-moderators" className="text-[#6B01B6] hover:underline">
+                Permissions
+              </Link>{' '}
+              for the clearest control path.
+            </p>
+            <Callout type="info" title="Permissions reminder">
+              Use the Permissions page to assign Admin and Moderator access.
+            </Callout>
+          </section>
+
+          <section id="save-and-next">
+            <h2 className="text-2xl font-semibold mb-4">Save and next</h2>
+            <Callout type="success" title="No Save button needed">
+              Search, filtering, and approve/deny actions update the page state right away.
+            </Callout>
+          </section>
+        </div>
 
         <div className="flex items-center justify-between mt-16 pt-8 border-t border-border">
           <Link
-            to="/paypal-and-subscriptions"
+            to="/ai-settings"
             className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
-            PayPal & Subscriptions
+            Community AI Assistant
           </Link>
           <Link
-            to="/quests-and-tasks"
+            to="/events-guide"
             className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
           >
-            Quests & Tasks
+            Events Guide
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
