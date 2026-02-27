@@ -1,14 +1,15 @@
-import { RightSidebar } from "../components/right-sidebar";
-import { Callout, CodeBlock, InlineCode } from "../components/doc-components";
-import { ChevronLeft, ChevronRight, KeyRound, ShieldCheck } from "lucide-react";
-import { Link } from "react-router";
+import { RightSidebar } from '../components/right-sidebar';
+import { Callout, CodeBlock, InlineCode } from '../components/doc-components';
+import { ChevronLeft, ChevronRight, KeyRound, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router';
 
 export function APIKeysAndIntegrationsPage() {
   const tocItems = [
-    { id: "overview", label: "What this page is for" },
-    { id: "get-key", label: "Get your API key" },
-    { id: "use-key", label: "Use as Bearer token" },
-    { id: "notes", label: "Important notes" },
+    { id: 'overview', label: 'What this page is for' },
+    { id: 'get-key', label: 'Get your API key' },
+
+    { id: 'use-key', label: 'Use as Bearer token' },
+    { id: 'notes', label: 'Important notes' },
   ];
 
   return (
@@ -22,7 +23,7 @@ export function APIKeysAndIntegrationsPage() {
           API Keys
         </h1>
         <p className="text-lg text-muted-foreground mb-12">
-          Generate a community API key and use it as your Bearer token for Hive3 API calls.
+          Generate a community API key and use it for server-side Hive3 integration endpoints.
         </p>
 
         <div className="space-y-12">
@@ -46,7 +47,9 @@ export function APIKeysAndIntegrationsPage() {
               </p>
               <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
                 <li>Open your community dashboard and go to API Keys.</li>
-                <li>Click <InlineCode>Create key</InlineCode>.</li>
+                <li>
+                  Click <InlineCode>Create key</InlineCode>.
+                </li>
                 <li>Enter a key name and confirm.</li>
                 <li>Copy and store the full key immediately. It is only shown once.</li>
               </ul>
@@ -63,7 +66,12 @@ export function APIKeysAndIntegrationsPage() {
               code={`curl -X POST https://api.hive3.tech/api/v1/communities/onboard \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{"email":"user@example.com"}'`}
+  -d '{
+    "display_name": "Partner User",
+    "username": "partner_user",
+    "short_bio": "Building in Web3",
+    "social_links": [{"platform":"x","url":"https://x.com/partner_user"}]
+  }'`}
             />
           </section>
 

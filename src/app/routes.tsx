@@ -27,6 +27,7 @@ import { QuestsAndTasksPage } from "./pages/quests-and-tasks";
 import { APIKeysAndIntegrationsPage } from "./pages/api-keys-and-integrations";
 import { PayPalIntegrationPage } from "./pages/paypal-integration";
 import { OnboardingLinkSetupPage } from "./pages/onboarding-link-setup";
+import { APIManagingUsersPage } from "./pages/api-managing-users";
 import { AIAssistantSetupPage } from "./pages/ai-assistant-setup";
 import { ManagingCollaboratorsPage } from "./pages/managing-collaborators";
 import { EventsGuidePage } from "./pages/events-guide";
@@ -64,6 +65,7 @@ const customPages: Record<string, ComponentType> = {
   "/managing-members": ManagingMembersPage,
   "/quests-and-tasks": QuestsAndTasksPage,
   "/api-reference": OnboardingLinkSetupPage,
+  "/api-managing-users": APIManagingUsersPage,
   "/api-keys-and-integrations": APIKeysAndIntegrationsPage,
   "/paypal-integration": PayPalIntegrationPage,
   "/ai-assistant-setup": AIAssistantSetupPage,
@@ -104,6 +106,7 @@ const legacyRoutes = [
   { path: "/creating-content", Component: CreatingContentPage },
   { path: "/creating-jobs", Component: CreatingJobsPage },
   { path: "/credentials-explained", Component: CredentialsAndNFTsPage },
+  { path: "/api-subscription-management", Component: APIManagingUsersPage },
   { path: "/paypal-integration", Component: PayPalIntegrationPage },
   { path: "/ai-assistant-setup", Component: AIAssistantSetupPage },
   { path: "/managing-collaborators", Component: ManagingCollaboratorsPage },

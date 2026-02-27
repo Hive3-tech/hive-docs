@@ -180,6 +180,11 @@ export const docNavigation: DocNavigationSection[] = [
         path: "/api-reference",
         description: "Set up community onboarding links and server-side flow for API-based integration.",
       },
+      {
+        title: "Managing Users",
+        path: "/api-managing-users",
+        description: "List, inspect, and update users scoped to your community's linked relationships.",
+      },
     ],
   },
   {

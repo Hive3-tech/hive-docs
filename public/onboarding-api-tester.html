@@ -3,39 +3,91 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hive Onboarding API Request Tester</title>
+    <title>Hive3 API Explorer (Community Onboarding)</title>
     <style>
       :root {
         color-scheme: light;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
-          Arial, sans-serif;
+        --bg: #f7f7f8;
+        --surface: #ffffff;
+        --border: #d9dee7;
+        --text: #1f2937;
+        --muted: #5d6b82;
+        --dark: #26354a;
+        --dark-2: #1f2937;
+        --blue: #61affe;
+        --green: #49cc90;
+        --orange: #fca130;
+        --teal: #50e3c2;
+        --red: #f93e3e;
+        --ok: #047857;
+        --err: #b91c1c;
+      }
+
+      * {
+        box-sizing: border-box;
       }
 
       body {
         margin: 0;
-        padding: 2rem;
-        background: #f8fafc;
-        color: #0f172a;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Open Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      .topbar {
+        background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
+        color: #fff;
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid #172033;
+      }
+
+      .topbar-inner {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .topbar-title {
+        font-weight: 800;
+        letter-spacing: 0.02em;
+      }
+
+      .topbar-sub {
+        color: #d8e2f4;
+        font-size: 0.9rem;
       }
 
       .page {
-        max-width: 880px;
+        max-width: 1180px;
         margin: 0 auto;
-        background: #fff;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 12px 35px rgb(15 23 42 / 12%);
-        border: 1px solid #e2e8f0;
+        padding: 1rem;
+        display: grid;
+        gap: 1rem;
       }
 
-      h1 {
-        margin: 0 0 0.75rem;
-        font-size: 1.75rem;
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
       }
 
-      p.description {
-        margin: 0 0 1.5rem;
-        color: #475569;
+      .panel-header {
+        padding: 0.7rem 0.95rem;
+        background: #f1f5f9;
+        border-bottom: 1px solid var(--border);
+        font-weight: 700;
+      }
+
+      .panel-body {
+        padding: 0.95rem;
+      }
+
+      .muted {
+        color: var(--muted);
       }
 
       .grid {
@@ -43,342 +95,1289 @@
         gap: 0.85rem;
       }
 
+      .grid.two {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+
+      .field {
+        display: grid;
+        gap: 0.35rem;
+      }
+
       label {
-        display: block;
-        font-size: 0.9rem;
-        font-weight: 600;
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #42546e;
+      }
+
+      input,
+      select,
+      button,
+      textarea {
+        width: 100%;
+        font: inherit;
+      }
+
+      input,
+      select,
+      textarea {
+        border: 1px solid #c7d2e5;
+        border-radius: 6px;
+        background: #fff;
+        color: var(--text);
+        padding: 0.53rem 0.6rem;
+      }
+
+      input::placeholder,
+      textarea::placeholder {
+        color: #8a97ad;
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        border: 1px solid #2563eb;
+        background: #2563eb;
+        color: #fff;
+        border-radius: 6px;
+        padding: 0.5rem 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        width: auto;
+      }
+
+      .btn:hover {
+        filter: brightness(1.06);
+      }
+
+      .btn.secondary {
+        border-color: #64748b;
+        background: #64748b;
+      }
+
+      .btn.ghost {
+        border-color: #cbd5e1;
+        background: #fff;
         color: #334155;
       }
 
-      input,
-      textarea,
-      button {
-        width: 100%;
-        box-sizing: border-box;
-        font: inherit;
-        border-radius: 8px;
+      .auth-status {
+        font-size: 0.9rem;
+        font-weight: 700;
       }
 
-      input,
-      textarea {
-        border: 1px solid #cbd5e1;
-        padding: 0.65rem 0.75rem;
+      .auth-status.ok {
+        color: var(--ok);
+      }
+
+      .auth-status.err {
+        color: var(--err);
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        border: 1px solid #c8d2e4;
+        border-radius: 999px;
+        padding: 0.22rem 0.58rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        background: #f8fafc;
+        color: #334155;
+      }
+
+      .pill code {
         color: #0f172a;
-        background: #fff;
       }
 
-      textarea {
-        min-height: 120px;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      }
-
-      .row {
+      .endpoints {
         display: grid;
-        gap: 0.5rem;
+        gap: 0.75rem;
       }
 
-      .muted {
-        color: #64748b;
-        font-size: 0.85rem;
+      .endpoint {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
       }
 
-      .row-2 {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      }
-
-      button {
-        margin-top: 0.4rem;
-        border: 0;
-        background: #0f172a;
-        color: #fff;
-        font-weight: 600;
-        padding: 0.8rem;
+      details.endpoint > summary {
+        list-style: none;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.72rem 0.85rem;
+        border-radius: 8px 8px 0 0;
       }
 
-      button:hover {
+      details.endpoint > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .method {
+        min-width: 72px;
+        text-align: center;
+        color: #fff;
+        border-radius: 4px;
+        padding: 0.24rem 0.36rem;
+        font-weight: 800;
+        font-size: 0.75rem;
+        letter-spacing: 0.02em;
+      }
+
+      .method.get {
+        background: var(--blue);
+      }
+
+      .method.post {
+        background: var(--green);
+      }
+
+      .method.put {
+        background: var(--orange);
+      }
+
+      .method.patch {
+        background: var(--teal);
+        color: #083344;
+      }
+
+      .method.delete {
+        background: var(--red);
+      }
+
+      .path {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.9rem;
+      }
+
+      .summary-text {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .endpoint-body {
+        border-top: 1px solid var(--border);
+        padding: 0.9rem;
+        display: grid;
+        gap: 0.85rem;
+      }
+
+      .endpoint-status {
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      .endpoint-status.ok {
+        color: var(--ok);
+      }
+
+      .endpoint-status.err {
+        color: var(--err);
+      }
+
+      .io-grid {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .io-box {
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #0f172a;
+      }
+
+      .io-head {
         background: #1e293b;
-      }
-
-      .status {
-        margin-top: 1rem;
-        font-weight: 600;
-      }
-
-      .success {
-        color: #047857;
-      }
-
-      .error {
-        color: #b91c1c;
+        color: #f1f5f9;
+        padding: 0.42rem 0.58rem;
+        font-size: 0.78rem;
+        font-weight: 700;
       }
 
       pre {
-        margin: 0.7rem 0 0;
+        margin: 0;
+        padding: 0.65rem;
+        color: #dbeafe;
         background: #0f172a;
-        color: #e2e8f0;
-        padding: 1rem;
-        border-radius: 10px;
-        overflow: auto;
         white-space: pre-wrap;
         word-break: break-word;
+        max-height: 340px;
+        overflow: auto;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.8rem;
       }
 
-      .link {
-        margin-top: 0.65rem;
+      .endpoint-url {
+        color: #334155;
+        font-size: 0.84rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+
+      .link-actions {
+        display: flex;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+      }
+
+      a.quick-link {
+        color: #2563eb;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      a.quick-link:hover {
+        text-decoration: underline;
       }
 
       .hint {
-        margin-top: 0.65rem;
+        font-size: 0.9rem;
         color: #334155;
-        background: #ecfeff;
-        border: 1px solid #a5f3fc;
-        border-left: 4px solid #0891b2;
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
         border-radius: 8px;
-        padding: 0.75rem;
+        padding: 0.65rem;
       }
 
-      .hint strong {
-        display: block;
-        margin-bottom: 0.2rem;
+      .required::after {
+        content: " *";
+        color: #dc2626;
+      }
+
+      @media (max-width: 900px) {
+        .topbar-inner {
+          flex-direction: column;
+          align-items: flex-start;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="page">
-    <h1>Onboarding API Request Tester</h1>
-      <p class="description">
-        POST <code>/api/v1/communities/onboard</code> using an API key. Update fields below then click
-        <strong>Run onboarding</strong>.
-      </p>
-      <div class="hint">
-        <strong>Important</strong>
-        200 means a one-time <code>redirect_url</code> was created. Existing users are connected only after they use
-        the returned link and complete the login/consent step.
-      </div>
-      <div id="originHint" class="hint" style="display: none">
-        <strong>Notice</strong>
-        You are loading this file from a local file origin. If requests still fail, serve this file from the docs
-        dev server (for example <code>http://localhost:5173/onboarding-api-tester.html</code>) so the origin is
-        not <code>null</code>.
-      </div>
-
-      <div class="grid">
-        <div class="row">
-          <label for="apiBaseUrl">API base URL</label>
-          <input
-            id="apiBaseUrl"
-            type="url"
-            value="http://localhost:8080"
-            placeholder="http://localhost:8080"
-          />
-          <span class="muted">Use your local/test backend URL, e.g. http://localhost:8080 or http://host.docker.internal:8080. Full URL should include protocol.</span>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div>
+          <div class="topbar-title">Hive3 API Explorer</div>
+          <div class="topbar-sub">Swagger-style tester for onboarding, consent, and linked-user management</div>
         </div>
+        <span class="pill">Auth: <code>API key + user token</code></span>
+      </div>
+    </header>
 
-        <div class="row">
-          <label for="apiKey">API key (Bearer)</label>
-          <input id="apiKey" placeholder="hive_..." />
-          <span class="muted">Find your key in Hive and paste it here.</span>
-        </div>
-
-        <div class="row-2">
-          <div class="row">
-            <label for="email">Email *</label>
-            <input id="email" type="email" value="partner_user@example.com" />
+    <main class="page">
+      <section class="panel">
+        <div class="panel-header">Authorize / Server</div>
+        <div class="panel-body grid">
+          <div class="grid two">
+            <div class="field">
+              <label for="apiBaseUrl" class="required">API base URL</label>
+              <input id="apiBaseUrl" type="url" value="http://localhost:8080" placeholder="http://localhost:8080" />
+            </div>
+            <div class="field">
+              <label for="apiKey" class="required">API key</label>
+              <input id="apiKey" placeholder="hive_..." />
+            </div>
+            <div class="field">
+              <label for="userToken">User bearer token (for <code>/api/user/*</code>)</label>
+              <input id="userToken" placeholder="eyJhbGciOi..." />
+            </div>
           </div>
-          <div class="row">
-            <label for="username">Username</label>
-            <input id="username" value="partner_user" />
+          <div class="btn-row">
+            <button id="authorizeButton" class="btn">Authorize</button>
+            <button id="clearButton" class="btn ghost">Clear Cached Context</button>
+          </div>
+          <div id="authStatus" class="auth-status">Not authorized yet.</div>
+          <div class="hint">
+            Onboarding simulation: use <strong>Execute Onboard + Simulate User Click</strong>. It sends
+            <code>POST /api/v1/communities/onboard</code>, then opens returned <code>welcome_url</code>.
+            API onboarding no longer auto-links users. Use the <code>/api/user/community-welcome/*</code>
+            endpoints below (with a user bearer token) to verify context lookup, <code>consume</code>, and link consent.
+            This endpoint no longer accepts <code>email</code>; it stores onboarding context only.
           </div>
         </div>
+      </section>
 
-        <div class="row">
-          <label for="displayName">Display name</label>
-          <input id="displayName" value="Partner User" />
-        </div>
+      <section class="endpoints">
+        <details class="endpoint" open>
+          <summary>
+            <span class="method post">POST</span>
+            <span class="path">/api/v1/communities/onboard</span>
+            <span class="summary-text">Create onboarding context and return welcome URL</span>
+          </summary>
+          <div class="endpoint-body">
+            <div class="grid two">
+              <div class="field">
+                <label for="onboardDisplayName">display_name</label>
+                <input id="onboardDisplayName" value="Partner User" />
+              </div>
+              <div class="field">
+                <label for="onboardUsername">username</label>
+                <input id="onboardUsername" value="partner_user" />
+              </div>
+              <div class="field">
+                <label for="onboardShortBio">short_bio</label>
+                <input id="onboardShortBio" value="Building in Web3" />
+              </div>
+              <div class="field">
+                <label for="onboardFullBio">full_bio</label>
+                <input id="onboardFullBio" value="I like shipping useful products." />
+              </div>
+              <div class="field">
+                <label for="onboardSocialLinks">social_links (JSON array)</label>
+                <textarea id="onboardSocialLinks" placeholder='[{"platform":"x","url":"https://x.com/partner_user"}]'>[
+  {
+    "platform": "x",
+    "url": "https://x.com/partner_user"
+  }
+]</textarea>
+              </div>
+              <div class="field">
+                <label for="onboardSubscriptionId">subscription_id</label>
+                <input id="onboardSubscriptionId" placeholder="uuid" />
+              </div>
+              <div class="field">
+                <label for="onboardSubscriptionExpiresAt">subscription_expires_at (RFC3339)</label>
+                <input id="onboardSubscriptionExpiresAt" placeholder="2026-03-27T18:00:00Z" />
+              </div>
+            </div>
 
-        <div class="row">
-          <label for="profileImageUrl">Profile image URL</label>
-          <input
-            id="profileImageUrl"
-            value="https://cdn.example.com/avatar.png"
-            placeholder="https://..."
-          />
-        </div>
+            <div class="btn-row">
+              <button id="onboardExecuteFollow" class="btn">Execute Onboard + Simulate User Click</button>
+              <button id="onboardExecuteOnly" class="btn secondary">Execute Onboard Only</button>
+            </div>
 
-        <div class="row">
-          <label for="bannerImageUrl">Banner image URL</label>
-          <input
-            id="bannerImageUrl"
-            value="https://cdn.example.com/banner.png"
-            placeholder="https://..."
-          />
-        </div>
+            <div id="onboardStatus" class="endpoint-status">Ready.</div>
+            <div id="onboardUrl" class="endpoint-url"></div>
+            <div id="onboardRedirectActions" class="link-actions"></div>
 
-        <button id="runButton">Run onboarding request</button>
-      </div>
+            <div class="io-grid">
+              <div class="io-box">
+                <div class="io-head">Request Body</div>
+                <pre id="onboardRequest">{}</pre>
+              </div>
+              <div class="io-box">
+                <div class="io-head">Response</div>
+                <pre id="onboardResponse">{}</pre>
+              </div>
+            </div>
+          </div>
+        </details>
 
-      <div class="grid">
-        <div class="row">
-        <span id="status" class="status"></span>
-        <span id="urlOut" class="muted"></span>
-      </div>
+        <details class="endpoint" open>
+          <summary>
+            <span class="method get">GET</span>
+            <span class="path">/api/user/community-welcome/context?nonce=...</span>
+            <span class="summary-text">Load pending onboarding context for authenticated user</span>
+          </summary>
+          <div class="endpoint-body">
+            <div class="grid two">
+              <div class="field">
+                <label for="welcomeContextNonce" class="required">nonce</label>
+                <input id="welcomeContextNonce" placeholder="from welcome_url ctx query param" />
+              </div>
+            </div>
 
-        <div class="row">
-          <h3 style="margin: 0">Request body sent</h3>
-          <pre id="requestBody"></pre>
-        </div>
+            <div class="btn-row">
+              <button id="welcomeContextExecute" class="btn">Execute</button>
+            </div>
 
-        <div class="row">
-          <h3 style="margin: 0">Response</h3>
-          <pre id="responseBody"></pre>
-          <div id="redirectLink" class="link"></div>
-        </div>
-      </div>
-    </div>
+            <div id="welcomeContextStatus" class="endpoint-status">Ready.</div>
+            <div id="welcomeContextUrl" class="endpoint-url"></div>
+
+            <div class="io-grid">
+              <div class="io-box">
+                <div class="io-head">Request</div>
+                <pre id="welcomeContextRequest">{}</pre>
+              </div>
+              <div class="io-box">
+                <div class="io-head">Response</div>
+                <pre id="welcomeContextResponse">{}</pre>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="endpoint" open>
+          <summary>
+            <span class="method post">POST</span>
+            <span class="path">/api/user/community-welcome/consume</span>
+            <span class="summary-text">Join the community from nonce context before link consent</span>
+          </summary>
+          <div class="endpoint-body">
+            <div class="grid two">
+              <div class="field">
+                <label for="welcomeConsumeNonce" class="required">nonce</label>
+                <input id="welcomeConsumeNonce" placeholder="from welcome_url ctx query param" />
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button id="welcomeConsumeExecute" class="btn">Execute</button>
+            </div>
+
+            <div id="welcomeConsumeStatus" class="endpoint-status">Ready.</div>
+            <div id="welcomeConsumeUrl" class="endpoint-url"></div>
+
+            <div class="io-grid">
+              <div class="io-box">
+                <div class="io-head">Request Body</div>
+                <pre id="welcomeConsumeRequest">{}</pre>
+              </div>
+              <div class="io-box">
+                <div class="io-head">Response</div>
+                <pre id="welcomeConsumeResponse">{}</pre>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="endpoint" open>
+          <summary>
+            <span class="method post">POST</span>
+            <span class="path">/api/user/community-welcome/link</span>
+            <span class="summary-text">Submit explicit link consent (frontend does consume before link)</span>
+          </summary>
+          <div class="endpoint-body">
+            <div class="grid two">
+              <div class="field">
+                <label for="linkConsentCommunityId" class="required">community_id</label>
+                <input id="linkConsentCommunityId" placeholder="uuid" />
+              </div>
+              <div class="field">
+                <label for="linkConsentConsent" class="required">consent</label>
+                <select id="linkConsentConsent">
+                  <option value="true">true (allow)</option>
+                  <option value="false">false (decline)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="linkConsentAutoConsume">auto_consume</label>
+                <select id="linkConsentAutoConsume">
+                  <option value="true">true (recommended)</option>
+                  <option value="false">false</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button id="linkConsentExecute" class="btn">Execute</button>
+            </div>
+
+            <div id="linkConsentStatus" class="endpoint-status">Ready.</div>
+            <div id="linkConsentUrl" class="endpoint-url"></div>
+
+            <div class="io-grid">
+              <div class="io-box">
+                <div class="io-head">Request Body</div>
+                <pre id="linkConsentRequest">{}</pre>
+              </div>
+              <div class="io-box">
+                <div class="io-head">Response</div>
+                <pre id="linkConsentResponse">{}</pre>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="endpoint" open>
+          <summary>
+            <span class="method get">GET</span>
+            <span class="path">/api/user/linked-communities</span>
+            <span class="summary-text">Check user-linked communities (already linked short-path)</span>
+          </summary>
+          <div class="endpoint-body">
+            <div class="btn-row">
+              <button id="linkedCommunitiesExecute" class="btn">Execute</button>
+            </div>
+
+            <div id="linkedCommunitiesStatus" class="endpoint-status">Ready.</div>
+            <div id="linkedCommunitiesUrl" class="endpoint-url"></div>
+
+            <div class="io-grid">
+              <div class="io-box">
+                <div class="io-head">Request</div>
+                <pre id="linkedCommunitiesRequest">{}</pre>
+              </div>
+              <div class="io-box">
+                <div class="io-head">Response</div>
+                <pre id="linkedCommunitiesResponse">{}</pre>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="endpoint">
+          <summary>
+            <span class="method get">GET</span>
+            <span class="path">/api/v1/communities/users</span>
+            <span class="summary-text">List linked users for this community API key</span>
+          </summary>
+          <div class="endpoint-body">
+            <div class="grid two">
+              <div class="field">
+                <label for="listLimit">limit</label>
+                <input id="listLimit" type="number" min="1" value="20" />
+              </div>
+              <div class="field">
+                <label for="listOffset">offset</label>
+                <input id="listOffset" type="number" min="0" value="0" />
+              </div>
+              <div class="field">
+                <label for="listSubscriptionStatus">subscription_status</label>
+                <select id="listSubscriptionStatus">
+                  <option value="">(any)</option>
+                  <option value="active">active</option>
+                  <option value="none">none</option>
+                  <option value="cancelled">cancelled</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="listLinkedFrom">linked_from (RFC3339)</label>
+                <input id="listLinkedFrom" placeholder="2026-02-01T00:00:00Z" />
+              </div>
+              <div class="field">
+                <label for="listLinkedTo">linked_to (RFC3339)</label>
+                <input id="listLinkedTo" placeholder="2026-02-28T23:59:59Z" />
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button id="listExecute" class="btn">Execute</button>
+            </div>
+
+            <div id="listStatus" class="endpoint-status">Ready.</div>
+            <div id="listUrl" class="endpoint-url"></div>
+
+            <div class="io-grid">
+              <div class="io-box">
+                <div class="io-head">Request</div>
+                <pre id="listRequest">{}</pre>
+              </div>
+              <div class="io-box">
+                <div class="io-head">Response</div>
+                <pre id="listResponse">{}</pre>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="endpoint">
+          <summary>
+            <span class="method get">GET</span>
+            <span class="path">/api/v1/communities/users/:userId</span>
+            <span class="summary-text">Get a specific linked user</span>
+          </summary>
+          <div class="endpoint-body">
+            <div class="grid two">
+              <div class="field">
+                <label for="getUserId" class="required">userId</label>
+                <input id="getUserId" placeholder="uuid" />
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button id="getExecute" class="btn">Execute</button>
+            </div>
+
+            <div id="getStatus" class="endpoint-status">Ready.</div>
+            <div id="getUrl" class="endpoint-url"></div>
+
+            <div class="io-grid">
+              <div class="io-box">
+                <div class="io-head">Request</div>
+                <pre id="getRequest">{}</pre>
+              </div>
+              <div class="io-box">
+                <div class="io-head">Response</div>
+                <pre id="getResponse">{}</pre>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="endpoint">
+          <summary>
+            <span class="method patch">PATCH</span>
+            <span class="path">/api/v1/communities/users/:userId</span>
+            <span class="summary-text">Update linked user profile fields</span>
+          </summary>
+          <div class="endpoint-body">
+            <div class="grid two">
+              <div class="field">
+                <label for="patchUserId" class="required">userId</label>
+                <input id="patchUserId" placeholder="uuid" />
+              </div>
+              <div class="field">
+                <label for="patchDisplayName">display_name</label>
+                <input id="patchDisplayName" placeholder="Updated Name" />
+              </div>
+              <div class="field">
+                <label for="patchUsername">username</label>
+                <input id="patchUsername" placeholder="updated_username" />
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button id="patchExecute" class="btn">Execute</button>
+            </div>
+
+            <div id="patchStatus" class="endpoint-status">Ready.</div>
+            <div id="patchUrl" class="endpoint-url"></div>
+
+            <div class="io-grid">
+              <div class="io-box">
+                <div class="io-head">Request Body</div>
+                <pre id="patchRequest">{}</pre>
+              </div>
+              <div class="io-box">
+                <div class="io-head">Response</div>
+                <pre id="patchResponse">{}</pre>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="endpoint">
+          <summary>
+            <span class="method put">PUT</span>
+            <span class="path">/api/v1/communities/users/:userId/subscription</span>
+            <span class="summary-text">Assign or replace API-managed subscription</span>
+          </summary>
+          <div class="endpoint-body">
+            <div class="grid two">
+              <div class="field">
+                <label for="putUserId" class="required">userId</label>
+                <input id="putUserId" placeholder="uuid" />
+              </div>
+              <div class="field">
+                <label for="putSubscriptionId" class="required">subscription_id</label>
+                <input id="putSubscriptionId" placeholder="uuid" />
+              </div>
+              <div class="field">
+                <label for="putExpiresAt">expires_at (RFC3339)</label>
+                <input id="putExpiresAt" placeholder="2026-03-27T18:00:00Z" />
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button id="putExecute" class="btn">Execute</button>
+            </div>
+
+            <div id="putStatus" class="endpoint-status">Ready.</div>
+            <div id="putUrl" class="endpoint-url"></div>
+
+            <div class="io-grid">
+              <div class="io-box">
+                <div class="io-head">Request Body</div>
+                <pre id="putRequest">{}</pre>
+              </div>
+              <div class="io-box">
+                <div class="io-head">Response</div>
+                <pre id="putResponse">{}</pre>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="endpoint">
+          <summary>
+            <span class="method delete">DELETE</span>
+            <span class="path">/api/v1/communities/users/:userId/subscription</span>
+            <span class="summary-text">Revoke active API-managed subscription</span>
+          </summary>
+          <div class="endpoint-body">
+            <div class="grid two">
+              <div class="field">
+                <label for="deleteUserId" class="required">userId</label>
+                <input id="deleteUserId" placeholder="uuid" />
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button id="deleteExecute" class="btn">Execute</button>
+            </div>
+
+            <div id="deleteStatus" class="endpoint-status">Ready.</div>
+            <div id="deleteUrl" class="endpoint-url"></div>
+
+            <div class="io-grid">
+              <div class="io-box">
+                <div class="io-head">Request</div>
+                <pre id="deleteRequest">{}</pre>
+              </div>
+              <div class="io-box">
+                <div class="io-head">Response</div>
+                <pre id="deleteResponse">{}</pre>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+    </main>
 
     <script>
-      const statusEl = document.getElementById("status");
-      const requestBodyEl = document.getElementById("requestBody");
-      const responseBodyEl = document.getElementById("responseBody");
-      const redirectLinkEl = document.getElementById("redirectLink");
-      const urlOut = document.getElementById("urlOut");
-      const runButton = document.getElementById("runButton");
-      const baseUrlInput = document.getElementById("apiBaseUrl");
-      const originHintEl = document.getElementById("originHint");
+      const $ = (id) => document.getElementById(id);
+      const state = {
+        lastUserId: "",
+        lastWelcomeUrl: "",
+        lastContextNonce: "",
+        lastCommunityId: "",
+      };
 
-      const defaultBaseUrl = window.location.hostname === "localhost"
-        ? "http://localhost:8080"
-        : "http://localhost:8080";
-
-      if (!baseUrlInput.value) {
-        baseUrlInput.value = defaultBaseUrl;
-      }
-
-      if (window.location.origin === "null") {
-        originHintEl.style.display = "block";
-      }
-
-      function getPayload() {
-        return {
-          email: document.getElementById("email").value.trim(),
-          username: document.getElementById("username").value.trim(),
-          display_name: document.getElementById("displayName").value.trim(),
-          profile_image_url: document.getElementById("profileImageUrl").value.trim(),
-          banner_image_url: document.getElementById("bannerImageUrl").value.trim(),
-        };
+      function value(id) {
+        return $(id).value.trim();
       }
 
       function looksLikeAPIKey(key) {
-        return typeof key === "string" && /^hive_[A-Za-z0-9]{48}$/.test(key.trim());
+        return /^hive_[A-Za-z0-9]{48}$/.test(key);
       }
 
-      function getErrorHint(status, bodyText) {
-        const normalizedBody = bodyText.toLowerCase();
-        const hints = {
-          400: "Validation failed. Confirm request body uses snake_case fields and valid email. Required: email.",
-          401: "Authorization failed. Confirm you're using a current `hive_...` key (post-rotation keys are one-time visible) and posting to `/api/v1/communities/onboard` on the same backend where the key was created.",
-          403: "Forbidden. Confirm key owner is community owner/admin and community tier is `swarm` or `royal`.",
-          404: "Endpoint not found. Confirm URL is `/api/v1/communities/onboard` with `/api` prefixed.",
-          500: "Server error. Retry and capture requestId from backend logs if this persists.",
-        };
-
-        if (hints[status]) {
-          return hints[status];
-        }
-
-        if (normalizedBody.includes("invalid api key")) {
-          return "Authorization still looks wrong. Confirm key has no spaces/newlines and is unchanged from the dashboard.";
-        }
-
-        if (normalizedBody.includes("community tier") || normalizedBody.includes("not eligible")) {
-          return "That community is not eligible for API key onboarding. Promote it to Swarm or Royal.";
-        }
-
-        if (normalizedBody.includes("admin access required")) {
-          return "The key user must be community owner/admin at key creation time.";
-        }
-
-        return "Check backend logs with the same request time for exact error message.";
+      function getBaseUrl() {
+        return value("apiBaseUrl").replace(/\/$/, "");
       }
 
-      function setStatus(message, isError = false) {
-        statusEl.textContent = message;
-        statusEl.className = isError ? "status error" : "status success";
+      function pretty(data) {
+        if (data === undefined || data === null) return "<empty>";
+        if (typeof data === "string") return data || "<empty>";
+        try {
+          return JSON.stringify(data, null, 2);
+        } catch (_err) {
+          return String(data);
+        }
       }
 
-      runButton.addEventListener("click", async () => {
-        const apiBaseUrl = baseUrlInput.value.trim().replace(/\/$/, "");
-        const apiKey = document.getElementById("apiKey").value.trim();
-        const payload = getPayload();
+      function setAuthStatus(message, isError = false) {
+        const el = $("authStatus");
+        el.textContent = message;
+        el.className = isError ? "auth-status err" : "auth-status ok";
+      }
 
+      function setEndpointStatus(prefix, message, isError = false) {
+        const el = $(`${prefix}Status`);
+        if (!el) return;
+        el.textContent = message;
+        el.className = isError ? "endpoint-status err" : "endpoint-status ok";
+      }
+
+      function setEndpointIO(prefix, requestObj, responseObj, endpointUrl = "") {
+        $(`${prefix}Request`).textContent = pretty(requestObj);
+        $(`${prefix}Response`).textContent = pretty(responseObj);
+        $(`${prefix}Url`).textContent = endpointUrl;
+      }
+
+      function apiKeyGuard() {
+        const baseUrl = getBaseUrl();
+        const apiKey = value("apiKey");
+
+        if (!baseUrl) {
+          return "API base URL is required.";
+        }
         if (!apiKey) {
-          setStatus("API key is required.", true);
-          return;
+          return "API key is required.";
         }
         if (!looksLikeAPIKey(apiKey)) {
-          setStatus("API key format looks invalid. Expected `hive_` + 48 chars.", true);
-          return;
-        }
-        if (!payload.email) {
-          setStatus("Email is required.", true);
-          return;
+          return "API key format invalid. Expected hive_ + 48 alphanumeric characters.";
         }
 
-        const endpoint = `${apiBaseUrl}/api/v1/communities/onboard`;
-        const requestBody = JSON.stringify(payload, null, 2);
-        requestBodyEl.textContent = requestBody;
-        responseBodyEl.textContent = "";
-        redirectLinkEl.innerHTML = "";
-        urlOut.textContent = endpoint;
-        setStatus("Running onboarding request...");
+        return "";
+      }
+
+      function userTokenGuard() {
+        const baseUrl = getBaseUrl();
+        const userToken = value("userToken");
+
+        if (!baseUrl) {
+          return "API base URL is required.";
+        }
+        if (!userToken) {
+          return "User bearer token is required for /api/user endpoints.";
+        }
+
+        return "";
+      }
+
+      function parseWelcomeUrl(url) {
+        if (!url) return { nonce: "", communityId: "" };
+        try {
+          const parsed = new URL(url, window.location.origin);
+          return {
+            nonce: (parsed.searchParams.get("ctx") || "").trim(),
+            communityId: (parsed.searchParams.get("communityId") || "").trim(),
+          };
+        } catch (_err) {
+          return { nonce: "", communityId: "" };
+        }
+      }
+
+      function syncWelcomeContext(url) {
+        const { nonce, communityId } = parseWelcomeUrl(url);
+        if (nonce) {
+          state.lastContextNonce = nonce;
+          $("welcomeContextNonce").value = nonce;
+          $("welcomeConsumeNonce").value = nonce;
+        }
+        if (communityId) {
+          state.lastCommunityId = communityId;
+          $("linkConsentCommunityId").value = communityId;
+        }
+      }
+
+      function renderRedirectActions(url) {
+        const container = $("onboardRedirectActions");
+        container.innerHTML = "";
+
+        if (!url) return;
+
+        const aNew = document.createElement("a");
+        aNew.href = url;
+        aNew.target = "_blank";
+        aNew.rel = "noreferrer";
+        aNew.className = "quick-link";
+        aNew.textContent = "Open welcome link in new tab";
+
+        const aSame = document.createElement("a");
+        aSame.href = url;
+        aSame.className = "quick-link";
+        aSame.textContent = "Open welcome link in this tab";
+
+        container.appendChild(aNew);
+        container.appendChild(aSame);
+      }
+
+      function errorHint(status, bodyText, authMode = "apiKey") {
+        const text = (bodyText || "").toLowerCase();
+        if (status === 400) return "Validation failed. Check required fields, UUIDs, and RFC3339 timestamps.";
+        if (status === 401) {
+          return authMode === "userToken"
+            ? "Authorization failed. Check user bearer token and base URL."
+            : "Authorization failed. Check API key and base URL.";
+        }
+        if (status === 403) return "Access denied. Confirm key owner role and community tier eligibility.";
+        if (status === 404) return "Endpoint or target resource not found.";
+        if (text.includes("paypal") || text.includes("subscription")) {
+          return "Subscription assignment requires active community-owned PayPal configuration.";
+        }
+        if (authMode === "apiKey" && text.includes("invalid api key")) {
+          return "API key appears invalid or revoked.";
+        }
+        return "Check backend logs for details.";
+      }
+
+      async function apiRequest(prefix, method, path, body, allowedStatuses = [200], authMode = "apiKey") {
+        const guard = authMode === "userToken" ? userTokenGuard() : apiKeyGuard();
+        if (guard) {
+          setEndpointStatus(prefix, guard, true);
+          return null;
+        }
+
+        const bearerToken = authMode === "userToken" ? value("userToken") : value("apiKey");
+        const endpointUrl = `${getBaseUrl()}${path}`;
+        const payload = body === undefined ? "<empty>" : body;
+        setEndpointIO(prefix, payload, "Running request...", `${method} ${endpointUrl}`);
+        setEndpointStatus(prefix, "Request in progress...");
 
         try {
-          const response = await fetch(endpoint, {
-            method: "POST",
+          const response = await fetch(endpointUrl, {
+            method,
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${apiKey}`,
+              Authorization: `Bearer ${bearerToken}`,
             },
-            body: requestBody,
+            body: body === undefined ? undefined : JSON.stringify(body),
           });
 
           const text = await response.text();
           let parsed;
           try {
-            parsed = JSON.parse(text);
-            responseBodyEl.textContent = JSON.stringify(parsed, null, 2);
-          } catch (_e) {
-            responseBodyEl.textContent = text || "<empty response>";
+            parsed = text ? JSON.parse(text) : "<empty>";
+          } catch (_err) {
+            parsed = text || "<empty>";
           }
 
-          if (!response.ok) {
-            setStatus(`Error: HTTP ${response.status} ${response.statusText}`, true);
-            const hint = getErrorHint(response.status, text);
-            responseBodyEl.textContent = `${responseBodyEl.textContent}\n\nHint: ${hint}`;
+          if (!allowedStatuses.includes(response.status)) {
+            const hint = errorHint(response.status, text, authMode);
+            setEndpointStatus(
+              prefix,
+              `HTTP ${response.status} ${response.statusText}. ${hint}`,
+              true
+            );
+            setEndpointIO(prefix, payload, parsed, `${method} ${endpointUrl}`);
+            return { ok: false, status: response.status, parsed, text, url: endpointUrl };
+          }
+
+          setEndpointStatus(prefix, `HTTP ${response.status} ${response.statusText}`);
+          setEndpointIO(prefix, payload, parsed, `${method} ${endpointUrl}`);
+          return { ok: true, status: response.status, parsed, text, url: endpointUrl };
+        } catch (err) {
+          const message = err && err.message ? err.message : String(err);
+          setEndpointStatus(prefix, `Request failed: ${message}`, true);
+          setEndpointIO(prefix, payload, { error: message }, `${method} ${endpointUrl}`);
+          return null;
+        }
+      }
+
+      function onboardPayload() {
+        const payload = {};
+        const username = value("onboardUsername");
+        const displayName = value("onboardDisplayName");
+        const shortBio = value("onboardShortBio");
+        const fullBio = value("onboardFullBio");
+        const socialLinksRaw = value("onboardSocialLinks");
+        const subscriptionId = value("onboardSubscriptionId");
+        const subscriptionExpiresAt = value("onboardSubscriptionExpiresAt");
+
+        if (username) payload.username = username;
+        if (displayName) payload.display_name = displayName;
+        if (shortBio) payload.short_bio = shortBio;
+        if (fullBio) payload.full_bio = fullBio;
+        if (socialLinksRaw) {
+          try {
+            const parsed = JSON.parse(socialLinksRaw);
+            if (!Array.isArray(parsed)) {
+              throw new Error("social_links must be a JSON array");
+            }
+            payload.social_links = parsed;
+          } catch (err) {
+            const message = err && err.message ? err.message : String(err);
+            throw new Error(`Invalid social_links JSON: ${message}`);
+          }
+        }
+        if (subscriptionId) payload.subscription_id = subscriptionId;
+        if (subscriptionExpiresAt) payload.subscription_expires_at = subscriptionExpiresAt;
+
+        return payload;
+      }
+
+      async function executeOnboard({ followRedirect }) {
+        let payload;
+        try {
+          payload = onboardPayload();
+        } catch (err) {
+          const message = err && err.message ? err.message : String(err);
+          setEndpointStatus("onboard", message, true);
+          return;
+        }
+
+        const popup = followRedirect ? window.open("about:blank", "_blank") : null;
+
+        const result = await apiRequest(
+          "onboard",
+          "POST",
+          "/api/v1/communities/onboard",
+          payload,
+          [200]
+        );
+
+        if (!result || !result.ok) {
+          if (popup && !popup.closed) popup.close();
+          return;
+        }
+
+        const parsed = result.parsed;
+        const welcomeUrl =
+          parsed && typeof parsed === "object"
+            ? (parsed.welcome_url || parsed.welcomeUrl || parsed.redirect_url || "").trim()
+            : "";
+
+        state.lastWelcomeUrl = welcomeUrl || "";
+        $("onboardUrl").textContent = welcomeUrl ? `welcome_url: ${welcomeUrl}` : "No welcome_url returned.";
+        renderRedirectActions(welcomeUrl);
+        syncWelcomeContext(welcomeUrl);
+
+        if (followRedirect) {
+          if (welcomeUrl) {
+            if (popup && !popup.closed) {
+              popup.location.href = welcomeUrl;
+            } else {
+              window.open(welcomeUrl, "_blank", "noopener");
+            }
+            setEndpointStatus(
+              "onboard",
+              "Onboard succeeded and welcome_url opened to simulate external user click."
+            );
+          } else {
+            if (popup && !popup.closed) popup.close();
+            setEndpointStatus("onboard", "Onboard succeeded but no welcome_url was returned.", true);
+          }
+        }
+      }
+
+      $("authorizeButton").addEventListener("click", () => {
+        const baseUrl = getBaseUrl();
+        const apiKey = value("apiKey");
+        const userToken = value("userToken");
+
+        if (!baseUrl) {
+          setAuthStatus("API base URL is required.", true);
+          return;
+        }
+        if (!apiKey && !userToken) {
+          setAuthStatus("Provide at least one credential (API key and/or user token).", true);
+          return;
+        }
+        if (apiKey && !looksLikeAPIKey(apiKey)) {
+          setAuthStatus("API key format invalid. Expected hive_ + 48 alphanumeric characters.", true);
+          return;
+        }
+
+        const enabled = [];
+        if (apiKey) enabled.push("community API key");
+        if (userToken) enabled.push("user bearer token");
+        if (!enabled.length) enabled.push("none");
+
+        setAuthStatus(`Configured ${baseUrl} with: ${enabled.join(" + ")}.`);
+      });
+
+      $("clearButton").addEventListener("click", () => {
+        state.lastUserId = "";
+        state.lastWelcomeUrl = "";
+        state.lastContextNonce = "";
+        state.lastCommunityId = "";
+        [
+          "getUserId",
+          "patchUserId",
+          "putUserId",
+          "deleteUserId",
+          "welcomeContextNonce",
+          "welcomeConsumeNonce",
+          "linkConsentCommunityId",
+        ].forEach((id) => {
+          $(id).value = "";
+        });
+        $("onboardUrl").textContent = "";
+        $("onboardRedirectActions").innerHTML = "";
+        setAuthStatus("Cleared cached tester context.");
+      });
+
+      $("onboardExecuteFollow").addEventListener("click", async () => {
+        await executeOnboard({ followRedirect: true });
+      });
+
+      $("onboardExecuteOnly").addEventListener("click", async () => {
+        await executeOnboard({ followRedirect: false });
+      });
+
+      $("welcomeContextExecute").addEventListener("click", async () => {
+        const nonce = value("welcomeContextNonce") || state.lastContextNonce;
+        if (!nonce) {
+          setEndpointStatus("welcomeContext", "nonce is required.", true);
+          return;
+        }
+        const path = `/api/user/community-welcome/context?nonce=${encodeURIComponent(nonce)}`;
+        const result = await apiRequest("welcomeContext", "GET", path, undefined, [200], "userToken");
+        if (!result || !result.ok) return;
+
+        const parsed = result.parsed;
+        if (parsed && typeof parsed === "object") {
+          const communityId = (parsed.community_id || parsed.communityId || "").trim();
+          if (communityId) {
+            state.lastCommunityId = communityId;
+            $("linkConsentCommunityId").value = communityId;
+          }
+        }
+      });
+
+      $("welcomeConsumeExecute").addEventListener("click", async () => {
+        const nonce = value("welcomeConsumeNonce") || state.lastContextNonce;
+        if (!nonce) {
+          setEndpointStatus("welcomeConsume", "nonce is required.", true);
+          return;
+        }
+        const body = { nonce };
+        const result = await apiRequest(
+          "welcomeConsume",
+          "POST",
+          "/api/user/community-welcome/consume",
+          body,
+          [200],
+          "userToken"
+        );
+        if (!result || !result.ok) return;
+
+        const parsed = result.parsed;
+        if (parsed && typeof parsed === "object") {
+          const communityId = (parsed.community_id || parsed.communityId || "").trim();
+          if (communityId) {
+            state.lastCommunityId = communityId;
+            $("linkConsentCommunityId").value = communityId;
+          }
+        }
+      });
+
+      $("linkConsentExecute").addEventListener("click", async () => {
+        const autoConsume = value("linkConsentAutoConsume") !== "false";
+
+        if (autoConsume) {
+          const nonce = value("welcomeConsumeNonce") || value("welcomeContextNonce") || state.lastContextNonce;
+          if (!nonce) {
+            setEndpointStatus(
+              "linkConsent",
+              "auto_consume is enabled but nonce is missing. Run onboard/context first or disable auto_consume.",
+              true
+            );
             return;
           }
 
-          setStatus(`Success: HTTP ${response.status} ${response.statusText}`);
+          const consumeResult = await apiRequest(
+            "welcomeConsume",
+            "POST",
+            "/api/user/community-welcome/consume",
+            { nonce },
+            [200],
+            "userToken"
+          );
+          if (!consumeResult || !consumeResult.ok) return;
 
-          const redirectUrl =
-            parsed && typeof parsed === "object" ? parsed.redirect_url || parsed.redirectUrl : null;
-          if (typeof redirectUrl === "string" && redirectUrl.trim() !== "") {
-            redirectLinkEl.innerHTML = `
-              <a href="${redirectUrl}" target="_blank" rel="noreferrer">Open generated onboarding URL</a>
-            `;
-            window.open(redirectUrl, "_blank", "noopener");
+          const consumeParsed = consumeResult.parsed;
+          if (consumeParsed && typeof consumeParsed === "object") {
+            const consumedCommunityId = (consumeParsed.community_id || consumeParsed.communityId || "").trim();
+            if (consumedCommunityId) {
+              state.lastCommunityId = consumedCommunityId;
+              $("linkConsentCommunityId").value = consumedCommunityId;
+            }
           }
-        } catch (err) {
-          const msg = String(err?.message || "").toLowerCase();
-          let hint = "Check that the API base URL is reachable from this browser and the domain resolves.";
-          if (msg.includes("failed to fetch")) {
-            hint =
-              "Request could not be sent. Confirm the endpoint is running and that this page origin is allowed by backend CORS. For local docs on 5173, CORS should include http://localhost:5173 (and http://127.0.0.1:5173).";
-          }
-          setStatus(`Request failed: ${err.message}`, true);
-          responseBodyEl.textContent = `Error details: ${err.message}\n\nHint: ${hint}`;
         }
+
+        const communityId = value("linkConsentCommunityId") || state.lastCommunityId;
+        if (!communityId) {
+          setEndpointStatus("linkConsent", "community_id is required.", true);
+          return;
+        }
+        const consentRaw = value("linkConsentConsent");
+        const consent = consentRaw !== "false";
+        const body = {
+          community_id: communityId,
+          consent,
+        };
+
+        await apiRequest("linkConsent", "POST", "/api/user/community-welcome/link", body, [200], "userToken");
+      });
+
+      $("linkedCommunitiesExecute").addEventListener("click", async () => {
+        await apiRequest(
+          "linkedCommunities",
+          "GET",
+          "/api/user/linked-communities",
+          undefined,
+          [200],
+          "userToken"
+        );
+      });
+
+      $("listExecute").addEventListener("click", async () => {
+        const params = new URLSearchParams();
+        const limit = value("listLimit");
+        const offset = value("listOffset");
+        const subscriptionStatus = value("listSubscriptionStatus");
+        const linkedFrom = value("listLinkedFrom");
+        const linkedTo = value("listLinkedTo");
+
+        if (limit) params.set("limit", limit);
+        if (offset) params.set("offset", offset);
+        if (subscriptionStatus) params.set("subscription_status", subscriptionStatus);
+        if (linkedFrom) params.set("linked_from", linkedFrom);
+        if (linkedTo) params.set("linked_to", linkedTo);
+
+        const query = params.toString();
+        const path = query ? `/api/v1/communities/users?${query}` : "/api/v1/communities/users";
+
+        await apiRequest("list", "GET", path, undefined, [200], "apiKey");
+      });
+
+      $("getExecute").addEventListener("click", async () => {
+        const userId = value("getUserId") || state.lastUserId;
+        if (!userId) {
+          setEndpointStatus("get", "userId is required.", true);
+          return;
+        }
+
+        await apiRequest(
+          "get",
+          "GET",
+          `/api/v1/communities/users/${encodeURIComponent(userId)}`,
+          undefined,
+          [200],
+          "apiKey"
+        );
+      });
+
+      $("patchExecute").addEventListener("click", async () => {
+        const userId = value("patchUserId") || state.lastUserId;
+        if (!userId) {
+          setEndpointStatus("patch", "userId is required.", true);
+          return;
+        }
+
+        const displayName = value("patchDisplayName");
+        const username = value("patchUsername");
+        if (!displayName && !username) {
+          setEndpointStatus("patch", "Provide display_name or username.", true);
+          return;
+        }
+
+        const body = {};
+        if (displayName) body.display_name = displayName;
+        if (username) body.username = username;
+
+        await apiRequest(
+          "patch",
+          "PATCH",
+          `/api/v1/communities/users/${encodeURIComponent(userId)}`,
+          body,
+          [200],
+          "apiKey"
+        );
+      });
+
+      $("putExecute").addEventListener("click", async () => {
+        const userId = value("putUserId") || state.lastUserId;
+        const subscriptionId = value("putSubscriptionId");
+
+        if (!userId) {
+          setEndpointStatus("put", "userId is required.", true);
+          return;
+        }
+        if (!subscriptionId) {
+          setEndpointStatus("put", "subscription_id is required.", true);
+          return;
+        }
+
+        const body = { subscription_id: subscriptionId };
+        const expiresAt = value("putExpiresAt");
+        if (expiresAt) body.expires_at = expiresAt;
+
+        await apiRequest(
+          "put",
+          "PUT",
+          `/api/v1/communities/users/${encodeURIComponent(userId)}/subscription`,
+          body,
+          [200],
+          "apiKey"
+        );
+      });
+
+      $("deleteExecute").addEventListener("click", async () => {
+        const userId = value("deleteUserId") || state.lastUserId;
+        if (!userId) {
+          setEndpointStatus("delete", "userId is required.", true);
+          return;
+        }
+
+        await apiRequest(
+          "delete",
+          "DELETE",
+          `/api/v1/communities/users/${encodeURIComponent(userId)}/subscription`,
+          undefined,
+          [204],
+          "apiKey"
+        );
       });
     </script>
   </body>
