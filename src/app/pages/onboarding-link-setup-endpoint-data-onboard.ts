@@ -3,37 +3,44 @@ import type { EndpointCardData } from "./onboarding-link-setup-endpoint-card";
 export const onboardEndpointCard: EndpointCardData = {
   method: "POST",
   path: "/api/v1/communities/onboard",
-  title: "Create onboarding context",
+  title: "Create or match onboarding user",
   description:
-    "Creates a short-lived onboarding context and returns `welcome_url` with `ctx` nonce. This endpoint does not accept `email` and does not auto-link users.",
+    "Creates or matches a Hive3 user for the target community, stores welcome context, and returns a session-capable `welcome_url` plus the resolved `user_id` and `username`.",
   authMode: "Auth: API key",
   requestParameters: [
+    {
+      name: "email",
+      type: "string",
+      required: true,
+      description: "Required email address. Existing emails reuse the current Hive3 account; new emails create a Hive3 account.",
+      example: "partner.user@example.com",
+    },
     {
       name: "display_name",
       type: "string",
       required: false,
-      description: "Prefill candidate for onboarding display name.",
+      description: "Optional profile display name. Defaults to the email prefix when omitted.",
       example: "Partner User",
     },
     {
       name: "username",
       type: "string",
       required: false,
-      description: "Prefill candidate for onboarding username.",
+      description: "Optional requested username. If taken, Hive3 assigns the next sequential suffix such as `name01`, `name02`, and so on.",
       example: "partner_user",
     },
     {
       name: "short_bio",
       type: "string",
       required: false,
-      description: "Prefill candidate for short bio.",
+      description: "Optional short bio for the created or matched user.",
       example: "Building in Web3",
     },
     {
       name: "full_bio",
       type: "string",
       required: false,
-      description: "Prefill candidate for full bio.",
+      description: "Optional full bio for the created or matched user.",
       example: "I like shipping useful products.",
     },
     {
@@ -68,6 +75,7 @@ export const onboardEndpointCard: EndpointCardData = {
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
+    "email": "partner.user@example.com",
     "display_name": "Partner User",
     "username": "partner_user",
     "short_bio": "Building in Web3",
@@ -88,6 +96,7 @@ export const onboardEndpointCard: EndpointCardData = {
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
+    email: "partner.user@example.com",
     display_name: "Partner User",
     username: "partner_user",
     short_bio: "Building in Web3",
@@ -102,16 +111,18 @@ const data = await response.json();`,
   responseExamples: [
     {
       status: 200,
-      notes: "Context created.",
+      notes: "User created or matched successfully.",
       example: `{
-  "welcome_url": "https://app.hive3.tech/community/builders/welcome?ctx=Q6mJmQ3f1jYw0V8LtF8UsH4o"
+  "user_id": "7f5d9b84-45d8-4d71-bff8-72974f9de8e1",
+  "username": "partner_user",
+  "welcome_url": "https://api.hive3.tech/api/auth/welcome?token=ENCRYPTED_TOKEN&communityId=COMMUNITY_ID&ctx=Q6mJmQ3f1jYw0V8LtF8UsH4o"
 }`,
     },
     {
       status: 400,
       notes: "Invalid payload.",
       example: `{
-  "message": "subscription_id is required when subscription_expires_at is set"
+  "message": "email is required"
 }`,
     },
     {
@@ -119,6 +130,13 @@ const data = await response.json();`,
       notes: "Missing or invalid API key.",
       example: `{
   "message": "invalid api key"
+}`,
+    },
+    {
+      status: 409,
+      notes: "A required linked resource is invalid for this community.",
+      example: `{
+  "message": "subscription_id does not belong to this community"
 }`,
     },
   ],

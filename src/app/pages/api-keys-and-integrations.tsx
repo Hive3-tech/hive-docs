@@ -67,12 +67,18 @@ export function APIKeysAndIntegrationsPage() {
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
+    "email": "partner.user@example.com",
     "display_name": "Partner User",
     "username": "partner_user",
     "short_bio": "Building in Web3",
     "social_links": [{"platform":"x","url":"https://x.com/partner_user"}]
   }'`}
             />
+            <p className="text-sm text-muted-foreground mt-4">
+              The onboarding endpoint requires <InlineCode>email</InlineCode>. It will either reuse
+              the existing Hive3 user for that email or create a new Hive3 account, then return a
+              <InlineCode>welcome_url</InlineCode> that you send to the user.
+            </p>
           </section>
 
           <section id="notes">
@@ -82,6 +88,10 @@ export function APIKeysAndIntegrationsPage() {
                 <li>Only one active community API key is supported at a time.</li>
                 <li>Rotate or revoke keys immediately if you suspect exposure.</li>
                 <li>Do not embed keys in public client apps.</li>
+                <li>
+                  Use the API from your backend only, then redirect the human user to the returned{' '}
+                  <InlineCode>welcome_url</InlineCode>.
+                </li>
               </ul>
             </div>
             <Callout type="warning" title="Security reminder">

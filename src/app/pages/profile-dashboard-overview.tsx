@@ -73,6 +73,14 @@ export function ProfileDashboardOverviewPage() {
       iconStyle: 'bg-green-100 text-green-600',
       note: 'Search, pending requests, and collaborator approvals',
     },
+    {
+      title: 'Welcome Page',
+      subtitle: 'Curate public profile landing',
+      to: '/honey-bee-profile-dashboard-overview',
+      icon: FileText,
+      iconStyle: 'bg-rose-100 text-rose-600',
+      note: 'Honey Bee+ builder for spotlight and featured profile sections',
+    },
   ];
 
   return (
@@ -193,6 +201,15 @@ export function ProfileDashboardOverviewPage() {
               monetization features use membership gating. Honey Bee+ unlocks creator tools such as
               privacy controls, PayPal connection, and AI assistant setup.
             </Callout>
+            <div className="rounded-lg border border-border bg-card p-4 mt-4">
+              <p className="font-semibold mb-2">Profile welcome page builder</p>
+              <p className="text-sm text-muted-foreground">
+                Honey Bee, Swarm, and Royal Hive accounts can curate their public profile landing
+                page with a spotlight block, subscription highlights, and selected events, courses,
+                content, and jobs. Worker Bee accounts continue to use the standard public profile
+                layout.
+              </p>
+            </div>
           </section>
         </div>
 

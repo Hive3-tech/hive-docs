@@ -38,8 +38,9 @@ export function APIManagingUsersPage() {
         <section id="overview" className="space-y-4 mb-12">
           <h2 className="text-2xl font-semibold">Overview</h2>
           <p className="text-muted-foreground">
-            Linked scope is created when users complete the Hive onboarding and consent flow from
-            your onboarding link.
+            Linked scope is created when users finish the Hive welcome flow from your onboarding
+            link and grant community profile-link consent. The onboarding endpoint can either reuse
+            an existing Hive3 user by email or create a new one automatically.
           </p>
         </section>
 
@@ -173,7 +174,8 @@ export function APIManagingUsersPage() {
                 Unlinked users always return <InlineCode>404</InlineCode> to prevent cross-community
                 user probing.
               </li>
-              <li>API key requests are rate-limited at 100 requests/minute per key.</li>
+              <li>Standard community API requests are rate-limited at 100 requests/minute per community.</li>
+              <li>Bulk onboarding uses a separate 5 requests/hour bucket per community.</li>
               <li>All management actions are written to API audit logs.</li>
             </ul>
           </div>

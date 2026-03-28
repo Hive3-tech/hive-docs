@@ -17,7 +17,7 @@ export function CircleWalletPage() {
     { id: 'overview', label: 'What Circle Wallet is' },
     { id: 'where-found', label: 'Where to find it' },
     { id: 'actions', label: 'What you can do' },
-    { id: 'transfer', label: 'Send ETH from Circle Wallet' },
+    { id: 'transfer', label: 'Send funds from Circle Wallet' },
     { id: 'default-wallet', label: 'Default wallet and credentials' },
     { id: 'status', label: 'If your wallet shows unavailable' },
     { id: 'tips', label: 'Best practices' },
@@ -34,8 +34,8 @@ export function CircleWalletPage() {
           Circle Wallet
         </h1>
         <p className="text-lg text-muted-foreground mb-12">
-          Circle Wallet is your built-in Hive3 wallet. It is created for your account automatically
-          and gives you a ready-to-use home base for wallet actions.
+          Circle Wallet is your built-in Hive3 profile wallet. It is created for your account
+          automatically and gives you a ready-to-use home base for default wallet actions.
         </p>
 
         <div className="space-y-12">
@@ -55,7 +55,8 @@ export function CircleWalletPage() {
                   Account-linked
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Your Circle Wallet is attached to your Hive3 account, not to one browser session.
+                  Your default Circle Wallet is attached to your Hive3 account, not to one browser
+                  session.
                 </p>
               </div>
               <div className="rounded-lg border border-border bg-card p-4">
@@ -75,8 +76,8 @@ export function CircleWalletPage() {
             <h2 className="text-2xl font-semibold mb-4">Where to find it</h2>
             <p className="text-muted-foreground">
               Open your wallet management controls from your profile experience. In that modal, you
-              will see your default wallet, Circle Wallet details, and linked external wallets in
-              one place.
+              will see your default wallet, your default/profile Circle Wallet details, and linked
+              external wallets in one place.
             </p>
           </section>
 
@@ -99,23 +100,25 @@ export function CircleWalletPage() {
                   Check balances
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  See ETH and USDC balances in the same panel where you manage your wallets.
+                  See your default wallet balance and USDC in the same panel where you manage your
+                  wallets.
                 </p>
               </div>
               <div className="rounded-lg border border-border bg-card p-4">
                 <div className="font-semibold mb-2 flex items-center gap-2">
                   <Send className="w-4 h-4 text-[#6B01B6]" />
-                  Transfer ETH
+                  Transfer funds
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Use the Transfer action from Circle Wallet to send ETH to another wallet address.
+                  Use the Transfer action from Circle Wallet to send funds to another wallet
+                  address.
                 </p>
               </div>
             </div>
           </section>
 
           <section id="transfer">
-            <h2 className="text-2xl font-semibold mb-4">Send ETH from Circle Wallet</h2>
+            <h2 className="text-2xl font-semibold mb-4">Send funds from Circle Wallet</h2>
             <Callout type="warning" title="Double-check before sending">
               Transfers are irreversible. Confirm wallet address and amount before you click Send.
             </Callout>
@@ -127,7 +130,7 @@ export function CircleWalletPage() {
                 Choose <InlineCode>Transfer</InlineCode>.
               </Step>
               <Step number={3} title="Enter destination and amount">
-                Add a valid destination address and your ETH amount, or use{' '}
+                Add a valid destination address and amount, or use{' '}
                 <InlineCode>Max</InlineCode>.
               </Step>
               <Step number={4} title="Review and send">
@@ -135,8 +138,8 @@ export function CircleWalletPage() {
               </Step>
             </div>
             <p className="text-sm text-muted-foreground mt-4">
-              The Max option leaves a small gas reserve (about <InlineCode>0.00005 ETH</InlineCode>
-              ) so your wallet can still process network fees.
+              The Max option leaves a small native-token gas reserve (about{' '}
+              <InlineCode>0.00005</InlineCode>) so your wallet can still process network fees.
             </p>
           </section>
 

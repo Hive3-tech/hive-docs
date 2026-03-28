@@ -84,6 +84,14 @@ export function CommunitiesOverviewPage() {
       iconStyle: 'bg-indigo-100 text-indigo-600',
       note: 'Available for Swarm community operations',
     },
+    {
+      title: 'Welcome Page',
+      subtitle: 'Curate public join page',
+      to: '/communities-overview',
+      icon: FileText,
+      iconStyle: 'bg-rose-100 text-rose-600',
+      note: 'Spotlight, subscriptions, and featured sections for visitors',
+    },
   ];
 
   return (
@@ -141,6 +149,12 @@ export function CommunitiesOverviewPage() {
             <Callout type="info" title="Shared setup note">
               Community PayPal and AI setup use the same core workflow patterns as your profile
               guides, with community ownership context.
+            </Callout>
+
+            <Callout type="info" title="Community welcome pages">
+              Communities can curate the public join page from the dashboard with a spotlight block,
+              curated subscriptions, and selected events, courses, quests, and jobs. Shared links,
+              onboarding links, and QR codes all route visitors into that same welcome experience.
             </Callout>
           </section>
 

@@ -44,7 +44,7 @@ export function GetStartedPage() {
             <h2 className="text-2xl font-semibold mb-4">Step 2: Connect or use Circle wallet</h2>
             <Step number={2} title="Enable your wallet path">
               In wallet settings, connect an existing Web3 wallet or continue with the
-              built-in Circle wallet flow.
+              built-in Circle wallet flow for your default profile wallet.
             </Step>
             <Callout type="info" title="Wallet choice matters">
               Choose Circle wallet when you want to test quickly and move faster with
