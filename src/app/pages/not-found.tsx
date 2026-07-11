@@ -6,10 +6,10 @@ export function NotFoundPage() {
   <main className="min-h-screen bg-background text-foreground flex items-center">
       <div className="w-full px-4 py-20">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="w-14 h-14 rounded-full bg-[#6B01B6]/10 border border-[#6B01B6]/30 flex items-center justify-center mx-auto mb-6">
-            <AlertTriangle className="w-7 h-7 text-[#6B01B6]" />
+          <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-6">
+            <AlertTriangle className="w-7 h-7 text-primary" />
           </div>
-          <p className="text-sm text-[#6B01B6] font-semibold mb-3">404</p>
+          <p className="text-sm text-primary font-semibold mb-3">404</p>
           <h1 className="text-4xl font-bold mb-4">Page not found</h1>
           <p className="text-muted-foreground mb-8">
             We couldn&apos;t find that page. It might have moved or no longer exists.
@@ -17,16 +17,16 @@ export function NotFoundPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               to="/"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#6B01B6] text-white hover:opacity-95 transition-opacity"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground hover:opacity-95 transition-opacity"
             >
               <Home className="w-4 h-4" />
               Back to docs home
             </Link>
             <Link
-              to="/get-started"
+              to="/membership-plans"
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-border hover:bg-accent transition-colors"
             >
-              Get started
+              Membership plans
             </Link>
           </div>
         </div>

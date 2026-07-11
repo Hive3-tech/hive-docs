@@ -14,10 +14,16 @@ export const docNavigation: DocNavigationSection[] = [
     section: "Getting Started",
     pages: [
       {
-        title: "Getting Started",
+        title: "Welcome to Hive3",
         path: "/",
         description:
-          "Start here for the Hive3 overview and the fastest path to your first account and workflow setup.",
+          "What Hive3 is, how to create an account, and a tour of the platform's main areas.",
+      },
+      {
+        title: "Membership Plans",
+        path: "/membership-plans",
+        description:
+          "Compare Worker Bee, Honey Bee, Swarm, and Royal Hive plans and what each unlocks.",
       },
     ],
   },
@@ -25,39 +31,52 @@ export const docNavigation: DocNavigationSection[] = [
     section: "Your Profile",
     pages: [
       {
-        title: "Profile Dashboard Overview",
-        path: "/honey-bee-profile-dashboard-overview",
-        description: "Review dashboard workflows for profile and content creators on Hive3.",
+        title: "Profile Dashboard",
+        path: "/profile-dashboard",
+        description:
+          "Your control room for profile editing, builders, payments, AI, communities, and collaborators.",
       },
       {
-        title: "Profile Settings",
-        path: "/profile-and-account-settings",
-        description: "Update profile identity, badges, and privacy for your public profile.",
+        title: "Editing Your Profile",
+        path: "/editing-your-profile",
+        description:
+          "Update your identity, images, bio attachment, badges, and social links.",
+      },
+      {
+        title: "Profile Builder",
+        path: "/profile-builder",
+        description:
+          "Compose your public overview, welcome page, and widgets from configurable blocks.",
       },
       {
         title: "Account Settings",
         path: "/account-settings",
-        description: "Manage membership plan, theme preferences, and notification settings.",
+        description:
+          "Manage theme, notifications, linked logins, subscriptions, data export, and deletion.",
       },
       {
-        title: "Link Paypal account",
-        path: "/profile-paypal",
-        description: "Connect a PayPal business account and manage Honey Bee subscriptions.",
+        title: "Connecting PayPal",
+        path: "/connect-paypal",
+        description:
+          "Link a PayPal Business account to sell personal subscriptions and tickets.",
       },
       {
         title: "Personal AI Assistant",
-        path: "/profile-ai",
-        description: "Set up your profile AI assistant, visibility, and training documents.",
+        path: "/personal-ai-assistant",
+        description:
+          "Launch a personal AI assistant with custom identity, visibility, and training documents.",
       },
       {
-        title: "Communities",
-        path: "/profile-communities",
-        description: "See communities where you are owner, admin, or moderator, and open them quickly.",
+        title: "Your Communities",
+        path: "/your-communities",
+        description:
+          "See the communities where you are an owner, admin, or moderator and open them quickly.",
       },
       {
         title: "Collaborators",
-        path: "/profile-collaborators",
-        description: "Review collaborators, monitor pending requests, and approve or deny applications.",
+        path: "/collaborators",
+        description:
+          "Review your collaborator list and approve or deny pending collaboration requests.",
       },
     ],
   },
@@ -67,138 +86,220 @@ export const docNavigation: DocNavigationSection[] = [
       {
         title: "Community Dashboard Overview",
         path: "/communities-overview",
-        description: "Use a dashboard-level map of community settings, permissions, members, AI, and monetization tools.",
+        description:
+          "A map of every community management area, from members to monetization.",
       },
       {
         title: "Creating a Community",
         path: "/creating-a-community",
-        description: "Set up a new Swarm community and choose your first profile details.",
+        description:
+          "Set up your community's identity and request a metaverse world (Swarm and above).",
+      },
+      {
+        title: "Community Profile & Welcome Page",
+        path: "/community-profile-builder",
+        description:
+          "Build your community's public profile and invitation welcome page from blocks.",
       },
       {
         title: "Community Settings",
         path: "/community-settings",
-        description: "Control visibility, branding, and core policy settings in one place.",
+        description:
+          "Control identity, branding, visibility, and how people gain access to your community.",
+      },
+      {
+        title: "Members & Applications",
+        path: "/members-and-applications",
+        description:
+          "Manage your member list, review applications, assign roles, and remove members.",
       },
       {
         title: "Permissions",
-        path: "/admins-and-moderators",
-        description: "Assign and manage owner-admin-moderator permission workflows.",
+        path: "/permissions",
+        description:
+          "Understand what owners, admins, and moderators can do and how to assign roles.",
       },
       {
-        title: "Chat Settings",
-        path: "/chat-settings",
-        description: "Tune chat moderation, moderation rules, and member controls.",
+        title: "Chat & Integrations",
+        path: "/chat-and-integrations",
+        description:
+          "Run community chat and sync conversations with Discord and Telegram.",
       },
       {
-        title: "PayPal Integration",
-        path: "/paypal-and-subscriptions",
-        description: "Connect PayPal and run community subscription plans and payment flows.",
+        title: "Community PayPal & Monetization",
+        path: "/community-paypal",
+        description:
+          "Connect community PayPal to sell subscriptions, tickets, quest credits, and metaverse time.",
       },
       {
         title: "Community AI Assistant",
-        path: "/ai-settings",
-        description: "Configure community AI with the same setup pattern used in profile AI guides.",
-      },
-      {
-        title: "Members",
-        path: "/managing-members",
-        description: "Review members, filter roles, and process pending community applications.",
+        path: "/community-ai-assistant",
+        description:
+          "Give your community its own AI assistant with custom identity and training documents.",
       },
     ],
   },
   {
-    section: "Hive3 Features",
+    section: "Using Hive3",
     pages: [
       {
-        title: "Subscriptions",
-        path: "/membership-tiers",
+        title: "Posts & the Feed",
+        path: "/posts-and-feed",
         description:
-          "Compare Worker Bee, Honey Bee, Swarm, and Royal Hive capabilities and access gates.",
+          "Post to your feed, discover people and communities, and interact with likes and comments.",
       },
       {
-        title: "Events Guide",
+        title: "Events",
         path: "/events-guide",
-        description: "Create, host, and monitor platform events from a single place.",
+        description:
+          "Browse, join, and create events with the week-grid scheduler and access controls.",
       },
       {
-        title: "Courses Guide",
+        title: "Courses",
         path: "/courses-guide",
-        description: "Build course structures and learning paths for members.",
+        description:
+          "Take courses lesson by lesson or build your own with office hours and rewards.",
       },
       {
-        title: "Content Guide",
+        title: "Content",
         path: "/content-guide",
-        description: "Author, schedule, and curate content assets for platform distribution.",
+        description:
+          "Publish long-form content with access gating, separate from feed posts.",
       },
       {
-        title: "Quests Guide",
+        title: "Quests",
         path: "/quests-guide",
-        description: "Design and launch community quest flows and completion milestones.",
+        description:
+          "Run objective-based quests with evidence review, credential rewards, and quest credits.",
       },
       {
-        title: "Jobs Guide",
+        title: "Jobs",
         path: "/jobs-guide",
-        description: "Publish and manage job opportunities with role and status workflows.",
+        description:
+          "Browse and apply to jobs, or post openings and review applications.",
       },
       {
-        title: "Task Guide",
-        path: "/quests-and-tasks",
-        description: "Review task status and upcoming task workflow availability.",
+        title: "Honey Marketplace",
+        path: "/honey-marketplace",
+        description:
+          "Discover coordinations and add-ons your profile or community can activate.",
+      },
+      {
+        title: "Tickets & Purchases",
+        path: "/tickets-and-purchases",
+        description:
+          "Buy tickets through PayPal, find your purchases, and request refunds.",
+      },
+      {
+        title: "Messaging & Chats",
+        path: "/messaging",
+        description:
+          "Use direct messages and community conversations, with tier-based DM rules.",
+      },
+      {
+        title: "Notifications",
+        path: "/notifications",
+        description:
+          "Stay on top of activity with categories, mutes, and the Rewards and Tickets panels.",
       },
     ],
   },
   {
-    section: "Wallet & Credentials",
+    section: "Wallets & Credentials",
     pages: [
       {
         title: "Credentials",
-        path: "/credentials-and-nfts",
-        description: "Understand credential rewards, claiming, wallet requirements, and minting.",
+        path: "/credentials",
+        description:
+          "Earn, claim, and create on-chain credentials for attendance, completion, and quests.",
       },
       {
         title: "Circle Wallet",
         path: "/circle-wallet",
-        description: "Set up and use the built-in Circle wallet experience.",
+        description:
+          "Use the built-in Circle wallet for credential deployment on supported networks.",
       },
       {
         title: "Linking External Wallets",
         path: "/linking-external-wallets",
-        description: "Attach external wallets and manage connection status safely.",
+        description:
+          "Connect EVM wallets, pick a default, and control public NFT visibility.",
       },
     ],
   },
   {
-    section: "Developer Reference",
+    section: "Hive CLI",
     pages: [
+      {
+        title: "CLI Quickstart",
+        path: "/cli/quickstart",
+        description:
+          "Install @hive3/cli, log in from your browser, and set it up by hand or with an AI agent.",
+      },
+      {
+        title: "Authentication & Configuration",
+        path: "/cli/authentication",
+        description:
+          "How browser approval, login options, scopes, and logout work.",
+      },
+      {
+        title: "Command Reference",
+        path: "/cli/commands",
+        description:
+          "Every hive command and flag, grouped by area, with destructive actions marked.",
+      },
+    ],
+  },
+  {
+    section: "API Reference",
+    pages: [
+      {
+        title: "API Overview",
+        path: "/api/overview",
+        description:
+          "Base URL, authentication, scopes, pagination, idempotency, errors, and rate limits.",
+      },
       {
         title: "API Keys",
-        path: "/api-keys-and-integrations",
-        description: "Generate an API key and use it as the Bearer token for Hive3 API calls.",
+        path: "/api/keys",
+        description:
+          "Create, rotate, and revoke person-owned API keys from the dashboard or CLI.",
       },
       {
-        title: "Onboard",
-        path: "/api-reference",
-        description: "Set up community onboarding links and server-side flow for API-based integration.",
+        title: "Profile & Account API",
+        path: "/api/profile-and-account",
+        description:
+          "Endpoints for your profile, builders, uploads, account, wallets, and NFT exposure.",
       },
       {
-        title: "Managing Users",
-        path: "/api-managing-users",
-        description: "List, inspect, and update users scoped to your community's linked relationships.",
-      },
-    ],
-  },
-  {
-    section: "Resources",
-    pages: [
-      {
-        title: "Video Tutorials",
-        path: "/video-tutorials",
-        description: "Use guided videos for quick onboarding and feature walkthroughs.",
+        title: "Posts & Comments API",
+        path: "/api/posts-and-comments",
+        description:
+          "Create, read, update, delete, and like posts and comments.",
       },
       {
-        title: "Changelog",
-        path: "/changelog",
-        description: "Track releases and versioned documentation updates.",
+        title: "Resources API",
+        path: "/api/resources",
+        description:
+          "Shared CRUD semantics for events, courses, content, quests, and jobs.",
+      },
+      {
+        title: "Workflows API",
+        path: "/api/workflows",
+        description:
+          "Participation flows: RSVPs, enrollments, evidence, applications, and attendance.",
+      },
+      {
+        title: "Communities API",
+        path: "/api/communities",
+        description:
+          "Membership, applications, members, roles, and access — gated by your live roles.",
+      },
+      {
+        title: "Notifications API",
+        path: "/api/notifications",
+        description:
+          "List, read, and delete notifications and manage category mutes.",
       },
     ],
   },

@@ -1,14 +1,16 @@
 import { Copy, Check } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
 interface CodeBlockProps {
   code: string;
   language: string;
+  title?: string;
 }
 
-export function CodeBlock({ code, language }: CodeBlockProps) {
+export function CodeBlock({ code, language, title }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
 
   const normalizeLanguage = (value: string) => {
@@ -42,7 +44,8 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
       <div className="absolute top-3 right-3 z-10">
         <button
           onClick={handleCopy}
-          className="p-2 bg-muted hover:bg-accent rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+          aria-label="Copy code"
+          className="p-2 bg-muted hover:bg-accent rounded-lg transition-colors opacity-100 xl:opacity-0 xl:group-hover:opacity-100"
         >
           {copied ? (
             <Check className="w-4 h-4 text-green-600" />
@@ -52,6 +55,11 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
         </button>
       </div>
       <div className="bg-[#1e1e1e] rounded-lg p-4 overflow-x-auto">
+        {title && (
+          <div className="text-xs font-medium text-gray-300 border-b border-gray-700 pb-2 mb-2">
+            {title}
+          </div>
+        )}
         <div className="text-xs text-gray-400 mb-2">{language}</div>
         <div className="overflow-x-auto rounded-b-lg">
           <SyntaxHighlighter
@@ -82,6 +90,35 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
   );
 }
 
+interface FigureProps {
+  src: string;
+  darkSrc?: string;
+  alt: string;
+  caption?: string;
+}
+
+export function Figure({ src, darkSrc, alt, caption }: FigureProps) {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const activeSrc = mounted && darkSrc && resolvedTheme === "dark" ? darkSrc : src;
+
+  return (
+    <figure className="my-6">
+      <img src={activeSrc} alt={alt} className="w-full rounded-xl border border-border" />
+      {caption && (
+        <figcaption className="text-sm text-muted-foreground mt-2 text-center">
+          {caption}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+
 interface CalloutProps {
   type: "info" | "warning" | "success" | "error";
   title?: string;
@@ -106,7 +143,7 @@ export function Callout({ type, title, children }: CalloutProps) {
 
 export function InlineCode({ children }: { children: React.ReactNode }) {
   return (
-    <code className="px-1.5 py-0.5 bg-muted rounded text-sm font-mono text-[#6B01B6] dark:text-[#E9E5F5]">
+    <code className="px-1.5 py-0.5 bg-muted rounded text-sm font-mono text-primary">
       {children}
     </code>
   );
@@ -121,7 +158,7 @@ interface StepProps {
 export function Step({ number, title, children }: StepProps) {
   return (
     <div className="flex gap-4">
-      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-[#6B01B6] to-[#512DA8] text-white flex items-center justify-center font-semibold text-sm">
+      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm">
         {number}
       </div>
       <div className="flex-1">

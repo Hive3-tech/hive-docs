@@ -1,189 +1,68 @@
-import { RightSidebar } from '../components/right-sidebar';
-import { Callout } from '../components/doc-components';
-import { AtSign, ChevronLeft, ChevronRight, Globe, Image, Shield, Users } from 'lucide-react';
 import { Link } from 'react-router';
+import { Callout, Step } from '../components/doc-components';
+import { PagerNav } from '../components/pager-nav';
+import { RightSidebar } from '../components/right-sidebar';
 
 export function CreatingCommunityPage() {
   const tocItems = [
-    { id: 'at-a-glance', label: 'What this page does' },
     { id: 'before-you-start', label: 'Before you start' },
-    { id: 'open-flow', label: 'Open create flow' },
     { id: 'details', label: 'Community details' },
-    { id: 'media-socials', label: 'Images and social links' },
-    { id: 'create', label: 'Create community' },
-    { id: 'after-create', label: 'After creation' },
+    { id: 'world-request', label: 'World media kit' },
+    { id: 'next-steps', label: 'After creation' },
   ];
 
   return (
     <div className="flex">
-      <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
+      <div className="flex-1 min-w-0 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
         <div className="text-sm text-muted-foreground mb-6">
           Communities / <span className="text-foreground">Creating a Community</span>
         </div>
-
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] bg-clip-text text-transparent">
-          Creating a Community
-        </h1>
-        <p className="text-lg text-muted-foreground mb-12">
-          Launch your community with your name, handle, visuals, and social links in one guided
-          setup screen.
-        </p>
+        <h1 className="text-4xl font-bold mb-4 text-gradient">Creating a Community</h1>
+        <p className="text-lg text-muted-foreground mb-12">Create the community identity first, then send the team the visual references for its metaverse world.</p>
 
         <div className="space-y-12">
-          <section id="at-a-glance">
-            <h2 className="text-2xl font-semibold mb-4">What this page does</h2>
-            <p className="text-muted-foreground mb-4">
-              Think of this page as your community launch pad. You set the public basics first, then
-              create the community and continue setup in community settings.
-            </p>
-            <Callout type="info" title="Header actions">
-              The page includes a <span className="font-medium">Back to Dashboard</span> button and
-              a <span className="font-medium">Cancel</span> action at the bottom.
-            </Callout>
-          </section>
-
           <section id="before-you-start">
             <h2 className="text-2xl font-semibold mb-4">Before you start</h2>
-            <div className="space-y-4">
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="font-semibold mb-2 flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-[#6B01B6]" />
-                  Swarm access required
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Community creation requires Swarm tier (or higher).
-                </p>
-              </div>
-
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="font-semibold mb-2 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#6B01B6]" />
-                  One community owner limit
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  If you already own a community, the create flow is blocked.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section id="open-flow">
-            <h2 className="text-2xl font-semibold mb-4">Open create flow</h2>
-            <div className="rounded-lg border border-border bg-card p-4">
-              <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
-                <li>Open your Profile Dashboard.</li>
-                <li>Select Communities.</li>
-                <li>Click Create Community.</li>
-              </ol>
-            </div>
-            <p className="text-sm text-muted-foreground mt-4">
-              If your account is below Swarm tier, Hive3 shows the membership upgrade prompt instead
-              of opening the create screen.
-            </p>
-          </section>
-
-          <section id="media-socials">
-            <h2 className="text-2xl font-semibold mb-4">Images and social links</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="font-semibold mb-2 flex items-center gap-2">
-                  <Image className="w-4 h-4 text-[#6B01B6]" />
-                  Community logo and hero image
-                </p>
-                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                  <li>Both image uploads are optional.</li>
-                  <li>You can remove an uploaded image before creating.</li>
-                  <li>Upload supports standard image files.</li>
-                </ul>
-              </div>
-
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="font-semibold mb-2 flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-[#6B01B6]" />
-                  Social links section
-                </p>
-                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                  <li>Starts with one social row by default.</li>
-                  <li>Choose a platform and add a valid URL.</li>
-                  <li>Add or remove rows as needed.</li>
-                  <li>Only completed rows are saved.</li>
-                </ul>
-              </div>
-            </div>
+            <Callout type="info" title="Swarm or Royal Hive required">
+              Community creation is available to Swarm and Royal Hive members. Each account can own one community.
+            </Callout>
+            <p className="text-muted-foreground">If you already own a community, Hive3 returns you to your profile instead of opening another creation flow.</p>
           </section>
 
           <section id="details">
-            <h2 className="text-2xl font-semibold mb-4">Community details</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="font-semibold mb-2">Community Name (required)</p>
-                <p className="text-sm text-muted-foreground">
-                  This is your primary display name across cards and profile views.
-                </p>
-              </div>
-
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="font-semibold mb-2 flex items-center gap-2">
-                  <AtSign className="w-4 h-4 text-[#6B01B6]" />
-                  Community Handle (required)
-                </p>
-                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                  <li>Unique @handle for your community.</li>
-                  <li>3 to 30 characters.</li>
-                  <li>Lowercase letters, numbers, and underscores.</li>
-                  <li>Input is auto-formatted to match allowed characters.</li>
-                </ul>
-              </div>
-
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="font-semibold mb-2">Short Description (optional)</p>
-                <p className="text-sm text-muted-foreground">
-                  A quick summary line for your community.
-                </p>
-              </div>
-
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="font-semibold mb-2">Full Description (optional)</p>
-                <p className="text-sm text-muted-foreground">
-                  Longer detail about your mission, audience, and goals.
-                </p>
-              </div>
-            </div>
+            <h2 className="text-2xl font-semibold mb-4">Step 1: Community details</h2>
+            <Step number={1} title="Name and handle">
+              Enter the community name and a unique handle. Handles use 3–30 lowercase letters, numbers, underscores, or hyphens.
+            </Step>
+            <Step number={2} title="Logo and banner">
+              Upload the images that identify the community in its profile and cards.
+            </Step>
+            <Step number={3} title="Social links">
+              Add the community's public social destinations, then review the details before continuing.
+            </Step>
           </section>
 
-          <section id="after-create">
-            <h2 className="text-2xl font-semibold mb-4">After creation</h2>
+          <section id="world-request">
+            <h2 className="text-2xl font-semibold mb-4">Step 2: World media kit</h2>
             <p className="text-muted-foreground mb-4">
-              After a successful create, Hive3 takes you directly to your new community page.
+              Swarm and Royal Hive creation continues to a World media kit. Upload at least one logo, banner, or reference image that the Hive3 team can use when building your metaverse world.
             </p>
-            <Callout type="info" title="Recommended next step">
-              Open{' '}
-              <Link to="/community-settings" className="text-[#6B01B6] hover:underline">
-                Community Settings
-              </Link>{' '}
-              to configure privacy, access mode, guidelines, and other management controls.
-            </Callout>
+            <p className="text-muted-foreground">Creating the community submits those assets with a metaverse world request and then opens the new community.</p>
+          </section>
+
+          <section id="next-steps">
+            <h2 className="text-2xl font-semibold mb-4">After creation</h2>
+            <ul className="space-y-3 text-muted-foreground list-disc pl-6">
+              <li>Build the public overview and invitation page in <Link className="text-primary hover:underline" to="/community-profile-builder">Community Profile &amp; Welcome Page</Link>.</li>
+              <li>Choose joining rules in <Link className="text-primary hover:underline" to="/community-settings">Community Settings</Link>.</li>
+              <li>Assign trusted helpers through <Link className="text-primary hover:underline" to="/permissions">Permissions</Link>.</li>
+              <li>Review people in <Link className="text-primary hover:underline" to="/members-and-applications">Members &amp; Applications</Link>.</li>
+              <li>Connect chat, payments, or the assistant from the <Link className="text-primary hover:underline" to="/communities-overview">Community Dashboard</Link>.</li>
+            </ul>
           </section>
         </div>
-
-        <div className="flex items-center justify-between mt-16 pt-8 border-t border-border">
-          <Link
-            to="/communities-overview"
-            className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Community Dashboard Overview
-          </Link>
-          <Link
-            to="/community-settings"
-            className="flex items-center gap-2 text-muted-foreground hover:text-[#6B01B6] transition-colors"
-          >
-            Community Settings
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
+        <PagerNav />
       </div>
-
       <RightSidebar items={tocItems} />
     </div>
   );

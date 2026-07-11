@@ -1,13 +1,5 @@
 /* Custom Hive3 Documentation Styles */
 
-/* Gradient text utilities */
-.gradient-text-violet {
-  background: linear-gradient(to right, #6B01B6, #512DA8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 /* Dot grid pattern for hero sections */
 .dot-grid-pattern {
   background-image: radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0);

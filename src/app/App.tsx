@@ -4,7 +4,7 @@ import { router } from "./routes";
 
 export default function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <RouterProvider router={router} />
     </ThemeProvider>
   );

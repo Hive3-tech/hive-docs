@@ -34,9 +34,9 @@ export function DocsRouteErrorBoundary() {
 
   return (
     <div className="flex">
-      <div className="flex-1 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
+      <div className="flex-1 min-w-0 max-w-6xl mx-auto px-4 py-12 xl:pr-80">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-sm text-[#6B01B6] font-semibold mb-3">{title}</p>
+          <p className="text-sm text-primary font-semibold mb-3">{title}</p>
           <h1 className="text-4xl font-bold mb-4">We hit a docs error</h1>
           <p className="text-muted-foreground mb-8">
             We couldn&apos;t render <span className="font-semibold text-foreground">{location.pathname}</span>{" "}
@@ -48,7 +48,7 @@ export function DocsRouteErrorBoundary() {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#6B01B6] text-white hover:opacity-95 transition-opacity"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground hover:opacity-95 transition-opacity"
           >
             <RefreshCw className="w-4 h-4" />
             Reload page
@@ -56,7 +56,7 @@ export function DocsRouteErrorBoundary() {
           <div className="mt-8 flex justify-center">
             <Link
               to="/"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-[#6B01B6]"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
             >
               <ChevronLeft className="w-4 h-4" />
               Go back to docs home

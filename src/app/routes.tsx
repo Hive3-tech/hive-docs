@@ -1,116 +1,148 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import type { ComponentType } from "react";
 import { DocLayout } from "./components/doc-layout";
-import { createStubDocPage } from "./pages/stub-doc-page";
 import { orderedDocPages } from "./doc-navigation";
 import { OverviewPage } from "./pages/overview";
-import { TiersPage } from "./pages/tiers";
-import { ProfileDashboardOverviewPage } from "./pages/profile-dashboard-overview";
-import { ProfileAccountSettingsPage } from "./pages/profile-account-settings";
+import { MembershipPlansPage } from "./pages/membership-plans";
+import { ProfileDashboardPage } from "./pages/profile-dashboard";
+import { EditingYourProfilePage } from "./pages/editing-your-profile";
+import { ProfileBuilderPage } from "./pages/profile-builder";
 import { AccountSettingsPage } from "./pages/account-settings";
-import { ProfilePayPalPage } from "./pages/profile-paypal";
-import { ProfileCommunitiesPage } from "./pages/profile-communities";
-import { ProfileCollaboratorsPage } from "./pages/profile-collaborators";
-import { CreatingEventsPage } from "./pages/creating-events";
-import { CreatingCoursesPage } from "./pages/creating-courses";
-import { CreatingContentPage } from "./pages/creating-content";
-import { CreatingJobsPage } from "./pages/creating-jobs";
+import { ConnectPayPalPage } from "./pages/connect-paypal";
+import { PersonalAiAssistantPage } from "./pages/personal-ai-assistant";
+import { YourCommunitiesPage } from "./pages/your-communities";
+import { CollaboratorsPage } from "./pages/collaborators";
 import { CommunitiesOverviewPage } from "./pages/communities-overview";
 import { CreatingCommunityPage } from "./pages/creating-a-community";
+import { CommunityProfileBuilderPage } from "./pages/community-profile-builder";
 import { CommunitySettingsPage } from "./pages/community-settings";
-import { AdminsAndModeratorsPage } from "./pages/admins-and-moderators";
-import { ChatSettingsPage } from "./pages/chat-settings";
-import { AISettingsPage } from "./pages/ai-settings";
-import { PayPalAndSubscriptionsPage } from "./pages/paypal-and-subscriptions";
-import { ManagingMembersPage } from "./pages/managing-members";
-import { QuestsAndTasksPage } from "./pages/quests-and-tasks";
-import { APIKeysAndIntegrationsPage } from "./pages/api-keys-and-integrations";
-import { PayPalIntegrationPage } from "./pages/paypal-integration";
-import { OnboardingLinkSetupPage } from "./pages/onboarding-link-setup";
-import { APIManagingUsersPage } from "./pages/api-managing-users";
-import { AIAssistantSetupPage } from "./pages/ai-assistant-setup";
-import { ManagingCollaboratorsPage } from "./pages/managing-collaborators";
+import { MembersAndApplicationsPage } from "./pages/members-and-applications";
+import { PermissionsPage } from "./pages/permissions";
+import { ChatAndIntegrationsPage } from "./pages/chat-and-integrations";
+import { CommunityPayPalPage } from "./pages/community-paypal";
+import { CommunityAiAssistantPage } from "./pages/community-ai-assistant";
+import { PostsAndFeedPage } from "./pages/posts-and-feed";
 import { EventsGuidePage } from "./pages/events-guide";
 import { CoursesGuidePage } from "./pages/courses-guide";
-import { JobsGuidePage } from "./pages/jobs-guide";
-import { QuestsGuidePage } from "./pages/quests-guide";
 import { ContentGuidePage } from "./pages/content-guide";
-import { CredentialsAndNFTsPage } from "./pages/credentials-and-nfts";
+import { QuestsGuidePage } from "./pages/quests-guide";
+import { JobsGuidePage } from "./pages/jobs-guide";
+import { HoneyMarketplacePage } from "./pages/honey-marketplace";
+import { TicketsAndPurchasesPage } from "./pages/tickets-and-purchases";
+import { MessagingPage } from "./pages/messaging";
+import { NotificationsPage } from "./pages/notifications";
+import { CredentialsPage } from "./pages/credentials";
 import { CircleWalletPage } from "./pages/circle-wallet";
 import { LinkingExternalWalletsPage } from "./pages/linking-external-wallets";
+import { CliQuickstartPage } from "./pages/cli-quickstart";
+import { CliAuthenticationPage } from "./pages/cli-authentication";
+import { CliCommandsPage } from "./pages/cli-commands";
+import { ApiOverviewPage } from "./pages/api-overview";
+import { ApiKeysPage } from "./pages/api-keys";
+import { ApiProfileAndAccountPage } from "./pages/api-profile-and-account";
+import { ApiPostsAndCommentsPage } from "./pages/api-posts-and-comments";
+import { ApiResourcesPage } from "./pages/api-resources";
+import { ApiWorkflowsPage } from "./pages/api-workflows";
+import { ApiCommunitiesPage } from "./pages/api-communities";
+import { ApiNotificationsPage } from "./pages/api-notifications";
 import { NotFoundPage } from "./pages/not-found";
 import { DocsRouteErrorBoundary } from "./pages/route-error";
 
 const customPages: Record<string, ComponentType> = {
   "/": OverviewPage,
-  "/membership-tiers": TiersPage,
-  "/honey-bee-profile-dashboard-overview": ProfileDashboardOverviewPage,
-  "/profile-and-account-settings": ProfileAccountSettingsPage,
+  "/membership-plans": MembershipPlansPage,
+  "/profile-dashboard": ProfileDashboardPage,
+  "/editing-your-profile": EditingYourProfilePage,
+  "/profile-builder": ProfileBuilderPage,
   "/account-settings": AccountSettingsPage,
-  "/profile-paypal": ProfilePayPalPage,
-  "/profile-ai": AIAssistantSetupPage,
-  "/profile-communities": ProfileCommunitiesPage,
-  "/profile-collaborators": ProfileCollaboratorsPage,
-  "/creating-events": CreatingEventsPage,
-  "/creating-courses": CreatingCoursesPage,
-  "/creating-content": CreatingContentPage,
-  "/creating-jobs": CreatingJobsPage,
+  "/connect-paypal": ConnectPayPalPage,
+  "/personal-ai-assistant": PersonalAiAssistantPage,
+  "/your-communities": YourCommunitiesPage,
+  "/collaborators": CollaboratorsPage,
   "/communities-overview": CommunitiesOverviewPage,
   "/creating-a-community": CreatingCommunityPage,
+  "/community-profile-builder": CommunityProfileBuilderPage,
   "/community-settings": CommunitySettingsPage,
-  "/admins-and-moderators": AdminsAndModeratorsPage,
-  "/chat-settings": ChatSettingsPage,
-  "/ai-settings": AISettingsPage,
-  "/paypal-and-subscriptions": PayPalAndSubscriptionsPage,
-  "/managing-members": ManagingMembersPage,
-  "/quests-and-tasks": QuestsAndTasksPage,
-  "/api-reference": OnboardingLinkSetupPage,
-  "/api-managing-users": APIManagingUsersPage,
-  "/api-keys-and-integrations": APIKeysAndIntegrationsPage,
-  "/paypal-integration": PayPalIntegrationPage,
-  "/ai-assistant-setup": AIAssistantSetupPage,
-  "/managing-collaborators": ManagingCollaboratorsPage,
+  "/members-and-applications": MembersAndApplicationsPage,
+  "/permissions": PermissionsPage,
+  "/chat-and-integrations": ChatAndIntegrationsPage,
+  "/community-paypal": CommunityPayPalPage,
+  "/community-ai-assistant": CommunityAiAssistantPage,
+  "/posts-and-feed": PostsAndFeedPage,
   "/events-guide": EventsGuidePage,
   "/courses-guide": CoursesGuidePage,
-  "/jobs-guide": JobsGuidePage,
-  "/quests-guide": QuestsGuidePage,
   "/content-guide": ContentGuidePage,
-  "/credentials-and-nfts": CredentialsAndNFTsPage,
+  "/quests-guide": QuestsGuidePage,
+  "/jobs-guide": JobsGuidePage,
+  "/honey-marketplace": HoneyMarketplacePage,
+  "/tickets-and-purchases": TicketsAndPurchasesPage,
+  "/messaging": MessagingPage,
+  "/notifications": NotificationsPage,
+  "/credentials": CredentialsPage,
   "/circle-wallet": CircleWalletPage,
   "/linking-external-wallets": LinkingExternalWalletsPage,
-  "/credentials-explained": CredentialsAndNFTsPage,
+  "/cli/quickstart": CliQuickstartPage,
+  "/cli/authentication": CliAuthenticationPage,
+  "/cli/commands": CliCommandsPage,
+  "/api/overview": ApiOverviewPage,
+  "/api/keys": ApiKeysPage,
+  "/api/profile-and-account": ApiProfileAndAccountPage,
+  "/api/posts-and-comments": ApiPostsAndCommentsPage,
+  "/api/resources": ApiResourcesPage,
+  "/api/workflows": ApiWorkflowsPage,
+  "/api/communities": ApiCommunitiesPage,
+  "/api/notifications": ApiNotificationsPage,
 };
 
-const pageRoutes = orderedDocPages.map((page, index) => {
-  const previous = index > 0 ? orderedDocPages[index - 1] : undefined;
-  const next = index < orderedDocPages.length - 1 ? orderedDocPages[index + 1] : undefined;
+// Every navigation entry must resolve to a registered page component.
+// Fail loudly at module scope so a missing page breaks dev/build instead
+// of silently shipping a placeholder.
+for (const page of orderedDocPages) {
+  if (!customPages[page.path]) {
+    throw new Error(`No component registered for ${page.path}`);
+  }
+}
 
-  const stubComponent = createStubDocPage({
-    title: page.title,
-    section: page.section,
-    description: page.description,
-    prev: previous ? { label: previous.title, path: previous.path } : undefined,
-    next: next ? { label: next.title, path: next.path } : undefined,
-  });
+// Old path -> new path. Every previously-live URL redirects to its
+// replacement via a client-side replace navigation.
+const redirects: Record<string, string> = {
+  "/get-started": "/",
+  "/changelog": "/",
+  "/video-tutorials": "/",
+  "/membership-tiers": "/membership-plans",
+  "/honey-bee-profile-dashboard-overview": "/profile-dashboard",
+  "/profile-and-account-settings": "/editing-your-profile",
+  "/profile-paypal": "/connect-paypal",
+  "/profile-ai": "/personal-ai-assistant",
+  "/ai-assistant-setup": "/personal-ai-assistant",
+  "/profile-communities": "/your-communities",
+  "/profile-collaborators": "/collaborators",
+  "/managing-collaborators": "/collaborators",
+  "/communities-guide": "/creating-a-community",
+  "/managing-members": "/members-and-applications",
+  "/admins-and-moderators": "/permissions",
+  "/chat-settings": "/chat-and-integrations",
+  "/paypal-and-subscriptions": "/community-paypal",
+  "/paypal-integration": "/community-paypal",
+  "/ai-settings": "/community-ai-assistant",
+  "/creating-events": "/events-guide",
+  "/creating-courses": "/courses-guide",
+  "/creating-content": "/content-guide",
+  "/quests-and-tasks": "/quests-guide",
+  "/creating-jobs": "/jobs-guide",
+  "/credentials-and-nfts": "/credentials",
+  "/credentials-explained": "/credentials",
+  "/api-reference": "/api/overview",
+  "/api-managing-users": "/api/overview",
+  "/api-subscription-management": "/api/overview",
+  "/api-keys-and-integrations": "/api/keys",
+  "/cli/agents": "/cli/quickstart",
+};
 
-  return {
-    path: page.path,
-    Component: customPages[page.path] ?? stubComponent,
-  };
-});
-
-const legacyRoutes = [
-  { path: "/get-started", Component: OverviewPage },
-  { path: "/creating-events", Component: CreatingEventsPage },
-  { path: "/creating-courses", Component: CreatingCoursesPage },
-  { path: "/creating-content", Component: CreatingContentPage },
-  { path: "/creating-jobs", Component: CreatingJobsPage },
-  { path: "/credentials-explained", Component: CredentialsAndNFTsPage },
-  { path: "/api-subscription-management", Component: APIManagingUsersPage },
-  { path: "/paypal-integration", Component: PayPalIntegrationPage },
-  { path: "/ai-assistant-setup", Component: AIAssistantSetupPage },
-  { path: "/managing-collaborators", Component: ManagingCollaboratorsPage },
-];
+const pageRoutes = orderedDocPages.map((page) => ({
+  path: page.path,
+  Component: customPages[page.path],
+}));
 
 export const router = createBrowserRouter([
   {
@@ -128,9 +160,9 @@ export const router = createBrowserRouter([
           Component: route.Component,
         };
       }),
-      ...legacyRoutes.map((route) => ({
-        path: route.path.slice(1),
-        Component: route.Component,
+      ...Object.entries(redirects).map(([from, to]) => ({
+        path: from.slice(1),
+        element: <Navigate to={to} replace />,
       })),
     ],
   },

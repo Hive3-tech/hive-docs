@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { Linkedin } from 'lucide-react';
-import hive3Logo from '../../assets/hive3-logo.svg';
+import bannerDarkText from '../../assets/banner-dark-text.png';
+import bannerLightText from '../../assets/banner-light-text.png';
 
 function DiscordIcon({ className }: { className?: string }) {
   return (
@@ -32,14 +33,14 @@ export function Footer() {
       title: 'Documentation',
       links: [
         { label: 'Getting Started', path: '/' },
-        { label: 'Wallets', path: '/circle-wallet' },
-        { label: 'API Reference', path: '/api-reference' },
+        { label: 'Hive CLI', path: '/cli/quickstart' },
+        { label: 'API Reference', path: '/api/overview' },
       ],
     },
     {
       title: 'Platform',
       links: [
-        { label: 'Profile', path: '/honey-bee-profile-dashboard-overview' },
+        { label: 'Profile', path: '/profile-dashboard' },
         { label: 'Communities', path: '/communities-overview' },
         { label: 'Events', path: '/events-guide' },
         { label: 'Courses', path: '/courses-guide' },
@@ -49,8 +50,9 @@ export function Footer() {
     {
       title: 'Icons',
       links: [
-        { label: 'Hive3 Logo SVG', path: '/hive3-logo.svg', external: true, download: true },
-        { label: 'Hive3 Favicon SVG', path: '/favicon.svg', external: true, download: true },
+        { label: 'Hive3 Logo (PNG)', path: '/logo.png', external: true, download: true },
+        { label: 'Hive3 Banner — light theme (PNG)', path: '/banner-dark-text.png', external: true, download: true },
+        { label: 'Hive3 Banner — dark theme (PNG)', path: '/banner-light-text.png', external: true, download: true },
       ],
     },
   ];
@@ -62,7 +64,8 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <img src={hive3Logo} alt="Hive3" className="h-8 w-auto dark:invert" />
+              <img src={bannerDarkText} alt="Hive3" className="h-8 w-auto dark:hidden" />
+              <img src={bannerLightText} alt="Hive3" className="h-8 w-auto hidden dark:block" />
             </div>
             <p className="text-sm text-muted-foreground mb-4">
               Build and manage thriving Web3 communities with powerful tools for learning, events,
@@ -121,14 +124,14 @@ export function Footer() {
                         target={link.path.startsWith('http') ? '_blank' : undefined}
                         rel={link.path.startsWith('http') ? 'noopener noreferrer' : undefined}
                         download={link.download ? true : undefined}
-                        className="text-sm text-muted-foreground hover:text-[#6B01B6] transition-colors"
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
                       >
                         {link.label}
                       </a>
                     ) : (
                       <Link
                         to={link.path}
-                        className="text-sm text-muted-foreground hover:text-[#6B01B6] transition-colors"
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
                       >
                         {link.label}
                       </Link>
@@ -144,13 +147,13 @@ export function Footer() {
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">© 2026 Hive3. All rights reserved.</p>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-[#6B01B6] transition-colors">
+            <a href="#" className="hover:text-primary transition-colors">
               Privacy Policy
             </a>
-            <a href="#" className="hover:text-[#6B01B6] transition-colors">
+            <a href="#" className="hover:text-primary transition-colors">
               Terms of Service
             </a>
-            <a href="#" className="hover:text-[#6B01B6] transition-colors">
+            <a href="#" className="hover:text-primary transition-colors">
               Cookie Policy
             </a>
           </div>

@@ -55,8 +55,8 @@ export function RightSidebar({ items }: { items: TocItem[] }) {
               onClick={() => scrollToSection(item.id)}
               className={`block text-sm text-left w-full transition-colors border-l-2 pl-3 py-1 ${
                 activeId === item.id
-                  ? "border-[#6B01B6] text-[#6B01B6] font-medium"
-                  : "border-transparent text-muted-foreground hover:text-[#6B01B6]"
+                  ? "border-primary text-primary font-medium"
+                  : "border-transparent text-muted-foreground hover:text-primary"
               }`}
             >
               {item.label}

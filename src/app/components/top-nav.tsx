@@ -2,13 +2,13 @@ import { Link, useLocation } from "react-router";
 import { Search, Moon, Sun, Menu, ExternalLink } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
-import hive3Logo from "../../assets/hive3-logo.svg";
+import bannerDarkText from "../../assets/banner-dark-text.png";
+import bannerLightText from "../../assets/banner-light-text.png";
 
 export function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -19,7 +19,6 @@ export function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       }
       if (e.key === "Escape") {
         setSearchOpen(false);
-        setMobileMenuOpen(false);
       }
     };
 
@@ -29,27 +28,27 @@ export function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
 
   const navItems = [
     { label: "Getting Started", path: "/" },
-    { label: "Wallets", path: "/circle-wallet" },
-    { label: "API Reference", path: "/api-reference" },
+    { label: "CLI", path: "/cli/quickstart" },
+    { label: "API Reference", path: "/api/overview" },
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-card border-b border-border backdrop-blur-lg bg-opacity-80">
+    <header className="fixed top-0 left-0 right-0 z-50 app-surface border-b border-border backdrop-blur-lg">
       <div className="h-16 flex items-center px-4 gap-4">
-        {/* Hamburger Menu */}
+        {/* Hamburger Menu (mobile drawer toggle) */}
         <button
           onClick={onToggleSidebar}
-          className="p-2 hover:bg-accent rounded-lg transition-colors"
+          className="lg:hidden p-2 hover:bg-accent rounded-lg transition-colors"
+          aria-label="Open navigation"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 mr-4">
-          <img src={hive3Logo} alt="Hive3" className="h-8 w-auto dark:invert" />
-          <span className="font-semibold text-lg text-foreground">
-            DOCS
-          </span>
+          <img src={bannerDarkText} alt="Hive3" className="h-8 w-auto dark:hidden" />
+          <img src={bannerLightText} alt="Hive3" className="h-8 w-auto hidden dark:block" />
+          <span className="text-muted-foreground text-sm font-medium">Docs</span>
         </Link>
 
         {/* Navigation Tabs */}
@@ -60,7 +59,7 @@ export function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
               to={item.path}
               className={`px-4 py-2 rounded-lg text-sm transition-colors ${
                 location.pathname === item.path
-                  ? "bg-[#6B01B6] text-white"
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
@@ -72,7 +71,7 @@ export function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         {/* Search Bar */}
         <button
           onClick={() => setSearchOpen(!searchOpen)}
-          className="hidden lg:flex items-center gap-2 px-4 py-2 bg-input-background dark:bg-card border border-border rounded-lg text-sm text-muted-foreground hover:border-[#6B01B6] transition-colors min-w-[240px]"
+          className="hidden lg:flex items-center gap-2 px-4 py-2 bg-input-background dark:bg-card border border-border rounded-lg text-sm text-muted-foreground hover:border-primary transition-colors min-w-[240px]"
         >
           <Search className="w-4 h-4" />
           <span>Search docs...</span>
@@ -83,10 +82,10 @@ export function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         <div className="flex items-center gap-2 ml-auto lg:ml-0">
           {/* Theme Toggle */}
           <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
             className="p-2 hover:bg-accent rounded-lg transition-colors"
           >
-            {theme === "dark" ? (
+            {resolvedTheme === "dark" ? (
               <Sun className="w-5 h-5" />
             ) : (
               <Moon className="w-5 h-5" />
@@ -98,7 +97,7 @@ export function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
             href="https://app.hive3.tech"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#6B01B6] to-[#512DA8] text-white rounded-lg hover:opacity-90 transition-opacity text-sm"
+            className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm"
           >
             Go to App
             <ExternalLink className="w-4 h-4" />

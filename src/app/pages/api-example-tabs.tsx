@@ -1,38 +1,29 @@
-import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { CodeBlock } from "../components/doc-components";
+import {
+  buildCurl,
+  buildFetch,
+  buildPython,
+  type ApiEndpoint,
+} from "./api-endpoint-types";
 
-export type APIExampleId = "curl" | "fetch" | "node" | "python" | "go" | "java";
-
-export type APIExample = {
-  id: APIExampleId;
-  label: string;
-  language: string;
-  code: string;
-};
-
-export function APIExampleTabs({ examples }: { examples: APIExample[] }) {
-  const [active, setActive] = useState<APIExampleId>(examples[0]?.id ?? "curl");
-  const current = examples.find((example) => example.id === active) ?? examples[0];
-
+export function RequestExampleTabs({ endpoint }: { endpoint: ApiEndpoint }) {
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
-        {examples.map((example) => (
-          <button
-            key={example.id}
-            type="button"
-            onClick={() => setActive(example.id)}
-            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
-              active === example.id
-                ? "bg-[#6B01B6] text-white"
-                : "bg-muted text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {example.label}
-          </button>
-        ))}
-      </div>
-      {current ? <CodeBlock language={current.language} code={current.code} /> : null}
-    </div>
+    <Tabs defaultValue="curl">
+      <TabsList>
+        <TabsTrigger value="curl">curl</TabsTrigger>
+        <TabsTrigger value="python">Python</TabsTrigger>
+        <TabsTrigger value="javascript">JavaScript</TabsTrigger>
+      </TabsList>
+      <TabsContent value="curl">
+        <CodeBlock title="Example request" language="bash" code={buildCurl(endpoint)} />
+      </TabsContent>
+      <TabsContent value="python">
+        <CodeBlock title="Example request" language="python" code={buildPython(endpoint)} />
+      </TabsContent>
+      <TabsContent value="javascript">
+        <CodeBlock title="Example request" language="javascript" code={buildFetch(endpoint)} />
+      </TabsContent>
+    </Tabs>
   );
 }
