@@ -43,7 +43,7 @@ export function CredentialsPage() {
               You can become eligible through any of these verified sources:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-              <li>Proof of Human verification</li>
+              <li>Camera liveness check completion</li>
               <li>Event attendance</li>
               <li>Course completion</li>
               <li>Quest completion</li>

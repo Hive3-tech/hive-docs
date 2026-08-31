@@ -27,6 +27,13 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
+const legalLinks = [
+  { label: 'Privacy Policy', href: 'https://app.hive3.tech/legal/privacy' },
+  { label: 'Terms of Service', href: 'https://app.hive3.tech/legal/terms' },
+  { label: 'Cookie Policy', href: 'https://app.hive3.tech/legal/cookies' },
+  { label: 'Acceptable Use Policy', href: 'https://app.hive3.tech/legal/acceptable-use' },
+];
+
 export function Footer() {
   const footerSections = [
     {
@@ -146,17 +153,23 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">© 2026 Hive3. All rights reserved.</p>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-primary transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" className="hover:text-primary transition-colors">
-              Terms of Service
-            </a>
-            <a href="#" className="hover:text-primary transition-colors">
-              Cookie Policy
-            </a>
-          </div>
+          <nav
+            aria-label="Legal"
+            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground"
+          >
+            {legalLinks.map(link => (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-primary transition-colors"
+              >
+                {link.label}
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
+            ))}
+          </nav>
         </div>
       </div>
     </footer>
