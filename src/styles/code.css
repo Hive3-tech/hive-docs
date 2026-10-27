@@ -1,0 +1,58 @@
+/* Code blocks: Shiki emits CSS variables per token, `.dark` picks the dark set. */
+@layer components {
+  .shiki,
+  .shiki span {
+    color: var(--shiki-light);
+    background-color: transparent !important;
+  }
+
+  .dark .shiki,
+  .dark .shiki span {
+    color: var(--shiki-dark);
+  }
+
+  .code-block {
+    margin: 1.5rem 0;
+    overflow: hidden;
+    border: 1px solid var(--surface-clear-border);
+    border-radius: 1rem;
+    background: var(--code-bg);
+    box-shadow: var(--surface-solid-shadow);
+  }
+
+  .code-block-header {
+    display: flex;
+    min-height: 2.5rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0 0.5rem 0 1rem;
+    border-bottom: 1px solid var(--surface-clear-border);
+    background: var(--code-header-bg);
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+
+  .code-block pre {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.65;
+    tab-size: 2;
+  }
+
+  .code-block pre code {
+    display: block;
+    width: max-content;
+    min-width: 100%;
+    font-family: inherit;
+  }
+
+  .code-block pre:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+}

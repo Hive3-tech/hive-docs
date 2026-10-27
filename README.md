@@ -1,11 +1,22 @@
+# Hive3 Docs
 
-  # Build Hive3 Documentation Site
+Source of docs.hive3.tech: MDX pages rendered with React, Vite and Tailwind, prerendered to static HTML and deployed on Netlify.
 
-  This is a code bundle for Build Hive3 Documentation Site. The original project is available at https://www.figma.com/design/Gosb9ABWF5bynPIzQeZtjE/Build-Hive3-Documentation-Site.
+```bash
+npm i
+npm run dev        # local dev server
+npm run typecheck  # tsc --noEmit
+npm run check      # frontmatter, links, nav consistency, line budget
+npm run build      # tests + client build + SSR build + prerender into dist/
+npx vite preview   # serve dist/ locally
+```
 
-  ## Running the code
+## Writing a page
 
-  Run `npm i` to install the dependencies.
+1. Add `src/content/<section>/<slug>.mdx` with `title` and `description` frontmatter.
+2. List it in `src/content/nav.ts` (navigation order lives only there).
+3. Use the built-in components (`Callout`, `Steps`, `Figure`, `Walkthrough`, `UI`, `Path`, `PlanBadge`, `PlanMatrix`, `CardGrid`, `Endpoint`, `Tabs`) without importing them.
+4. Put images and videos under `public/media/…`.
+5. Run `npm run check`.
 
-  Run `npm run dev` to start the development server.
-  
+`AGENTS.md` documents the components, media conventions and repository layout in detail.
