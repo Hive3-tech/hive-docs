@@ -1,0 +1,318 @@
+---
+title: AI assistant
+description: Configure an account's AI assistant and manage the documents it is trained on.
+accent: developer
+---
+
+Use the AI assistant endpoints to set up an assistant for an account and keep its knowledge current from your own systems: change its name, description and who can use it, then upload handbooks, policies or FAQs as training documents and remove them when they go stale. Chatting with the assistant stays in the Hive3 app.
+
+## Scopes, plan and targeting
+
+| Scope | Allows |
+| --- | --- |
+| `ai:read` | Read the assistant settings and the list of training documents. |
+| `ai:write` | Change the settings, request upload URLs, attach documents and delete them. |
+
+No other scope implies these; keys created before they existed need to be replaced ([scopes](/developers/api-authentication#scopes)). API access needs Honey Bee or above ([overview](/developers)). The AI assistant itself is a Honey Bee feature: reading settings, saving settings, requesting an upload URL and attaching a document return `403 forbidden` (`A Honey Bee subscription is required to use the AI assistant`) when the account that owns the assistant is on Worker Bee.
+
+Routes act on the key owner's own account unless you add `?account=<account ID or @handle>`. The API calls an account that others join a community, so for another account the key also needs `communities:read` (reads) or `communities:write` (writes), must include that account when the key is limited to selected accounts, and the key owner must currently be an owner, admin or moderator of it. Routes that take a document ID use the account that owns the document and ignore `?account=`. See [managed accounts](/developers/api-authentication#managed-accounts).
+
+| Route | Route budget | Also limited to (per key owner) |
+| --- | --- | --- |
+| `PATCH /ai-assistant` | 30 per minute | 20 saves per minute |
+| `POST /ai-assistant/documents/upload-url` | 30 per minute | 60 per minute and 1,000 per day, shared with other uploads |
+| `POST /ai-assistant/documents` | 30 per minute | 10 per minute and 30 per day |
+| `DELETE /ai-assistant/documents/{documentId}` | 60 per minute | None |
+
+Exceeding a route budget returns `429 rate_limited` with a `Retry-After` header. Exceeding one of the other limits returns `400 invalid_request` with a message such as `Document upload limit reached. Try again later.`. All routes also count toward the account-wide budget ([rate limits](/developers/api-conventions#rate-limits)).
+
+JavaScript and Python follow the same request pattern as the tabbed examples; the cards that show only curl are trivial to translate.
+
+## Assistant settings
+
+<Endpoint method="GET" path="/api/v1/ai-assistant" scopes={["ai:read"]}>
+
+Returns the account's assistant. Before the first save it returns the defaults with `id: null`, `isNew: true`, the name `AI Assistant` and visibility `public`.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `account` | query | string | No | Account ID or `@handle`. Defaults to the key owner. |
+
+```bash
+curl "https://app.hive3.tech/api/v1/ai-assistant?account=@design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `visibility` is `public` (anyone may chat), `protected` (accepted members and the account's team) or `private` (owner, admins and moderators only).
+
+```json
+{
+  "data": {
+    "id": "assistant_123", "accountId": "account_123", "name": "Guild helper", "description": "Answers member questions",
+    "avatarUrl": "", "visibility": "protected", "isNew": false, "createdAt": "2026-10-27T18:00:00.000Z", "updatedAt": "2026-10-27T18:05:00.000Z"
+  }
+}
+```
+
+Errors: `403 forbidden` (account below Honey Bee, or your role does not allow it), `403 insufficient_scope`, `404 not_found` (account not found).
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/ai-assistant" scopes={["ai:write"]}>
+
+Updates the assistant, and creates it on the first save. Send only the fields you change; the others keep their current value. Send an empty string for `description` or `avatarUrl` to clear it. The body can be up to 16 KiB.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `account` | query | string | No | Account ID or `@handle`. Defaults to the key owner. |
+| `name` | body | string | No | 1 to 80 characters. Defaults to `AI Assistant` on the first save. |
+| `description` | body | string | No | Up to 2,000 characters. |
+| `avatarUrl` | body | string | No | Up to 2,048 characters. |
+| `visibility` | body | string | No | `public`, `protected` or `private`. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH "https://app.hive3.tech/api/v1/ai-assistant?account=@design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Guild helper","visibility":"protected"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/ai-assistant?account=@design-guild", {
+  method: "PATCH",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ name: "Guild helper", visibility: "protected" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/ai-assistant",
+    params={"account": "@design-guild"},
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"name": "Guild helper", "visibility": "protected"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200` with the assistant (same shape as the GET response), including on the first save.
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | A field is not a string, `visibility` is invalid, or a limit is broken (`Assistant name must be 1-80 characters`). Also when 20 saves per minute are exceeded. |
+| 403 | `forbidden`, `insufficient_scope` | The account is below Honey Bee, your role or the key's allowlist does not allow it, or the key lacks `ai:write` (or `communities:write` for another account). |
+| 404 | `not_found` | Account not found. |
+
+</Endpoint>
+
+## Training documents
+
+An assistant answers from up to 50 training documents. Each document is a PDF, a DOCX file or plain text, up to 5 MiB (5,242,880 bytes). After you attach a file, Hive3 extracts its text in the background. `extractionStatus` is one of:
+
+| Value | Meaning |
+| --- | --- |
+| `pending` | Extraction has been queued or is running. |
+| `done` | The text is available to the assistant. |
+| `unsupported` | The file type or content cannot be read. |
+| `failed` | Extraction failed. |
+
+<Endpoint method="GET" path="/api/v1/ai-assistant/documents" scopes={["ai:read"]}>
+
+Lists the assistant's documents, newest first. The list holds up to 50 documents and is not paginated. It is empty before the assistant is saved.
+
+```bash
+curl "https://app.hive3.tech/api/v1/ai-assistant/documents" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. Add `?account=` as in the settings route to read another account's documents.
+
+```json
+{ "data": [{ "id": "document_123", "fileName": "handbook.pdf", "fileSize": 182044, "mimeType": "application/pdf", "extractionStatus": "done", "uploadedAt": "2026-10-27T18:06:00.000Z" }] }
+```
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/ai-assistant/documents/upload-url" scopes={["ai:write"]}>
+
+Issues a single-use upload link, valid for 10 minutes, that you send the file to. It needs a Honey Bee account and takes no body. The upload belongs to the key owner, even when you attach it to another account's assistant.
+
+```bash
+curl -X POST "https://app.hive3.tech/api/v1/ai-assistant/documents/upload-url?account=@design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `201`.
+
+```json
+{
+  "data": {
+    "uploadUrl": "https://upload.example.com/upload?token=…",
+    "maxBytes": 5242880,
+    "contentTypes": ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"]
+  }
+}
+```
+
+`uploadUrl` is an opaque address; use it exactly as returned. Send the raw file bytes in a `POST` to it with the file's `Content-Type` and no `Authorization` header. The reply is `{ "storageId": "<upload ID>" }` (no `data` envelope), which you pass to the attach call. The upload host answers `400` for an unsupported type, an empty file or a file whose content does not match its type, `403` for an expired or used link, and `413` for a file over `maxBytes`.
+
+Errors: `403 forbidden` (account below Honey Bee, or your role does not allow it), `403 insufficient_scope`, `404 not_found`.
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/ai-assistant/documents" scopes={["ai:write"]}>
+
+Attaches an uploaded file to the assistant and starts text extraction. Save the assistant first: with no saved assistant this returns `404`. The route reads the `Idempotency-Key` header: repeating the request with the same key and body returns the first response, and the same key with a different body returns `409 conflict` ([idempotency](/developers/api-conventions#idempotency)). The body can be up to 4 KiB.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `account` | query | string | No | Account ID or `@handle`. Defaults to the key owner. |
+| `storageId` | body | string | Yes | The upload ID returned by the upload step. It must come from an upload link issued to the key owner. |
+| `fileName` | body | string | Yes | 1 to 160 characters. The extension must match `mimeType`: `.pdf`, `.docx` or `.txt`. |
+| `fileSize` | body | integer | Yes | Size in bytes, at most 5,242,880. It must equal the uploaded file's size. |
+| `mimeType` | body | string | Yes | `application/pdf`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document` or `text/plain`. It must equal the type you uploaded with. |
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/ai-assistant/documents \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"storageId":"upload_123","fileName":"handbook.pdf","fileSize":182044,"mimeType":"application/pdf"}'
+```
+
+The walkthrough below runs this call in curl, JavaScript and Python. Returns `201` with the document, `extractionStatus` `pending`.
+
+```json
+{ "data": { "id": "document_123", "fileName": "handbook.pdf", "fileSize": 182044, "mimeType": "application/pdf", "extractionStatus": "pending", "uploadedAt": "2026-10-27T18:06:00.000Z" } }
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | A field is missing or has the wrong type (`storageId, fileName, fileSize and mimeType are required`), or the file breaks a rule: `Document must be 5 MiB or smaller`, `Only PDF, DOCX, and plain-text documents are supported`, `Document extension does not match its content type`, `Document size does not match the uploaded file`, `This uploaded document is already attached`, `AI assistants support up to 50 documents`, or `Uploaded file is not owned by this account and upload flow`. |
+| 400 | `invalid_request` | More than 10 attachments in a minute (`Document upload limit reached. Try again later.`) or 30 in a day (`Daily document upload limit reached`) for the key owner. |
+| 403 | `forbidden`, `insufficient_scope` | The account is below Honey Bee, your role or the key's allowlist does not allow it, or the key lacks `ai:write`. |
+| 404 | `not_found` | The assistant is not saved (`AI assistant not found; save it with PATCH /api/v1/ai-assistant first`), or `storageId` is not a valid upload (`Upload was not found`). |
+| 409 | `conflict` | `Idempotency-Key` was used with a different request. |
+
+</Endpoint>
+
+<Endpoint method="DELETE" path="/api/v1/ai-assistant/documents/{documentId}" scopes={["ai:write"]}>
+
+Deletes a document and its stored file. Anyone who may manage the account that owns the assistant can delete it; no plan check applies.
+
+```bash
+curl -X DELETE https://app.hive3.tech/api/v1/ai-assistant/documents/document_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": { "deleted": true, "id": "document_123" } }
+```
+
+Errors: `404 not_found` (`Document not found`), `403 forbidden`, `403 insufficient_scope`, `429 rate_limited` after 60 deletes in a minute.
+
+</Endpoint>
+
+## Add a training document end to end
+
+<Steps>
+<Step title="Save the assistant">
+
+Call `PATCH /api/v1/ai-assistant` once. Attaching a document before this returns `404`.
+
+</Step>
+<Step title="Request an upload link">
+
+Call `POST /api/v1/ai-assistant/documents/upload-url`. The link works once and expires after 10 minutes.
+
+</Step>
+<Step title="Upload the file">
+
+`POST` the raw bytes to `uploadUrl` with the file's `Content-Type`. Keep the `storageId` from the reply.
+
+</Step>
+<Step title="Attach it">
+
+Call `POST /api/v1/ai-assistant/documents` with the `storageId`, `fileName`, `fileSize` and `mimeType`.
+
+</Step>
+<Step title="Wait for extraction">
+
+Call `GET /api/v1/ai-assistant/documents` until the document's `extractionStatus` is no longer `pending`. Use `DELETE` to remove a document.
+
+</Step>
+</Steps>
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+BASE=https://app.hive3.tech/api/v1
+AUTH="Authorization: Bearer $HIVE_API_KEY"
+URL=$(curl -s -X POST $BASE/ai-assistant/documents/upload-url -H "$AUTH" | jq -r .data.uploadUrl)
+SID=$(curl -s -X POST "$URL" -H "Content-Type: application/pdf" --data-binary @handbook.pdf | jq -r .storageId)
+SIZE=$(wc -c < handbook.pdf | tr -d ' ')
+curl -X POST $BASE/ai-assistant/documents -H "$AUTH" -H "Content-Type: application/json" \
+  -d "{\"storageId\":\"$SID\",\"fileName\":\"handbook.pdf\",\"fileSize\":$SIZE,\"mimeType\":\"application/pdf\"}"
+```
+
+</Tab>
+<Tab>
+
+```js
+import { readFile } from "node:fs/promises";
+
+const api = "https://app.hive3.tech/api/v1";
+const headers = { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" };
+const file = await readFile("handbook.pdf");
+
+const issued = await fetch(`${api}/ai-assistant/documents/upload-url`, { method: "POST", headers });
+const { uploadUrl } = (await issued.json()).data;
+const upload = await fetch(uploadUrl, { method: "POST", headers: { "Content-Type": "application/pdf" }, body: file });
+const { storageId } = await upload.json();
+
+const attached = await fetch(`${api}/ai-assistant/documents`, {
+  method: "POST",
+  headers,
+  body: JSON.stringify({ storageId, fileName: "handbook.pdf", fileSize: file.length, mimeType: "application/pdf" }),
+});
+const { data } = await attached.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+api = "https://app.hive3.tech/api/v1"
+auth = {"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]}
+raw = open("handbook.pdf", "rb").read()
+
+issued = requests.post(api + "/ai-assistant/documents/upload-url", headers=auth).json()["data"]
+upload = requests.post(issued["uploadUrl"], data=raw, headers={"Content-Type": "application/pdf"})
+attached = requests.post(api + "/ai-assistant/documents", headers=auth, json={
+    "storageId": upload.json()["storageId"], "fileName": "handbook.pdf",
+    "fileSize": len(raw), "mimeType": "application/pdf",
+})
+data = attached.json()["data"]
+```
+
+</Tab>
+</Tabs>

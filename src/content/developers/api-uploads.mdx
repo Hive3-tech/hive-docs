@@ -1,0 +1,199 @@
+---
+title: Uploads
+description: Upload images and documents through a one-time upload URL, then attach the returned upload ID to a profile, post, resource or application.
+accent: developer
+---
+
+Use uploads to set a profile picture or banner, add a cover image to an event or post, attach a résumé to a job application, or add a file to quest evidence from a script. The API never accepts file bytes in its own JSON requests. You ask for a one-time upload URL, send the file to that URL, and then pass the `storageId` it returns in the request that uses the file.
+
+API access needs a Honey Bee plan or above; see the [developer overview](/developers). Errors and rate limits follow [Requests, errors and limits](/developers/api-conventions#errors).
+
+## How an upload works
+
+<Steps>
+<Step title="Request an upload URL">
+Call `POST /api/v1/uploads/url` with the file name, type and size. You get a URL that is valid for 10 minutes and can be used once.
+</Step>
+<Step title="Send the file">
+`POST` the raw bytes to the returned `uploadUrl`. The response contains the upload ID as `storageId`.
+</Step>
+<Step title="Attach the upload">
+Send the `storageId` in the field that expects it, for example `imageStorageId` on a profile. Attach it within 24 hours; uploads that are not attached are deleted after that.
+</Step>
+</Steps>
+
+## Request an upload URL
+
+<Endpoint method="POST" path="/api/v1/uploads/url" scopes={["account:write"]}>
+
+Checks the file metadata against the upload policy and issues an upload URL for the key owner. Uploads always belong to the key owner, even when you later attach them to a managed account. Limited to 60 requests per minute and 1,000 per day per account.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `purpose` | body | string | Yes | `image` or `document`. |
+| `fileName` | body | string | Yes | Must end in an extension allowed for the purpose; see [Limits](#limits). |
+| `contentType` | body | string | Yes | MIME type allowed for the purpose; case is ignored. |
+| `byteSize` | body | number | Yes | File size in bytes. Positive, and not above the limit for the purpose. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/uploads/url \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"purpose":"image","fileName":"avatar.png","contentType":"image/png","byteSize":24000}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/uploads/url", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    purpose: "image",
+    fileName: "avatar.png",
+    contentType: "image/png",
+    byteSize: 24000,
+  }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/uploads/url",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"purpose": "image", "fileName": "avatar.png", "contentType": "image/png", "byteSize": 24000},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201`. `maxBytes` is the size limit for the purpose. Use `uploadUrl` exactly as returned.
+
+```json
+{
+  "data": {
+    "uploadUrl": "https://example.com/upload?token=0123abcd",
+    "purpose": "image",
+    "fileName": "avatar.png",
+    "contentType": "image/png",
+    "maxBytes": 8388608
+  }
+}
+```
+
+- `400 invalid_request`: a field is missing or invalid, for example `fileName must end with one of: .gif, .jpeg, .jpg, .png, .webp`, `contentType must be one of: …`, or `byteSize exceeds the 8388608 byte image limit`.
+- `429 rate_limited`: the per-account budget is used up, or the upload service is busy; wait for `Retry-After`.
+
+</Endpoint>
+
+## Send the file
+
+Send the file bytes with a `POST` to the `uploadUrl` from the previous step. This request goes to the upload URL, not to the API: do not send the `Authorization` header, and set `Content-Type` to the file's MIME type. The URL works once, even when the upload fails, so request a new URL to retry.
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST "$UPLOAD_URL" \
+  -H "Content-Type: image/png" \
+  --data-binary @avatar.png
+```
+
+</Tab>
+<Tab>
+
+```js
+import { readFile } from "node:fs/promises";
+
+const upload = await fetch(data.uploadUrl, {
+  method: "POST",
+  headers: { "Content-Type": "image/png" },
+  body: await readFile("avatar.png"),
+});
+const { storageId } = await upload.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+with open("avatar.png", "rb") as file:
+    upload = requests.post(
+        data["uploadUrl"], headers={"Content-Type": "image/png"}, data=file
+    )
+storage_id = upload.json()["storageId"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`. This response is not wrapped in `data`, and errors are a plain `error` string rather than the API error object.
+
+```json
+{ "storageId": "upload_123" }
+```
+
+| Status | `error` | When |
+|---|---|---|
+| 403 | `invalid_upload_grant` | The URL is unknown, expired or already used. |
+| 400 | `unsupported_content_type` | The `Content-Type` is not allowed for the purpose. |
+| 400 | `content_type_mismatch` | Image bytes do not match the declared image type. |
+| 400 | `empty_upload` | The body is empty. |
+| 413 | `payload_too_large` | The body is larger than `maxBytes`. |
+| 409 | `quota` | The account already keeps 500 uploads or 1 GiB. |
+| 429 | `rate_limited` | The 250 MiB daily upload budget is used up; wait for `Retry-After`. |
+
+## Attach an upload
+
+Pass the `storageId` where a request accepts an upload ID. The upload must belong to the same key owner and have been requested with a matching `purpose`: image fields need an `image` upload, and attachment fields accept either. When the upload is attached, the file type and size are checked again against the stored file.
+
+| Where | Fields |
+|---|---|
+| [Profile](/developers/api-account#update-a-profile) | `imageStorageId`, `heroImageStorageId` (images); `attachmentStorageId` (image or document) |
+| [Posts](/developers/api-posts) and [events, courses, content, quests and jobs](/developers/api-resources) | `imageStorageId`, `thumbnailStorageId`, `heroImageStorageId`, `bannerStorageId`, `employerLogoStorageId` (images); `attachmentStorageId` (image or document) |
+| Job applications and quest evidence ([participation workflows](/developers/api-workflows)) | `storageId` inside the file objects the request describes |
+
+For example, set a profile picture with the upload ID from the previous step:
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/profile \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"imageStorageId":"upload_123"}'
+```
+
+- `400 invalid_request`: the upload is not a valid ID, or its type or size is not allowed for that field (`uploaded file type or size is not allowed by the upload policy`).
+- `404 not_found`: the upload does not exist, has expired, belongs to another account, or was requested with a purpose the field does not accept (`upload was not found`).
+
+## Limits
+
+| Limit | Value |
+|---|---|
+| Images | GIF, JPEG, PNG or WebP (`image/gif`, `image/jpeg`, `image/png`, `image/webp`), up to 8 MiB (8,388,608 bytes). Extensions `.gif`, `.jpeg`, `.jpg`, `.png`, `.webp`. |
+| Documents | PDF, DOC, DOCX, Markdown or plain text (`application/pdf`, `application/msword`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`, `text/markdown`, `text/plain`), up to 25 MiB (26,214,400 bytes). Extensions `.doc`, `.docx`, `.md`, `.pdf`, `.txt`. |
+| Upload URL | Valid for 10 minutes, one use. |
+| Upload URL requests | 60 per minute and 1,000 per day per account. |
+| Uploaded bytes | 250 MiB per day per account. |
+| Stored uploads | 500 files and 1 GiB per account, counting uploads that are attached or still waiting to be attached. |
+| Unattached uploads | Deleted 24 hours after upload. |
+
+## AI assistant documents
+
+Training documents for the AI assistant use their own route, `POST /api/v1/ai-assistant/documents/upload-url`, with different file types and a smaller size limit. It shares the account's upload URL budget. See [AI assistant](/developers/api-ai-assistant).
+
+The `hive upload` command runs the whole flow for you; see the [CLI command reference](/developers/cli-commands).

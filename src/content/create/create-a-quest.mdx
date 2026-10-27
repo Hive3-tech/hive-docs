@@ -1,0 +1,228 @@
+---
+title: Create a quest
+description: Set a challenge with objectives, run it for 7 or 30 days, and review the evidence people submit.
+accent: quests
+---
+
+A quest is a time-limited challenge made of objectives, such as completing a course, attending an event or submitting proof of something you asked for. People enroll, work through the objectives and can earn a credential when they finish. Each quest uses one quest credit.
+
+**Who can do this:** any account on any plan, and the owner, admins and moderators of a community. You need a quest credit available: Swarm and Royal Hive include some every month, and any account can buy more. Owners and admins buy credits. Moderators spend the credits already in the balance. Members-only access, subscriptions and tickets need a [Honey Bee or higher](/start/plans) plan.
+
+<Walkthrough
+  src="/media/walkthroughs/create-a-quest.mp4"
+  poster="/media/walkthroughs/create-a-quest.poster.webp"
+  title="Create a quest"
+  chapters={[
+    { at: 0, label: "Choose a credit" },
+    { at: 7, label: "Basic info" },
+    { at: 19, label: "Schedule" },
+    { at: 23, label: "Objectives" },
+    { at: 32, label: "Visibility and access" },
+    { at: 34, label: "Publish" },
+  ]}
+/>
+
+## Understand quest credits
+
+Quest credits come in two lengths.
+
+| Credit | Longest quest | Included each month |
+|---|---|---|
+| 7-day | 7 days | Swarm: 1. Royal Hive: 2. |
+| 30-day | 30 days | Swarm: 1. Royal Hive: 2. |
+
+Included credits expire at the end of each month. When you publish a quest, Hive3 uses an included credit first and then the oldest credit you bought. You can see your balance in the <UI>Quest credits</UI> panel on your [dashboard](/create/your-dashboard), which shows <UI>7 day</UI>, <UI>30 day</UI> and how many <UI>active quests</UI> you have. Prices and packs are on [Plans and pricing](/start/plans).
+
+## Start a new quest
+
+<Path items={["My Hive", "My Dashboard", "Quests", "New Quest"]} />
+
+Open the dashboard of the account that should publish the quest, and select <UI>New Quest</UI> on the <UI>Quests</UI> tab. For a community, open [its dashboard](/create/your-dashboard) first.
+
+<Steps>
+<Step title="Choose a credit">
+A <UI>Create Quest</UI> window asks which duration credit to use. Select <UI>7 day quest</UI> (uses a Single plan credit) or <UI>30 day quest</UI> (uses a Bundle plan credit). Each option shows how many credits are <UI>remaining</UI>, and options with none left are disabled.
+</Step>
+<Step title="Buy more if you need to">
+Owners and admins can select <UI>Buy additional quest credits</UI> in the same window. If you have no credits at all, Hive3 opens <UI>Buy Quest Credits</UI> straight away. A moderator sees <UI>Out of quest credits. Ask an admin to buy more.</UI>
+</Step>
+</Steps>
+
+<Figure
+  src="/media/create/create-a-quest/credit-chooser.webp"
+  alt="The Create Quest window with a 7 day quest option and a 30 day quest option, each showing credits remaining."
+  caption="Choosing a credit for a new quest."
+/>
+
+The form is titled <UI>Create Quest</UI> and has four steps: <UI>Basic Info</UI>, <UI>Quest Schedule</UI>, <UI>Quest Builder</UI> and <UI>Visibility & Access</UI>. Your progress is saved automatically as a draft. Use the <UI>Drafts</UI> menu to resume one.
+
+## Basic Info
+
+<Steps>
+<Step title="Add a Quest Banner">
+Optional. 1200 × 400 pixels is recommended.
+</Step>
+<Step title="Write the Quest Title">
+Required. Up to 60 characters.
+</Step>
+<Step title="Write the Short Description">
+Required. Up to 125 characters.
+</Step>
+<Step title="Write the Full Description">
+Required. Use the editor, up to 3,000 words, or upload a PDF or Markdown file with <UI>Upload Document</UI>.
+</Step>
+<Step title="Choose badges">
+Up to 5. If your plan includes credentials, you can also set the <UI>Credential image</UI> for the credential people earn by completing the quest.
+</Step>
+</Steps>
+
+## Quest Schedule
+
+<Steps>
+<Step title="Pick the dates">
+Click the first day on the calendar, then the last day. You can also type the <UI>Start</UI> and <UI>Stop</UI> date and time. The start cannot be in the past.
+</Step>
+<Step title="Check the length">
+Hive3 fills in the longest end date your credit allows, 7 or 30 days after the start. You can end the quest sooner. A longer end is blocked with <UI>Maximum 7 days for this quest's credit plan</UI> (or 30).
+</Step>
+<Step title="Set the time zone">
+Use the menu next to <UI>TZ</UI>. A summary confirms <UI>This quest will run from</UI> the start to the end and how many days that is.
+</Step>
+</Steps>
+
+## Quest Builder
+
+The builder defines what people must do.
+
+### Choose a quest mode
+
+Under <UI>Quest Mode</UI>, select:
+
+- <UI>Standard Quest</UI>: one or more objectives that people complete at their own pace.
+- <UI>Streak Quest</UI>: people complete the objectives on consecutive days. Set the <UI>Streak Duration (days)</UI> from 1 to 30.
+
+### Add objectives
+
+A quest needs at least one objective.
+
+<Steps>
+<Step title="Start an objective">
+Select <UI>New Objective</UI>.
+</Step>
+<Step title="Choose the action">
+Under <UI>What do you want the questers to do?</UI>, choose one of the actions in the table below.
+</Step>
+<Step title="Set the details">
+Add a <UI>Short Description</UI>, then set how many times: <UI>How many times should they do this?</UI>. For <UI>Make progress on a course</UI> you set a percentage instead, between 1 and 100.
+</Step>
+<Step title="Choose whose activity counts">
+Under <UI>Target accounts</UI>, your own account is selected by default. Select <UI>Add account</UI> to count activity from other accounts as well, up to 10.
+</Step>
+<Step title="Narrow it to one item, if you like">
+For course, event and job actions you can choose a specific course, event or job (the field is optional) or leave it open to any in scope.
+</Step>
+<Step title="Save the objective">
+Select <UI>Add Objective</UI>, or <UI>Update Objective</UI> when editing. Use <UI>Change</UI> to pick a different action.
+</Step>
+</Steps>
+
+| Action | What the quester does |
+|---|---|
+| <UI>Like a post</UI> | Likes posts in scope |
+| <UI>Comment on a post</UI> | Comments on posts in scope |
+| <UI>Complete a course</UI> | Finishes a course in scope |
+| <UI>Make progress on a course</UI> | Reaches a progress milestone on a course |
+| <UI>Attend a metaverse event</UI> | Attends a 3D-world event in scope |
+| <UI>Attend a virtual event</UI> | Attends a virtual event in scope |
+| <UI>Apply for jobs</UI> | Applies to jobs in scope |
+| <UI>Custom task</UI> | Submits evidence that you review by hand |
+
+<Figure
+  src="/media/create/create-a-quest/quest-builder.webp"
+  alt="The Quest Builder step with Standard Quest and Streak Quest options and a list of objectives with a New Objective button."
+  caption="The Quest Builder."
+/>
+
+### Create a custom task
+
+Choose <UI>Custom task</UI> when none of the built-in actions fit.
+
+<Steps>
+<Step title="Name the task">
+Enter an <UI>Objective name</UI>, up to 120 characters, for example "Share your project on LinkedIn". It is required.
+</Step>
+<Step title="Describe it">
+Under <UI>What do you want the quester to do?</UI>, write the instructions. They are required and can include images.
+</Step>
+<Step title="Choose the Evidence Type">
+<UI>Written response</UI> (the default) asks for text, <UI>Link submission</UI> asks for a link, and <UI>Document upload</UI> asks for a file.
+</Step>
+</Steps>
+
+<Figure
+  src="/media/create/create-a-quest/custom-objective.webp"
+  alt="The custom task editor with Objective name, Evidence Type options and a description editor."
+  caption="A custom task."
+/>
+
+## Visibility & Access
+
+This step is titled <UI>Quest Access</UI>.
+
+<Steps>
+<Step title="Choose the Enrollment Type">
+<UI>Auto-enroll participants</UI> lets people join directly. <UI>Apply for entry</UI> leaves enrollment pending until an owner or admin approves it.
+</Step>
+<Step title="Choose the visibility">
+<UI>Public</UI>, <UI>Members only</UI> or <UI>Subscription / ticket</UI>. Worker Bee accounts see only <UI>Public</UI>.
+</Step>
+<Step title="Set up payment, if needed">
+For subscriptions, connect Stripe. For a one-time ticket, connect PayPal, then turn on <UI>Enable one-time ticket pricing</UI> in the <UI>One-Time Quest Ticket</UI> section and enter a <UI>Price</UI> and <UI>Currency</UI>. See [Get paid](/community/get-paid).
+</Step>
+</Steps>
+
+## Publish
+
+Select <UI>Create Quest</UI>. Hive3 asks <UI>Ready to publish?</UI>. Choose <UI>Create Quest</UI> to confirm. This is the moment the credit is used.
+
+## After you publish
+
+On the <UI>Quests</UI> tab of your [dashboard](/create/your-dashboard), open <UI>More actions</UI> on the quest and select <UI>Manage Enrollment</UI>. The page is titled <UI>Quest Enrollments</UI>.
+
+<Steps>
+<Step title="Approve people">
+<UI>Enrollment Requests</UI> lists each participant with their status, progress and when they applied. For pending requests, select <UI>Approve</UI> or <UI>Decline</UI>.
+</Step>
+<Step title="Open their evidence">
+Select <UI>Review</UI> on a row. The <UI>Evidence Review</UI> panel shows each submission against its objective: the written response, the link, documents and images.
+</Step>
+<Step title="Approve or deny each submission">
+Select <UI>Approve</UI> to count the objective as done, or <UI>Deny</UI> to reject it. The quester is notified either way. Once all of a participant's objectives are done, they complete the quest and can earn its credential if there is one.
+</Step>
+</Steps>
+
+<Figure
+  src="/media/create/create-a-quest/evidence-review.webp"
+  alt="The Quest Enrollments page with the Enrollment Requests table showing an accepted participant with a Review button, and the Evidence Review panel below it."
+  caption="Quest enrollments and evidence review."
+/>
+
+Built-in actions, such as completing a course, are tracked automatically, so only custom tasks need your review.
+
+### Quests lock when they start
+
+Once a quest starts you can no longer edit or delete it. Ended quests are read-only. You can hide an ended quest from your profile with <UI>Hide from profile</UI>.
+
+## Tips
+
+- Pick the shorter credit when you can. A 7-day quest keeps people focused.
+- Mix one automatic objective with one custom task so people have a quick way to start and something to show.
+- Write custom instructions as if the quester will read them once. Say exactly what to submit.
+- Use a streak quest for habits, such as logging in or posting each day for a week.
+
+## Related guides
+
+- [Complete quests](/explore/complete-quests)
+- [Plans and pricing](/start/plans)
+- [Create and award credentials](/community/issue-credentials)
+- [Your dashboard](/create/your-dashboard)

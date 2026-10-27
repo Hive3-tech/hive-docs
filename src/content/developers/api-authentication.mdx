@@ -1,0 +1,205 @@
+---
+title: Authentication and API keys
+description: Create API keys, choose scopes, act on communities you manage, and rotate or revoke keys.
+plan: honey
+accent: developer
+---
+
+Every API request is authenticated with an API key that belongs to one Hive3 account. The key decides which parts of the API the request can reach (its scopes) and which other accounts it can act on. This page covers creating, scoping, using and retiring keys. The command-line tool creates its own key when you run `hive login`; see [CLI sign-in and configuration](/developers/cli-authentication).
+
+## Who can use API keys
+
+Creating and using API keys is a <PlanBadge tier="honey" /> feature.
+
+- **Below Honey Bee.** If the key owner's account is on Worker Bee, every request with that account's keys returns `403` with the code `plan_required` and the message `API access requires a Honey Bee plan or above. Upgrade the account to use this key again.` The keys are kept. They work again when the account returns to Honey Bee or above.
+- **Account scheduled for deletion.** While an account is waiting to be deleted, its keys return `401` with `invalid_api_key` on every route except the one that cancels the deletion ([Export and deletion](/developers/api-account-data)), which skips the plan check only while the deletion is pending.
+- **No staff shortcuts.** A key never carries Hive3 Team staff permissions. A staff member's key is treated like any other account's key: acting on another account needs a real owner, admin or moderator role there, and the app's Honey Bee checks apply.
+- **Community-owned keys do not exist.** A key always belongs to a person's account. To work on a community, use a key whose owner is an owner, admin or moderator of that community. See [Managed accounts](#managed-accounts).
+
+## Create a key
+
+<Steps>
+<Step title="Open the key page">
+Go to <Path items={["Settings", "Help & feedback", "Developer API keys", "Manage API keys"]} />. The page is titled <UI>API Keys</UI>. On a Worker Bee account it shows an upgrade notice instead of the create button.
+</Step>
+<Step title="Start a new key">
+Select <UI>Create API key</UI> and enter a <UI>Name</UI> of up to 80 characters, for example the name of the integration that will use it.
+</Step>
+<Step title="Choose account access">
+Under <UI>Account access</UI> pick <UI>Read access</UI> or <UI>Full access</UI>. Read access lets the key view your account, posts, resources, broadcasts, tickets, AI assistant and credentials. Full access also lets it change them. The exact scopes are listed under [Scopes](#scopes).
+</Step>
+<Step title="Choose community access (optional)">
+Expand <UI>Community access</UI> if the key should work on communities you help run. Pick <UI>No access</UI>, <UI>Read access</UI> or <UI>Full access</UI>, then tick the communities the key may reach. The list shows your own account and each community where you are an owner, admin or moderator, with your role. You must select at least one community when you choose Read or Full access.
+</Step>
+<Step title="Copy the key">
+Select <UI>Create API key</UI>. The new key appears once, starting with `hive_sk_`. Select <UI>Copy</UI> and store it in a secret manager or an environment variable. The key clears from the screen after two minutes and cannot be shown again. Select <UI>Done</UI> before you create another key.
+</Step>
+</Steps>
+
+Keys created on this page do not expire. Account limits: at most **25 active keys** per account, 10 new keys per minute, and 50 new keys per day.
+
+<Callout type="warning">
+Treat a Full access key like a password. With `account:write` it can export all of your account data and change or remove linked wallets, and API keys do not need a two-step sign-in session. Create one key per integration so you can revoke a single key without breaking the others.
+</Callout>
+
+## Send the key
+
+Send the key in the `Authorization` header on every request. This is the only supported format.
+
+```http title="Authorization header"
+Authorization: Bearer hive_sk_<secret>
+```
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+export HIVE_API_KEY="hive_sk_..."
+curl https://app.hive3.tech/api/v1/me \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/me", {
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}` },
+});
+const { data } = await res.json();
+console.log(data.person.handle, data.credential.scopes);
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.get(
+    "https://app.hive3.tech/api/v1/me",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+)
+data = res.json()["data"]
+print(data["person"]["handle"], data["credential"]["scopes"])
+```
+
+</Tab>
+</Tabs>
+
+A missing, malformed, revoked, expired or unknown key fails with a `401` before anything else is checked. See [Requests, errors and limits](/developers/api-conventions#errors) for the full error list.
+
+## Scopes
+
+A scope grants access to one area of the API. Each endpoint card in the reference lists the scope it needs. A request whose key lacks the scope returns `403` with the code `insufficient_scope` and the missing scopes in `error.requiredScopes`.
+
+| Scope | Lets the key |
+|---|---|
+| `account:read` | Read the account, profile, wallets, notifications, profile builders and credential context. |
+| `account:write` | Update profile and settings, builders, notifications, wallet and NFT visibility, create upload URLs, export data, and cancel a pending account deletion. |
+| `account:destroy` | Request account deletion. The request still needs an explicit confirmation. Neither the key page nor the CLI grants this scope. |
+| `posts:read` | Read posts and comments the account can see. |
+| `posts:write` | Create, update, archive, like and comment on posts where the account has write access. |
+| `resources:read` | Read events, courses, content, quests and jobs, plus participants, enrollments, evidence, progress and applications. Also used for search. |
+| `resources:write` | Create, update and archive resources; RSVP, enroll and apply; review participants; record attendance; review evidence. |
+| `communities:read` | Discover communities, capabilities, applications and members. Also required to read another account's data with `?account=`, and to see other accounts' members-only and private items in search. |
+| `communities:moderate` | Review applications, remove members and change roles on communities you manage, within the role rules. Included in `communities:write`. |
+| `communities:write` | Write to communities you manage: their resources, posts, participant workflows, access settings, profile and builders. Includes `communities:moderate`. |
+| `broadcasts:read` | Read broadcast drafts and sends, and the audience summary. |
+| `broadcasts:write` | Create and edit drafts, send a test, send or schedule, and cancel a scheduled send. |
+| `tickets:read` | Read ticket setup on accounts you run, and your own purchased tickets. |
+| `tickets:write` | Change a ticket's name, description, price, currency or status. |
+| `ai:read` | Read the AI assistant settings and training documents. |
+| `ai:write` | Change the AI assistant, and upload, attach and remove training documents. |
+| `credentials:read` | Read credentials, your claimed credentials, and credentials awarded to you. |
+| `credentials:write` | Award custom credentials to people. |
+
+No older scope implies the eight newest ones (`broadcasts`, `tickets`, `ai` and `credentials`, read and write). A key created before they existed cannot reach those areas; create a new key.
+
+Scopes are necessary but not sufficient. Operations on communities also check your current role, and some checks depend on the owning account's plan.
+
+### Presets
+
+The key page and the command-line login bundle scopes into presets.
+
+| Preset | Scopes |
+|---|---|
+| Key page, <UI>Account access</UI> → <UI>Read access</UI> | `account:read`, `posts:read`, `resources:read`, `broadcasts:read`, `tickets:read`, `ai:read`, `credentials:read` |
+| Key page, <UI>Account access</UI> → <UI>Full access</UI> | The read scopes above plus `account:write`, `posts:write`, `resources:write`, `broadcasts:write`, `tickets:write`, `ai:write`, `credentials:write` |
+| Key page, <UI>Community access</UI> → <UI>Read access</UI> | `communities:read` |
+| Key page, <UI>Community access</UI> → <UI>Full access</UI> | `communities:read`, `communities:moderate`, `communities:write` |
+| CLI login, <UI>Read only</UI> | The seven account read scopes above plus `communities:read` |
+| CLI login, <UI>Full access</UI> | Every scope above except `account:destroy` |
+
+## Managed accounts
+
+A key can act on an account other than its owner's when the owner is currently an owner, admin or moderator of that account. Most routes take an optional `account` query parameter, an account ID or handle, to choose the target. Without it, the request acts on the key owner's own account. Posts, events and the other resources use the `owner` field in the request body instead; see [Events, courses, content, quests, jobs](/developers/api-resources).
+
+```bash title="Read a community's profile"
+curl "https://app.hive3.tech/api/v1/profile?account=design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+For any account other than the key owner's, all three checks must pass:
+
+1. **Scope.** Reads need `communities:read` and writes need `communities:write`, in addition to the scope for the area (for example `broadcasts:write`). Moderation actions need `communities:moderate`, which `communities:write` includes. A missing scope returns `403 insufficient_scope`.
+2. **Allowlist.** A key created with selected communities can act only on those. Otherwise it returns `403 forbidden` with a message such as `API key does not include this managed account`. A key created with <UI>No access</UI> reaches only its owner's account. Keys created by `hive login` have no allowlist and reach every account the owner currently helps run.
+3. **Live role.** The owner must hold the required role right now. Role changes take effect on the next request: a demoted admin loses access immediately, even though the key is unchanged. A missing role returns `403 forbidden`, for example `Your role on this account does not allow this action`.
+
+| Operation | Owner | Admin | Moderator |
+|---|---|---|---|
+| Read members, applications, and participants | Yes | Yes | Yes |
+| Create and edit the community's resources, posts and profile | Yes | Yes | Yes |
+| Send broadcasts, manage the AI assistant, award credentials | Yes | Yes | Yes |
+| Remove a member | Any non-owner | Any non-owner | Only members with the `member` role |
+| Change member roles | Yes | Yes | No |
+| Manage tickets, subscription-based access and anything involving payments | Yes | Yes | No |
+
+Call `GET /api/v1/capabilities` to list the accounts the key can act on, with the role and capabilities on each. It needs `communities:read`.
+
+```json title="Response"
+{
+  "data": {
+    "person": { "id": "account_123", "handle": "ada", "displayName": "Ada" },
+    "credential": { "id": "key_123", "scopes": ["account:read", "communities:read"] },
+    "communities": [
+      {
+        "communityId": "account_456",
+        "name": "Design Guild",
+        "role": "admin",
+        "capabilities": { "canRead": true, "canWrite": true, "canModerate": true }
+      }
+    ]
+  }
+}
+```
+
+`GET /api/v1/me` returns the same object and needs `account:read`. In both, `credential.communityIds` is present when the key has an allowlist. An empty `communities` list means the key has no rights over another account.
+
+## Rotate and revoke keys
+
+On the <UI>API Keys</UI> page, **Active keys** lists each key's name, its recognizable prefix (`hive_sk_…` plus the last four characters), when it was last used, and whether it has Read access or Full access. The filter menu switches to **Revoked keys**.
+
+- <UI>Rotate</UI> creates a new key with the same name, scopes and community access, labelled `(rotated)`, and revokes the old key at the same moment. Copy the new key, then update your integration. Rotating counts against the 25-key limit before the old key is removed, so revoke an unused key first if you are at the limit.
+- <UI>Revoke</UI> disables a key immediately. A revoked key returns `401 invalid_api_key`.
+- A key can revoke itself with `DELETE /api/v1/account/keys/current`, which needs no scope ([details](/developers/api-account-data)). This is what `hive logout` does.
+
+Revoke any key that may have been exposed, then create a replacement.
+
+## Keep keys safe
+
+- Keep keys in environment variables or a secret manager. Do not commit them to source control, put them in URLs, or paste them into chat or tickets.
+- Use the narrowest preset that works: Read access for dashboards and reports, Full access only for integrations that write.
+- Give every integration its own key and restrict community access to the communities it needs.
+- Rotate keys on a schedule and when a teammate who had access leaves.
+
+## Authentication errors
+
+| Status | Code | Meaning |
+|---|---|---|
+| `401` | `missing_authorization` | The `Authorization` header is absent. |
+| `401` | `malformed_authorization` | The header is not `Authorization: Bearer <api key>`. |
+| `401` | `invalid_api_key` | The key is unknown, revoked or expired, or its account is unavailable or scheduled for deletion. |
+| `403` | `plan_required` | The key owner is below Honey Bee. The key works again after an upgrade. |
+| `403` | `insufficient_scope` | The key lacks a scope; `error.requiredScopes` lists it. |
+| `403` | `forbidden` | The key has the scope but not the allowlist entry or live role. |

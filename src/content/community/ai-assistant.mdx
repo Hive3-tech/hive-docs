@@ -1,0 +1,95 @@
+---
+title: AI assistant
+description: Launch an assistant on your community page that answers questions using the documents you give it.
+plan: honey
+accent: community
+---
+
+The AI assistant is a chat on your community page that answers questions for your members and visitors. You give it a name, a description and a set of documents, such as your handbook, FAQ or event guide, and it uses those documents as context when it replies.
+
+**Who can do this:** the owner, admins and moderators of a community on [Honey Bee or higher](/start/plans).
+
+<Walkthrough
+  src="/media/walkthroughs/ai-assistant.mp4"
+  poster="/media/walkthroughs/ai-assistant.poster.webp"
+  title="Set up your AI assistant"
+  chapters={[
+    { at: 0, label: "Open AI" },
+    { at: 3.5, label: "Name your assistant" },
+    { at: 11.5, label: "Choose who can use it" },
+    { at: 14, label: "Training documents" },
+    { at: 16.5, label: "Launch" },
+  ]}
+/>
+
+## Launch your assistant
+
+<Path items={["My Hive", "My Dashboard", "AI"]} />
+
+<Steps>
+<Step title="Open the AI settings">
+On your dashboard, select <UI>AI</UI>. The page is titled <UI>AI Assistant</UI> and describes itself as "Configure assistant identity, visibility, and training documents."
+</Step>
+<Step title="Describe the assistant">
+Under <UI>AI Agent Information</UI>, upload an <UI>Avatar</UI> image, then set a <UI>Name</UI> (up to 80 characters, starting as Community AI Assistant) and a <UI>Description</UI> (up to 2,000 characters) that explains what the assistant is for.
+</Step>
+<Step title="Choose who can use it">
+Under <UI>Visibility</UI>, pick <UI>Public</UI>, <UI>Protected</UI> or <UI>Private</UI>. See the table below.
+</Step>
+<Step title="Add training documents">
+Under <UI>Training Documents</UI>, select <UI>Choose File</UI> and pick a document. You can do this before you launch: uploading your first document launches the assistant for you.
+</Step>
+<Step title="Launch">
+Select <UI>Launch Assistant</UI>. A confirmation says <UI>Assistant launched</UI>.
+</Step>
+</Steps>
+
+<Figure
+  src="/media/community/ai-assistant/settings.webp"
+  alt="The AI Assistant settings page with the name and description fields, the three visibility options and the Training Documents upload."
+  caption="The AI Assistant settings."
+/>
+
+## Choose who can use it
+
+| Visibility | Who can chat with the assistant |
+|---|---|
+| <UI>Public</UI> | All signed-in people. |
+| <UI>Protected</UI> | Only members of your community. |
+| <UI>Private</UI> | Only your team: the owner, admins and moderators. |
+
+The chat appears on your community's page for the people your setting allows. <UI>Private</UI> is useful while you test the assistant before opening it up.
+
+## Training documents
+
+Documents are what make the assistant specific to your community. It reads them and uses what it finds to answer questions.
+
+| What | Limit |
+|---|---|
+| File types | PDF, Word (`.docx`) and plain text (`.txt`) |
+| File size | Up to 5 MB per file. PDFs are read up to 2 MB and 100 pages. |
+| Documents you can keep | Up to 50 |
+| Uploads | Up to 30 per day |
+| Documents the assistant uses | Your 10 most recent. It reads up to about 10,000 characters of each, and about 20,000 characters in total. |
+
+<Callout type="tip">
+Keep each document short and focused, and put the most important information first. Because the assistant reads only the 10 most recent documents, delete or merge old ones rather than letting them pile up.
+</Callout>
+
+Each uploaded document appears in a list with its size and the date you added it. Select <UI>Delete</UI> beside a document to remove it from the assistant.
+
+## Update the assistant later
+
+Return to <UI>AI</UI> on your dashboard at any time. The main button now reads <UI>Update Assistant</UI>. After you update, a confirmation says <UI>Assistant updated</UI> and you return to your dashboard. Documents are added or removed as soon as you upload or delete them, so you do not need <UI>Update Assistant</UI> for those. A new document may take a short while to be processed before the assistant can use it.
+
+## What to expect
+
+- Besides your documents, the assistant knows your account's name, description and location, and a short list of your published events, courses, quests, content and posts. Visitors only get answers about public items. Members also get items for members, and owners and admins get everything.
+- Review its replies before you rely on it for anything important, such as prices or policies, and keep the source documents up to date.
+- If the assistant should not be available for a while, set <UI>Visibility</UI> to <UI>Private</UI> and select <UI>Update Assistant</UI>.
+
+## Related
+
+- [Roles and permissions](/community/roles-and-permissions)
+- [Build your account page](/create/build-your-page)
+- [AI assistant API](/developers/api-ai-assistant)

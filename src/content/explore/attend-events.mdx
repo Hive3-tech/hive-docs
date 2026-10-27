@@ -1,0 +1,124 @@
+---
+title: Attend events
+description: Find an event, RSVP or apply, then join it in person, from a link, or inside a 3D world.
+accent: events
+---
+
+Events on Hive3 can happen in person, online through a link, or inside a shared 3D world. You find them, reserve a place, and join when it starts. If the organizer attached a credential, attending earns you the right to claim it.
+
+Any account can attend events, including Worker Bee. Some events ask for membership of the organizer's community, a ticket, or a subscription first.
+
+## Find an event
+
+Select <UI>Events</UI> in the sidebar. Type in <UI>Search events...</UI>, or open the filter menu to narrow the list:
+
+| Filter | Shows |
+|---|---|
+| <UI>All</UI> | Every event. |
+| <UI>IRL</UI> | In-person events and events that run at a linked location, such as a video call. |
+| <UI>Metaverse</UI> | Events held in a 3D world. |
+| <UI>Upcoming</UI>, <UI>Live</UI>, <UI>Finished</UI> | Events by when they happen. |
+
+A **Featured Events** row at the top highlights events picked by Hive3. Events you have reserved places for are also listed under <Path items={["My Hive", "Events"]} />.
+
+<Figure
+  src="/media/explore/attend-events/events-directory.webp"
+  alt="The Events directory with the search box, the filter menu showing All, IRL, Metaverse, Finished, Upcoming and Live, and a grid of event cards."
+  caption="Filter the Events directory by type or by when the event happens."
+/>
+
+## Read an event page
+
+Open a card to see the event's title, organizer, description and badges. A coloured badge shows its state: <UI>UPCOMING</UI>, <UI>LIVE NOW</UI> or <UI>COMPLETED</UI>. The schedule shows the start and stop time, and a **Credential** card appears if the organizer attached one. Within 48 hours of the start, a <UI>Starts in</UI> countdown appears above the main button.
+
+## RSVP or apply
+
+<Steps>
+<Step title="Open the event">
+You need to be signed in. If you are not, Hive3 asks you to sign in and brings you back to the event.
+</Step>
+<Step title="Select the main button">
+The label depends on how the organizer set up entry:
+- <UI>RSVP to Event</UI> means your place is confirmed immediately.
+- <UI>Apply to Event</UI> means the organizer reviews applications first.
+</Step>
+<Step title="Check your status">
+After an RSVP, the button reads <UI>RSVP'd</UI>. Point at it to see **Cancel RSVP**. After an application it reads <UI>Applied</UI> with a <UI>Cancel Application</UI> button, and the page says your application is awaiting approval from the organizer.
+</Step>
+</Steps>
+
+You are notified when you RSVP, when you apply, and when the organizer accepts or declines your application. If a decline happens, the page says **Your event application was not accepted.** Contact the organizer to change that decision.
+
+<Callout type="note">
+An RSVP reserves a place but does not guarantee admission when the event is first come, first served. If the event is full, Hive3 shows **Sorry, this event is at full capacity.**
+</Callout>
+
+<Figure
+  src="/media/explore/attend-events/event-rsvp.webp"
+  alt="An event page with the title, the UPCOMING badge, the schedule and the RSVP to Event button in the right-hand column."
+  caption="The RSVP or Apply button sits in the right-hand column of an event page."
+/>
+
+### When the event asks for more
+
+If you see a panel instead of the RSVP button, the event has an extra requirement.
+
+| You see | What to do |
+|---|---|
+| **This event is for (community) members** with <UI>Join community</UI> or <UI>Apply to join community</UI> | Join or apply to the organizer's community first. See [Discover and join communities](/explore/discover-and-join). If you have already applied, the panel says your application is awaiting approval. |
+| **Access Required** with <UI>Buy Ticket</UI> and/or <UI>Subscribe</UI> | Pay for access. See [Tickets and subscriptions](/explore/tickets-and-subscriptions). Afterwards a **You have access** badge appears, and you can RSVP. |
+
+## Join the event
+
+What you do when it starts depends on where it is held. You must have an accepted RSVP first.
+
+### Online or at a linked location
+
+Once the event is live, <UI>Enter Event</UI> appears. It opens the organizer's link (a video call, a stream or a map) in a new tab and records that you attended. A toast confirms **Attendance recorded**. If the organizer attached a credential, it adds that you can now claim it.
+
+### In person
+
+Go to the place the organizer describes. For in-person events the organizer marks people as attended, and that is what makes you eligible for the credential. If the event also has a link, <UI>Enter Event</UI> works the same way as above.
+
+### In a 3D world
+
+For a Metaverse event, the button is a green <UI>Enter world</UI>. It appears from 15 minutes before the event starts until it ends.
+
+<Steps>
+<Step title="Select Enter world">
+A new tab opens with a loading screen that shows **Getting your entry pass…** and the steps *Entry pass*, *World*, *Graphics* and *Ready*.
+</Step>
+<Step title="Wait for the world to load">
+When your pass is ready, the tab moves to the world itself.
+</Step>
+</Steps>
+
+If something stops you, the page tells you why:
+
+| Message | What it means |
+|---|---|
+| **This event opens 15 minutes before it starts.** | You are early. Select <UI>Try entry again</UI> when the time comes. |
+| **This event has ended.** | The world closed at the event's end time. |
+| **This event is for (community) members** | Join or apply to the community, then return to the event. |
+| **You've been banned from this world.** | A world moderator removed your access. |
+| You are sent back to the event page with a short message | Your RSVP is missing, still awaiting approval, or the event needs a ticket or subscription. Finish that step on the event page, then select <UI>Enter world</UI> again. |
+
+Attendance for 3D-world events is recorded inside the world, so you do not need to do anything else.
+
+<Figure
+  src="/media/explore/attend-events/enter-world.webp"
+  alt="The world loading screen titled with the world's name, showing the steps Entry pass, World, Graphics and Ready and the message Getting your entry pass."
+  caption="Entering a 3D world: the loading screen appears while Hive3 prepares your entry pass."
+/>
+
+## After the event
+
+When your attendance is recorded, you are eligible for the event's credential and receive a notification. Claim it from <Path items={["Notifications", "Claim Credentials"]} />. See [Notifications](/explore/notifications) and [Your credentials](/account/credentials).
+
+## Related pages
+
+<CardGrid>
+<LinkCard href="/explore/tickets-and-subscriptions" title="Tickets and subscriptions" icon="ticket" accent="addons">Pay for an event that needs a ticket.</LinkCard>
+<LinkCard href="/explore/notifications" title="Notifications" icon="bell" accent="credentials">Find your application updates and credentials.</LinkCard>
+<LinkCard href="/create/host-in-a-world" title="Host in a 3D world" icon="globe" accent="events">Run your own event in a world.</LinkCard>
+</CardGrid>

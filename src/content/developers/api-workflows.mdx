@@ -1,0 +1,326 @@
+---
+title: Participation workflows
+description: Build RSVP, attendance, enrollment, evidence and application flows with the shared participation rules and the event endpoints.
+accent: developer
+---
+
+Use the workflow endpoints to let an account take part in a resource (RSVP to an event, enroll in a course or quest, apply for a job) and to let organizers review those participants. This page covers the rules every workflow shares and the event endpoints. Courses and jobs are on [Course and job workflows](/developers/api-workflows-courses-jobs); quests are on [Quest workflows](/developers/api-workflows-quests).
+
+All endpoints are under `https://app.hive3.tech/api/v1`, authenticate with an API key (see [authentication](/developers/api-authentication#create-a-key)) and use the response envelope from [Requests, errors and limits](/developers/api-conventions#response-format). API access needs Honey Bee or above; see the [developer overview](/developers). Some field names (`personId`, `communityId`) predate unified accounts and identify accounts: the API calls an account that others join a community. Examples that read no body from you show only curl; JavaScript and Python follow the pattern of the first example below.
+
+## Shared rules
+
+### Access decisions
+
+Participant requests (RSVP, enroll, complete a lesson, apply) use the same live access decision as the Hive3 web app, so the result can change without a new key:
+
+- A members-only resource needs an accepted membership in the owning community.
+- A paid resource needs the matching subscription plan or a purchased ticket.
+- Managers of the resource are exempt.
+
+A denied request returns `403 forbidden` with a resource-specific message (for example `You cannot RSVP for this event`). Withdrawing (`{ "enroll": false }`) skips the access decision, but a declined participant still gets `409 conflict`.
+
+### Managers and participants
+
+Participant routes act as the key owner and need `resources:write`. Manager routes list participants and record decisions. They need `resources:read` (lists) or `resources:write` (changes) and a current owner, admin or moderator role on the account that owns the resource; anyone else gets `403 forbidden` (`You cannot manage this event`). Managing another account's resource also needs `communities:read` (lists) or `communities:write` (changes), otherwise `403 insufficient_scope` with `requiredScopes`. See the [role matrix](/developers/api-communities#roles-and-permissions).
+
+If the key is limited to selected accounts, every workflow route on a resource owned by an account outside that list returns `403 forbidden` (`API key does not include this community`).
+
+Manager lists include each participant's `email` next to `personId`, `name`, `username` and `image`. Treat them as personal data.
+
+### Declined participants and capacity
+
+- After an organizer declines a participant (`accepted: false`), that participant's join or leave request returns `409 conflict` (`Enrollment was declined by the organizer. Contact the organizer to change this decision.`). Only an organizer can change the decision.
+- Joining a full event or course returns `400 invalid_request` with the capacity message (`Sorry, this event is at full capacity.`).
+- `accepted` is `true` when the participant is approved, `null` when the organizer must still decide (the resource has automatic enrollment turned off) and `false` when declined.
+
+### Limits
+
+Manager lists return at most 200 rows and have no `page` object. POST workflow requests are limited to 60 per minute per account and domain (`events`, `courses`, `quests`, `jobs`), PATCH to 120 per minute; a request over the limit returns `429 rate_limited` with a `Retry-After` header. Request bodies are limited to 128 KB. The 600 requests per minute account budget is in [Rate limits](/developers/api-conventions#rate-limits).
+
+## Attachment objects
+
+Quest evidence and job applications take files as attachment objects:
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `storageId` | string | One of `storageId` or `url` | The file ID returned after you upload a file with [Uploads](/developers/api-uploads). It must belong to the key owner (`404 not_found` otherwise). |
+| `url` | string | One of `storageId` or `url` | Address of a file you host. Quest evidence and job applications accept only `http` or `https` URLs (at most 2,048 characters); any other scheme returns `400`. |
+| `fileName` | string | Yes | Display name. Quest evidence allows at most 255 characters and no control characters. |
+| `contentType` | string | Yes | Images: `image/gif`, `image/jpeg`, `image/png`, `image/webp`. Documents: `application/pdf`, `application/msword`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`, `text/markdown`, `text/plain`. |
+| `byteSize` | integer | Yes | Greater than 0; at most 8 MiB for images and 25 MiB for documents. |
+
+`fileName`, `contentType` and `byteSize` are required even when you send a `url`. For a `storageId`, the stored file's real type and size are checked as well.
+
+## Events
+
+An event RSVP is the participant record for an event. Use these endpoints to RSVP on behalf of the key owner and to let organizers approve RSVPs and record attendance.
+
+<Endpoint method="GET" path="/api/v1/workflows/events/{eventId}/participants" scopes={["resources:read"]}>
+
+Lists RSVPs for an event with approval state and attendance. Only owners, admins and moderators of the event's account can call it.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `eventId` | path | string | Yes | Event ID. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl https://app.hive3.tech/api/v1/workflows/events/event_123/participants \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/workflows/events/event_123/participants", {
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}` },
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.get(
+    "https://app.hive3.tech/api/v1/workflows/events/event_123/participants",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200` with an array of up to 200 rows. `attendedAt` is present once attendance is recorded. `resolvedWallet` is the wallet address the event will use for that participant, when one is set. Both it and `email` are personal data.
+
+```json
+{
+  "data": [
+    {
+      "personId": "account_456",
+      "name": "Ada Lovelace",
+      "email": "ada@example.com",
+      "username": "ada",
+      "image": "https://example.com/ada.png",
+      "enrollmentId": "enrollment_789",
+      "accepted": true,
+      "enrolledAt": "2026-10-20T09:30:00.000Z",
+      "attendedAt": "2026-10-27T18:02:11.000Z",
+      "resolvedWallet": "0x0000000000000000000000000000000000000001",
+      "whitelisted": false
+    }
+  ]
+}
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 403 | `forbidden` | The key owner cannot manage this event, or the key excludes the owning account. |
+| 403 | `insufficient_scope` | The event belongs to another account and the key lacks `communities:read`. |
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/workflows/events/{eventId}/rsvp" scopes={["resources:write"]}>
+
+Creates or withdraws the key owner's RSVP. Sending the request again keeps the existing RSVP. RSVP changes are limited to 10 per minute and 100 per day per account, shared with the Hive3 app.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `eventId` | path | string | Yes | Event ID. |
+| `enroll` | body | boolean | No | `true` (default) creates the RSVP, `false` withdraws it. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/workflows/events/event_123/rsvp \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"enroll": true}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/workflows/events/event_123/rsvp", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ enroll: true }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/workflows/events/event_123/rsvp",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"enroll": True},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201` for a new RSVP and `200` when one already exists. Withdrawing returns `200` with `{ "eventId": "event_123", "isRSVPd": false }`.
+
+```json
+{
+  "data": {
+    "eventId": "event_123",
+    "enrollmentId": "enrollment_789",
+    "accepted": null,
+    "isRSVPd": true
+  }
+}
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | The event is at full capacity. |
+| 403 | `forbidden` | `You cannot RSVP for this event`: the access decision denies the key owner. |
+| 404 | `not_found` | The event does not exist or is archived. |
+| 409 | `conflict` | The organizer declined this participant. |
+| 429 | `rate_limited` | RSVP budget used up; wait for `Retry-After` seconds. |
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/workflows/events/{eventId}/participants/{enrollmentId}" scopes={["resources:write"]}>
+
+Approves or declines an RSVP, records attendance, or both. Only event managers can call it. Approving re-checks the participant's current access (matching plan or purchased ticket).
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `eventId` | path | string | Yes | Event ID. |
+| `enrollmentId` | path | string | Yes | `enrollmentId` from the participants list. |
+| `accepted` | body | boolean | No | `true` approves, `false` declines. |
+| `decision` | body | string | No | Alternative to `accepted`: `approve` or `accepted`, `deny` or `rejected`. |
+| `attended` | body | boolean | No | `true` records attendance and needs an approved RSVP. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/workflows/events/event_123/participants/enrollment_789 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"accepted": true}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/workflows/events/event_123/participants/enrollment_789", {
+  method: "PATCH",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ accepted: true }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/workflows/events/event_123/participants/enrollment_789",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"accepted": True},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{ "data": { "enrollmentId": "enrollment_789", "updated": true } }
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 403 | `forbidden` | The key owner cannot manage the event, or `Participant does not have access to this event` when approving. |
+| 404 | `not_found` | The enrollment does not belong to the event, or you record attendance on an archived event. |
+| 409 | `conflict` | `Approved RSVP required` for attendance, or `attended: false` after attendance was recorded (`Recorded attendance cannot be removed`). |
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/workflows/events/{eventId}/attendance" scopes={["resources:write"]}>
+
+Records attendance for an approved participant. The first recorded time is kept, the attendee is notified, and recorded attendance cannot be removed. It follows the same rules as `attended` on the participant `PATCH`.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `eventId` | path | string | Yes | Event ID. |
+| `enrollmentId` | body | string | Yes | `enrollmentId` of an approved RSVP. A missing value returns `400 invalid_request` (`enrollmentId is required`). |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/workflows/events/event_123/attendance \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"enrollmentId": "enrollment_789"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/workflows/events/event_123/attendance", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ enrollmentId: "enrollment_789" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/workflows/events/event_123/attendance",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"enrollmentId": "enrollment_789"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{ "data": { "enrollmentId": "enrollment_789", "updated": true } }
+```
+
+Errors match the participant `PATCH` above.
+
+</Endpoint>

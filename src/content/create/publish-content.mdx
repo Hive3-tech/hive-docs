@@ -1,0 +1,128 @@
+---
+title: Publish content
+description: Write an article or upload a PDF or Markdown document, and choose whether it is public, members-only or behind a subscription.
+accent: content
+---
+
+Content is how you publish something to read: an article, a guide, a report or a PDF. You write it in Hive3's editor or upload a document, add a banner and a short summary, and decide who can read it. The form has two steps.
+
+**Who can do this:** any account on any plan, and the owner, admins and moderators of a community. Members-only and subscription content need a [Honey Bee or higher](/start/plans) plan. Content from a Worker Bee account is always public.
+
+<Walkthrough
+  src="/media/walkthroughs/publish-content.mp4"
+  poster="/media/walkthroughs/publish-content.poster.webp"
+  title="Publish content"
+  chapters={[
+    { at: 0, label: "Open your dashboard" },
+    { at: 5, label: "Basic info and article" },
+    { at: 19, label: "Content access" },
+    { at: 21.5, label: "Publish" },
+  ]}
+/>
+
+## Start new content
+
+<Path items={["My Hive", "My Dashboard", "Content", "New Content"]} />
+
+Open the dashboard of the account that should publish, then select <UI>New Content</UI> on the <UI>Content</UI> tab. For a community, open [its dashboard](/create/your-dashboard) first.
+
+The form is titled <UI>Create New Content</UI>. A panel on the right shows your two steps, a preview card, <UI>Back</UI> and <UI>Next</UI> buttons and a <UI>Drafts</UI> menu. Your progress is saved automatically as a draft, and <UI>Cancel</UI> offers <UI>Discard draft</UI>, <UI>Keep editing</UI> and <UI>Save & exit</UI>.
+
+## Basic Info
+
+<Steps>
+<Step title="Add a Content Banner">
+Optional. Upload a wide image; 1600 × 400 pixels is recommended.
+</Step>
+<Step title="Enter the Content Name">
+Required. Up to 60 characters.
+</Step>
+<Step title="Write the Short Description">
+Required. Up to 125 characters, one or two sentences. It appears on content cards.
+</Step>
+<Step title="Add the Full Description">
+Required. Either write the content in the editor, or upload a document. See below.
+</Step>
+<Step title="Choose badges">
+Up to 5 badges from the suggestions, so people can find the content by topic.
+</Step>
+</Steps>
+
+<Figure
+  src="/media/create/publish-content/basic-info.webp"
+  alt="The Basic Info step of the Create New Content form with a banner upload, name, short description and the rich text editor."
+  caption="Basic Info."
+/>
+
+### Write in the editor
+
+The editor takes up to 3,000 words. Its toolbar covers:
+
+| Tool | Options |
+|---|---|
+| Text | Paragraph, <UI>Heading 1</UI> to <UI>Heading 3</UI>, <UI>Bold</UI>, <UI>Italic</UI>, <UI>Underline</UI>, <UI>Strikethrough</UI>, <UI>Highlight</UI>, <UI>Inline code</UI>, subscript and superscript |
+| Structure | <UI>Bullet list</UI>, <UI>Numbered list</UI>, <UI>Task list</UI>, <UI>Blockquote</UI>, <UI>Horizontal rule</UI>, <UI>Insert table</UI> |
+| Layout | Align left, center, right and justify |
+| Links and media | <UI>Add link</UI>, <UI>Upload image</UI>, <UI>Embed YouTube video</UI> |
+| History | <UI>Undo</UI> and <UI>Redo</UI> |
+
+Hive3 does not accept images pasted as raw data. Use <UI>Upload image</UI> so the file is stored with your content.
+
+### Upload a document instead
+
+Select <UI>Upload Document</UI> above the editor and choose a PDF or a Markdown file (`.pdf`, `.md` or `.markdown`). While it converts the button reads <UI>Converting...</UI>.
+
+- A Markdown file is converted to formatted text.
+- A PDF is shown to readers in a PDF viewer on the content page.
+
+The uploaded file appears in place of the editor with a <UI>Remove</UI> button. If you have already written text, Hive3 asks <UI>This will replace the existing description. Continue?</UI> before it swaps it out. Select <UI>Remove</UI> to go back to the editor.
+
+<Callout type="tip">
+Upload a PDF when layout matters, such as a report or a slide deck. Use the editor when you want text that reads well on a phone.
+</Callout>
+
+## Content Access
+
+This step is titled <UI>Content Access</UI>. It controls who can discover and read the content.
+
+| Option | Who can read it |
+|---|---|
+| <UI>Public</UI> | Anyone can view this content. |
+| <UI>Members only</UI> | Only members or collaborators can view this content. |
+| <UI>Subscription</UI> | An active subscription is required before viewing. |
+
+For <UI>Subscription</UI>, connect Stripe in <UI>Monetize</UI>, then choose a plan under <UI>Select subscription</UI>. If you have no plan yet, <UI>Create subscription</UI> takes you to your payment settings. See [Get paid](/community/get-paid). Worker Bee accounts see only <UI>Public</UI>.
+
+<Figure
+  src="/media/create/publish-content/content-access.webp"
+  alt="The Content Access step with Public, Members only and Subscription options."
+  caption="Content Access."
+/>
+
+## Publish
+
+Select <UI>Create Content</UI> in the panel. Hive3 asks <UI>Ready to publish?</UI> and explains that it will create your content and take you to the published page. Choose <UI>Create Content</UI> to confirm, or <UI>Keep editing</UI> to go back. Hive3 then confirms with <UI>Content created successfully!</UI>
+
+## After you publish
+
+Your content appears on the <UI>Content</UI> tab of your [dashboard](/create/your-dashboard).
+
+- <UI>Edit</UI> reopens the form as <UI>Edit Content</UI>. The last button reads <UI>Update Content</UI> and the confirmation reads <UI>Ready to update?</UI>.
+- <UI>View</UI> opens the public page.
+- <UI>More actions</UI> offers <UI>Hide from profile</UI>, which removes the content from your public lists, Discover and search without deleting it, and a <UI>Notifications on</UI> or <UI>Notifications off</UI> switch.
+- <UI>Delete</UI> removes it after you confirm.
+
+You can hide content at any time. There is no waiting period, as there is for events and quests.
+
+## Tips
+
+- Put the most useful sentence in the short description. It is all most people see before they open the page.
+- Break long articles up with headings, so readers can scan the page.
+- Use <UI>Members only</UI> for material you want your community to have first, and <UI>Subscription</UI> for material you want to charge for.
+- Link to your related events, courses and quests inside the article to send readers onward.
+
+## Related guides
+
+- [Read and watch content](/explore/read-content)
+- [Get paid: subscriptions and tickets](/community/get-paid)
+- [Your dashboard](/create/your-dashboard)

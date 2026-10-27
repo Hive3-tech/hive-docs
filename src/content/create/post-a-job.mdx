@@ -1,0 +1,127 @@
+---
+title: Post a job
+description: Publish a job posting, choose who can apply, and review applications with résumés and cover letters.
+accent: jobs
+---
+
+A job posting tells the Hive3 community about a role you are hiring for. Applicants send a résumé and an optional cover letter through Hive3, and you review every application in one place. The form has two steps.
+
+**Who can do this:** any account on any plan, and the owner, admins and moderators of a community. Limiting applications to members or subscribers needs a [Honey Bee or higher](/start/plans) plan. A Worker Bee posting is always public.
+
+<Walkthrough
+  src="/media/walkthroughs/post-a-job.mp4"
+  poster="/media/walkthroughs/post-a-job.poster.webp"
+  title="Post a job"
+  chapters={[
+    { at: 0, label: "Open your dashboard" },
+    { at: 4, label: "Basic info" },
+    { at: 17, label: "Job access" },
+    { at: 19, label: "Publish" },
+  ]}
+/>
+
+## Start a new job posting
+
+<Path items={["My Hive", "My Dashboard", "Jobs", "New Job"]} />
+
+Open the dashboard of the account that is hiring and select <UI>New Job</UI> on the <UI>Jobs</UI> tab. For a community, open [its dashboard](/create/your-dashboard) first so the posting appears under the community.
+
+The form is titled <UI>Create Job Posting</UI>. A panel on the right shows your two steps, a preview card, <UI>Back</UI> and <UI>Next</UI> buttons and a <UI>Drafts</UI> menu. Hive3 saves your progress as a draft. <UI>Cancel</UI> offers <UI>Discard draft</UI>, <UI>Keep editing</UI> and <UI>Save & exit</UI>.
+
+## Basic Info
+
+<Steps>
+<Step title="Add a Job Banner">
+Optional. Upload a wide image; 1600 × 400 pixels is recommended. It is a good place for your logo or brand.
+</Step>
+<Step title="Enter the Job Title">
+Required, for example "Senior Blockchain Developer".
+</Step>
+<Step title="Set the Job Location">
+Enter a city, state or country. Leave it blank for a remote role; the posting then shows Remote.
+</Step>
+<Step title="Choose the Job Type">
+Required. Select <UI>Full-time</UI>, <UI>Part-time</UI>, <UI>Contract</UI>, <UI>Freelance</UI> or <UI>Internship</UI>.
+</Step>
+<Step title="Add a Pay Range, if you want to">
+Optional. Choose a currency (<UI>USD</UI>, <UI>EUR</UI>, <UI>GBP</UI> or <UI>ETH</UI>) and enter a <UI>Min</UI> and a <UI>Max</UI>.
+</Step>
+<Step title="Write the Job Description">
+Required. Describe the responsibilities and requirements in the editor, up to 3,000 words, or select <UI>Upload Document</UI> and choose a PDF or Markdown file.
+</Step>
+<Step title="Choose badges">
+Up to 5 badges from the suggestions, such as skills or fields.
+</Step>
+</Steps>
+
+You cannot move on until the title, the job type and a description or document are in place.
+
+<Figure
+  src="/media/create/post-a-job/basic-info.webp"
+  alt="The Basic Info step of the Create Job Posting form with job banner, title, location, job type buttons and pay range."
+  caption="Basic Info."
+/>
+
+## Job Access
+
+This step is titled <UI>Job Access</UI>. Choose who can discover and apply.
+
+| Option | Who can apply |
+|---|---|
+| <UI>Public</UI> | Anyone can view and apply. |
+| <UI>Members only</UI> | Only members or collaborators can view and apply. |
+| <UI>Subscription</UI> | An active subscription is required before applying. |
+
+For <UI>Subscription</UI>, connect Stripe in <UI>Monetize</UI>, then pick a plan under <UI>Select subscription</UI>. If you have none yet, <UI>Create subscription</UI> takes you to your payment settings. See [Get paid](/community/get-paid).
+
+<Figure
+  src="/media/create/post-a-job/job-access.webp"
+  alt="The Job Access step with Public, Members only and Subscription options."
+  caption="Job Access."
+/>
+
+## Publish
+
+Select <UI>Create Job</UI>. Hive3 asks <UI>Ready to publish?</UI>. Choose <UI>Create Job</UI> to publish, and you land on the job page. When you edit a posting later, the buttons read <UI>Update Job</UI> and <UI>Ready to update?</UI>.
+
+## Review applications
+
+From the <UI>Jobs</UI> tab of your [dashboard](/create/your-dashboard), open <UI>More actions</UI> on the posting and select <UI>Manage Applications</UI>.
+
+The page shows <UI>Total Applications</UI>, <UI>Pending Review</UI>, <UI>Approved</UI> and <UI>Rejected</UI> counts, and tabs to filter the list: <UI>All</UI>, <UI>Pending</UI>, <UI>Approved</UI> and <UI>Rejected</UI>.
+
+<Steps>
+<Step title="Read the application">
+Select the <UI>View</UI> button for the résumé, which includes the file name, to open it. If the applicant wrote a cover letter, a second <UI>View</UI> button opens that.
+</Step>
+<Step title="Decide">
+Select <UI>Approve</UI> or <UI>Reject</UI>.
+</Step>
+</Steps>
+
+<Figure
+  src="/media/create/post-a-job/applications.webp"
+  alt="The Manage Applications page with four summary count cards, All, Pending, Approved and Rejected tabs, and an applicant with Approve and Reject buttons plus their attached cover letter and resume."
+  caption="Managing applications. Applicants appear here with Approve and Reject buttons."
+/>
+
+### What applicants see
+
+An applicant selects <UI>Apply for Job</UI> and fills in a short form: an optional <UI>Cover Letter</UI> and a required <UI>Resume</UI>. If an application is rejected, the applicant can apply again, and the form is then titled <UI>Reapply for Job</UI>.
+
+### Edit, hide or delete
+
+<UI>Edit</UI> reopens the form as <UI>Edit Job Posting</UI>. <UI>Hide from profile</UI> in the <UI>More actions</UI> menu removes the posting from your public lists and from search without deleting it, and <UI>Delete</UI> removes it.
+
+## Tips
+
+- Say what the role is in the first sentence of the description. Applicants skim.
+- Leave the pay range in when you can. Roles with a stated range are easier to evaluate.
+- Use <UI>Members only</UI> to hire from your own community first.
+- Ask applicants to attach everything you need to the résumé, since the application has a single résumé upload.
+
+## Related guides
+
+- [Find and apply for jobs](/explore/find-jobs)
+- [Members and applications](/community/members-and-applications)
+- [Your dashboard](/create/your-dashboard)

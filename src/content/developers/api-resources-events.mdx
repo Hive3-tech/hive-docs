@@ -1,0 +1,180 @@
+---
+title: "Events: slots and worlds"
+description: Create and reschedule events through the API, including time slots, RSVP approval, 3D world bookings and the rules for events that have started.
+accent: developer
+---
+
+Use these fields to schedule events from a calendar or another system, open them for automatic RSVPs or organizer approval, and book a Hive3 3D world for them. Events use the shared operations in [Events, courses, content, quests and jobs](/developers/api-resources): list, get, update and archive on `/api/v1/events`, with the same scopes, owner selector, visibility rules, `Idempotency-Key` header and limits (20 event creates per day, 128 KiB per request). To approve RSVPs or record attendance, see [Participation workflows](/developers/api-workflows).
+
+The examples read the key from `HIVE_API_KEY`. Some field names still say `community` or `person`; both identify accounts.
+
+## Event fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `title` | string | Required. |
+| `description` | string | Event text. `shortDescription` defaults to it. |
+| `eventSlots` | array | One object per session. Empty is allowed; see [Time slots](#time-slots). |
+| `autoEnroll` | boolean | Default `false`: RSVPs wait for organizer approval. `true` accepts RSVPs automatically. |
+| `worldId` | string | The 3D world to book. See [Book a world](#book-a-world). |
+| `maxCapacity` | integer | Attendee limit. For world events it must be a whole number from 1 up to the world's limit. |
+| `visibility`, `subscriptionId`, `badges` | | As in [Shared behavior](/developers/api-resources#shared-behavior). |
+| `imageUrl`, `heroImage`, `imageStorageId`, `heroImageStorageId` | string | Cover images (`image`, `thumbnailUrl` and `bannerImageUrl` also work). |
+
+The server owns `metaverseTime`, `courseId`, `kind`, `officeHours` and `sessionKey`; values you send for them are ignored. Course office-hour sessions cannot be updated here (`400 invalid_request`, `Course office hours are edited from their course`).
+
+## Create an event
+
+<Endpoint method="POST" path="/api/v1/events" scopes={["resources:write", "communities:write (community owner)"]}>
+
+Creates an event with one session. The response repeats the accepted body in `data`.
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/events \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: design-review-2030-01" \
+  -d '{"title":"Design Review Live","description":"A live walk-through of the new designs.","autoEnroll":true,"eventSlots":[{"name":"Session","startsAt":"2030-01-15T17:00:00.000Z","endsAt":"2030-01-15T18:00:00.000Z"}]}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/events", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+    "Idempotency-Key": "design-review-2030-01",
+  },
+  body: JSON.stringify({
+    title: "Design Review Live",
+    description: "A live walk-through of the new designs.",
+    autoEnroll: true,
+    eventSlots: [
+      { name: "Session", startsAt: "2030-01-15T17:00:00.000Z", endsAt: "2030-01-15T18:00:00.000Z" },
+    ],
+  }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/events",
+    headers={
+        "Authorization": f"Bearer {os.environ['HIVE_API_KEY']}",
+        "Idempotency-Key": "design-review-2030-01",
+    },
+    json={
+        "title": "Design Review Live",
+        "description": "A live walk-through of the new designs.",
+        "autoEnroll": True,
+        "eventSlots": [
+            {"name": "Session", "startsAt": "2030-01-15T17:00:00.000Z", "endsAt": "2030-01-15T18:00:00.000Z"}
+        ],
+    },
+)
+event = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201`.
+
+```json
+{
+  "data": {
+    "id": "event_123",
+    "type": "event",
+    "title": "Design Review Live",
+    "description": "A live walk-through of the new designs.",
+    "autoEnroll": true,
+    "badges": [],
+    "visibility": "public",
+    "eventSlots": [
+      { "name": "Session", "startsAt": "2030-01-15T17:00:00.000Z", "endsAt": "2030-01-15T18:00:00.000Z" }
+    ],
+    "owner": { "type": "person", "personId": "account_123" },
+    "data": {
+      "title": "Design Review Live",
+      "description": "A live walk-through of the new designs.",
+      "shortDescription": "A live walk-through of the new designs.",
+      "autoEnroll": true,
+      "visibility": "public",
+      "eventSlots": [
+        { "name": "Session", "startsAt": "2030-01-15T17:00:00.000Z", "endsAt": "2030-01-15T18:00:00.000Z" }
+      ]
+    },
+    "createdAt": 1767225600000,
+    "updatedAt": 1767225600000
+  }
+}
+```
+
+| Status | `code` | When |
+|---|---|---|
+| 400 | `invalid_request` | `Title is required`, an invalid slot, a world rule below, not enough metaverse time, or a body over 128 KiB. |
+| 403 | `forbidden` | The Worker Bee visibility or subscription rule, or a managed account outside the key's allowlist. |
+| 409 | `conflict` | The slot overlaps another booking on the same world, or the `Idempotency-Key` was used with a different request. |
+
+</Endpoint>
+
+## Time slots
+
+Each slot is an object with required `startsAt` and `endsAt` and optional `name` (or `title`), `image` and `links`. Both timestamps must be ISO 8601 with `Z` or an explicit offset, and `endsAt` must be later than `startsAt`:
+
+```text
+2030-01-01T10:00:00.000Z
+2030-01-01T12:00:00+02:00
+```
+
+A timestamp without an offset is rejected rather than guessed from a separate timezone. An invalid slot returns `400 invalid_request` and names the slot, for example `Event slot 1: startsAt and endsAt must be ISO 8601 timestamps with a timezone offset (for example 2030-01-01T10:00:00.000Z)` or `Event slot 1: endsAt must be after startsAt`. An empty `eventSlots` array is allowed. On `PATCH`, slots are validated only when you send `eventSlots`, and the array you send replaces the stored one.
+
+## Events that have started
+
+An event has started when its earliest valid slot start is at or before the current time, including after it ends. From then on `PATCH` returns `409 conflict` (`This event has started and can no longer be edited.`) and `DELETE` returns `409 conflict` (`This event has started and can no longer be cancelled.`). Events without a valid start remain editable and cancellable. Updating an archived event returns `404`.
+
+## Book a world
+
+Send `worldId` to book a 3D world for the event. The owning account's plan decides which world you can book: Honey Bee and Swarm accounts book the shared Hive3 Dome, and a Royal Hive account books its own world. Other combinations return `400` with the reason (`Booking a shared world needs a Honey Bee or Swarm plan.`, `Only this world's Royal Hive can book it.`, `That world isn't available.`).
+
+- **One slot.** A world event has exactly one slot (`World events have exactly one time slot.`).
+- **Attendee limit.** `maxCapacity` is a whole number from 1 to 500 in the shared Dome or from 1 to 100 in a Royal Hive's own world. It defaults to that maximum.
+- **No overlaps.** A slot that overlaps another booking on the same world returns `409 conflict` (`That time is already booked in this world (…)`). Back-to-back bookings are allowed.
+- **Metaverse time.** An event in the shared Dome spends the owning account's metaverse time. Creating it charges its duration in minutes (Swarm includes 60 minutes per UTC calendar month), a `PATCH` refunds the previous charge and charges the new one, and archiving an event that has not started refunds it. When time runs out the request returns `400` (`You're running out of metaverse time. Shorten the event or top up your balance.`) and nothing changes. Events in a Royal Hive's own world are free.
+- **Moving worlds.** `PATCH` with a different `worldId` removes the metaverse join links in the slots that pointed into the previous world. `worldId` cannot be cleared through the API.
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/events \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Town Hall in the Dome","worldId":"world_123","maxCapacity":100,"eventSlots":[{"startsAt":"2030-02-01T17:00:00Z","endsAt":"2030-02-01T18:00:00Z"}]}'
+```
+
+## Reschedule an event
+
+<Endpoint method="PATCH" path="/api/v1/events/{id}" scopes={["resources:write", "communities:write (community-owned)"]}>
+
+Replaces the slots of an event that has not started. Fields you omit keep their value.
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/events/event_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"eventSlots":[{"name":"Session","startsAt":"2030-01-16T17:00:00.000Z","endsAt":"2030-01-16T18:00:00.000Z"}]}'
+```
+
+Returns `200` with the updated event. Errors: `400` (invalid slot, world rule), `404 not_found`, `409 conflict` (the event has started, or the new slot overlaps another booking).
+
+</Endpoint>

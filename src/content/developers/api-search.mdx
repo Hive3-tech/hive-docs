@@ -1,0 +1,119 @@
+---
+title: Search
+description: Search accounts, events, courses, content, quests and jobs with the same ranking as Hive3 search.
+accent: developer
+---
+
+Use search to build a lookup box, resolve an `@handle` to an account ID before calling another endpoint, or find events, courses, content, quests and jobs by keyword. Results use the same ranking as search in the Hive3 app, evaluated for the account that owns the API key. Visibility is stricter than in the app: public and paid-preview (`protected`) items are listed for everyone, but another account's members-only and private items appear only when the key has `communities:read` and its account allowlist, if it has one, includes that account. Your own items always appear.
+
+Search needs the `resources:read` scope ([scopes](/developers/api-authentication#scopes)); add `communities:read` so that members-only and private items of other accounts can appear when the key owner may see them. There is no `?account=` targeting: the key owner is always the viewer. API access needs Honey Bee or above; see the [developer overview](/developers).
+
+The API calls an account that others join a community. In search results, accounts are the items with `"type": "account"`.
+
+## Search accounts and resources
+
+<Endpoint method="GET" path="/api/v1/search" scopes={["resources:read"]}>
+
+Returns accounts and resources that match `q`, best match first. With `type=all` the result list holds accounts first (up to 50) and then resources (up to 50). The route allows 60 requests per minute per key owner, on top of the account-wide budget ([rate limits](/developers/api-conventions#rate-limits)).
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `q` | query | string | Yes | 1 to 100 characters after trimming. A leading `@` is ignored and matching is case-insensitive. |
+| `type` | query | string | No | `all` (default), `accounts`, `events`, `courses`, `content`, `quests` or `jobs`. |
+| `limit` | query | integer | No | 1 to 50, default 20. Values outside the range are clamped. |
+| `cursor` | query | string | No | The `page.nextCursor` of the previous response. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl "https://app.hive3.tech/api/v1/search?q=design&type=all&limit=2" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+</Tab>
+<Tab>
+
+```js
+const url = "https://app.hive3.tech/api/v1/search?q=design&type=all&limit=2";
+const res = await fetch(url, {
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}` },
+});
+const { data, page } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.get(
+    "https://app.hive3.tech/api/v1/search",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    params={"q": "design", "type": "all", "limit": 2},
+)
+body = res.json()
+data, page = body["data"], body["page"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{
+  "data": [
+    { "type": "account", "id": "account_123", "handle": "design-guild", "name": "Design Guild", "avatarUrl": null, "description": "Weekly critiques", "accessType": "open", "memberCount": 42, "isMember": false },
+    { "type": "event", "id": "event_123", "title": "Portfolio night", "description": "Bring two projects", "imageUrl": null, "tags": ["design"], "visibility": "public", "owner": { "id": "account_123", "handle": "design-guild", "name": "Design Guild", "avatarUrl": null } }
+  ],
+  "page": { "nextCursor": "2", "hasMore": true }
+}
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | `q` is missing or blank (`q is required`), is longer than 100 characters (`q must be 1-100 characters`), or `type` is not one of the listed values. |
+| 403 | `insufficient_scope` | The key lacks `resources:read`. |
+| 429 | `rate_limited` | More than 60 searches in a minute. Wait for the `Retry-After` header. |
+
+</Endpoint>
+
+## Result shapes
+
+Every item has a `type`. Account items and resource items carry different fields.
+
+| Field | Account items | Resource items |
+| --- | --- | --- |
+| `type` | `account` | `event`, `course`, `content`, `quest` or `job` |
+| `id` | Account ID | Resource ID |
+| `handle`, `name`, `avatarUrl` | The account | In `owner`, the account that publishes the item |
+| `title` | Not present | Resource title |
+| `description` | Short description | Text excerpt |
+| `imageUrl`, `tags` | Not present | Cover image URL or `null`; tag names |
+| `visibility` | Not present | Effective visibility: `public`, `protected`, `members_only` or `private`. It combines the item's own setting with its account's access type, so every item of a private account reads as `members_only` or `private`. |
+| `accessType` | `open`, `private`, `open-subscription` or `private-subscription` | Not present |
+| `memberCount`, `isMember` | Members of the account; whether the key owner belongs to it | Not present |
+
+`handle` and `avatarUrl` can be `null`. Use `id` with the endpoints in [Events, courses, content, quests, jobs](/developers/api-resources) and [Communities and members](/developers/api-communities) to read or act on an item.
+
+## Page through results
+
+`page.nextCursor` is an opaque string. It looks like a number today, but do not parse or compute it: pass it back unchanged as `cursor` and stop when `page.hasMore` is `false`. A `cursor` the API does not recognize starts again from the first result. See [pagination](/developers/api-conventions#pagination).
+
+The app ranks at most 100 matches per search, so paging ends after those. A `type=all` search splits that window into 50 accounts and 50 resources.
+
+```js
+let cursor;
+do {
+  const params = new URLSearchParams({ q: "design", limit: "50" });
+  if (cursor) params.set("cursor", cursor);
+  const res = await fetch(`https://app.hive3.tech/api/v1/search?${params}`, {
+    headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}` },
+  });
+  const { data, page } = await res.json();
+  for (const item of data) console.log(item.type, item.id);
+  cursor = page.hasMore ? page.nextCursor : undefined;
+} while (cursor);
+```

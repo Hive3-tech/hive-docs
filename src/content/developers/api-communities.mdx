@@ -1,0 +1,395 @@
+---
+title: Communities and members
+description: Join communities, review membership applications, manage members and roles, and change who can join with the API.
+accent: developer
+---
+
+Use these endpoints to build join and apply flows, moderation dashboards and member administration for communities, and to discover which accounts a key can manage. The API calls an account that others join a community, so the `communityId` in every path is an account ID, and `personId` in a path is the member's account ID. API access needs Honey Bee or above (see the [developer overview](/developers)).
+
+Requests use `https://app.hive3.tech/api/v1`, authenticate with an API key from [Authentication](/developers/api-authentication#create-a-key) and use the response envelope from [Requests, errors and limits](/developers/api-conventions#response-format). Endpoints without a body show only curl; for JavaScript and Python use the pattern of the [event participants example](/developers/api-workflows#events). The list endpoints here return at most 100 or 200 rows and have no `page` object. From the CLI, see `hive communities` in the [command reference](/developers/cli-commands).
+
+## Roles and permissions
+
+Roles are read live on every request: a key never keeps rights its owner has lost. Acting on your own account counts as owner. A key also needs the scope in the table, and `communities:write` implies `communities:moderate`. Scopes are explained in [Authentication](/developers/api-authentication#scopes) and keys limited to selected accounts in [Managed accounts](/developers/api-authentication#managed-accounts); a key that excludes the account returns `403 forbidden` (`API key does not include this managed account`).
+
+| Operation | Scope | Owner | Admin | Moderator | Member |
+| --- | --- | --- | --- | --- | --- |
+| Read your capabilities (`GET /me`, `GET /capabilities`) | `account:read`, `communities:read` | Yes | Yes | Yes | Yes (read only) |
+| Join, apply or leave | `communities:write` | Cannot leave | Yes | Yes | Yes |
+| List pending applications | `communities:read` | Yes | Yes | Yes | No |
+| Accept or decline an application | `communities:moderate` | Yes | Yes | Yes | No |
+| List members | `communities:read` | Yes | Yes | Yes | No |
+| Change a member's role | `communities:moderate` | Yes | Yes | No | No |
+| Remove a member | `communities:moderate` | Any non-owner | Any non-owner | Only role `member` | No |
+| Change access type | `communities:write` | Yes | Yes | Yes, with limits | No |
+
+Moderators who change the access type can only point subscription access at an existing plan of the account. Granting `admin` or `moderator` needs the account to be on Honey Bee or above. A member with active subscription access cannot be removed, and the owner can never be removed or demoted.
+
+## Your capabilities
+
+<Endpoint method="GET" path="/api/v1/me" scopes={["account:read"]}>
+
+Returns the key owner, the key's scopes and every account the owner belongs to with the role and capabilities. `GET /api/v1/capabilities` (scope `communities:read`) returns the same payload for tools that only hold community scopes.
+
+```bash
+curl https://app.hive3.tech/api/v1/me \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `communities` always includes the owner's own account with role `owner` (unless the key excludes it) and any account where the owner has an accepted membership, sorted by name. `canWrite` and `canModerate` are `true` for owners, admins and moderators. `credential.scopes` lists implied scopes, and `communityIds` appears only on keys limited to selected accounts.
+
+```json
+{
+  "data": {
+    "person": { "id": "account_123", "displayName": "Ada Lovelace", "handle": "ada" },
+    "credential": { "id": "key_123", "scopes": ["account:read", "communities:write", "communities:moderate"], "communityIds": ["account_456"] },
+    "communities": [
+      {
+        "communityId": "account_456",
+        "name": "Design Guild",
+        "role": "admin",
+        "capabilities": { "canRead": true, "canWrite": true, "canModerate": true }
+      }
+    ]
+  }
+}
+```
+
+</Endpoint>
+
+## Membership
+
+<Endpoint method="POST" path="/api/v1/communities/{communityId}/membership" scopes={["communities:write"]}>
+
+Joins, applies to or leaves a community as the key owner. `open` and `open-subscription` communities accept the membership immediately; `private` communities create a pending application for the managers to review. Sending `apply` or `join` again updates the same application. Limits: 20 joins and 20 applies per minute, 30 leaves per minute.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `communityId` | path | string | Yes | Account ID of the community. |
+| `action` | body | string | No | `join` (default), `apply` or `leave`. `join` and `apply` behave the same. |
+| `message` | body | string | No | Note shown to the managers with the application. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/communities/account_456/membership \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"action": "apply", "message": "I design for open-source projects."}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/communities/account_456/membership", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ action: "apply", message: "I design for open-source projects." }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/communities/account_456/membership",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"action": "apply", "message": "I design for open-source projects."},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201` for a new application and `200` when one already exists. `status` is `accepted` for open communities and `pending` for private ones. Leaving returns `200` with `{ "status": "removed" }`.
+
+```json
+{ "data": { "applicationId": "application_123", "status": "pending" } }
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | `action must be join, apply, or leave`. |
+| 403 | `forbidden` | The owner tries to leave their own account, or the key excludes this account. |
+| 404 | `not_found` | `Account not found`. |
+| 429 | `rate_limited` | Too many membership requests; wait for `Retry-After` seconds. |
+
+</Endpoint>
+
+## Applications
+
+<Endpoint method="GET" path="/api/v1/communities/{communityId}/applications" scopes={["communities:read"]}>
+
+Lists pending applications, up to 100, for owners, admins and moderators of the community.
+
+```bash
+curl https://app.hive3.tech/api/v1/communities/account_456/applications \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. Decided applications are not listed.
+
+```json
+{
+  "data": [
+    {
+      "id": "application_123",
+      "personId": "account_789",
+      "personName": "Grace Hopper",
+      "message": "I design for open-source projects.",
+      "status": "pending",
+      "appliedAt": "2026-10-26T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+Errors: `403 forbidden` (`Only account owners, admins and moderators can manage this account`), `404 not_found` (`Account not found`).
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/community-applications/{applicationId}" scopes={["communities:moderate"]}>
+
+Accepts or declines a pending application and notifies the applicant. Owners, admins and moderators can call it, at most 120 times per minute. Accepting adds the applicant as a `member` and never changes the role of someone who is already a member.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `applicationId` | path | string | Yes | `id` from the applications list. |
+| `decision` | body | string | Yes | `accepted` or `rejected`. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/community-applications/application_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"decision": "accepted"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/community-applications/application_123", {
+  method: "PATCH",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ decision: "accepted" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/community-applications/application_123",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"decision": "accepted"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{ "data": { "id": "application_123", "status": "accepted" } }
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | `decision must be accepted or rejected`. |
+| 403 | `forbidden` | The key owner is not an owner, admin or moderator of the community. |
+| 404 | `not_found` | `Application not found`. |
+| 409 | `conflict` | `Application is no longer pending`. |
+
+</Endpoint>
+
+## Members
+
+<Endpoint method="GET" path="/api/v1/communities/{communityId}/members" scopes={["communities:read"]}>
+
+Lists accepted members, up to 200, for owners, admins and moderators. Removed members are not returned.
+
+```bash
+curl https://app.hive3.tech/api/v1/communities/account_456/members \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `role` is `owner`, `admin`, `moderator` or `member`.
+
+```json
+{
+  "data": [
+    { "id": "account_789", "name": "Grace Hopper", "username": "grace", "title": "", "image": null, "role": "member" }
+  ]
+}
+```
+
+Errors: `403 forbidden` for accounts without a manager role, `404 not_found` for an unknown community.
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/communities/{communityId}/members/{personId}/role" scopes={["communities:moderate"]}>
+
+Sets a member's role. Only owners and admins can call it, at most 120 times per minute. Setting a role on an account that is not yet a member adds it as an accepted member. `null` demotes to `member`.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `communityId` | path | string | Yes | Account ID of the community. |
+| `personId` | path | string | Yes | Account ID of the member. |
+| `role` | body | string or null | Yes | `admin`, `moderator`, `member` or `null`. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/communities/account_456/members/account_789/role \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"role": "moderator"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/communities/account_456/members/account_789/role", {
+  method: "PATCH",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ role: "moderator" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/communities/account_456/members/account_789/role",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"role": "moderator"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{ "data": { "role": "moderator", "status": "updated" } }
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | `role must be admin, moderator, member, or null`. |
+| 403 | `forbidden` | The key owner is not an owner or admin, the target is the owner (`Cannot change owner role`), or the account is below Honey Bee and the role is `admin` or `moderator`. |
+| 404 | `not_found` | `Member not found`. |
+
+</Endpoint>
+
+<Endpoint method="DELETE" path="/api/v1/communities/{communityId}/members/{personId}" scopes={["communities:moderate"]}>
+
+Removes a member. Owners and admins can remove any member except the owner; moderators can remove only accounts whose role is `member`. A member with active subscription access cannot be removed. Limited to 120 removals per minute. The CLI asks for the member's account ID as confirmation.
+
+```bash
+curl -X DELETE https://app.hive3.tech/api/v1/communities/account_456/members/account_789 \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": { "status": "removed" } }
+```
+
+Errors: `403 forbidden` (`Moderators can only remove members`, `Cannot remove the account owner`, `Cannot remove a member with active subscription access`, or no manager role), `404 not_found` (`Member not found`).
+
+</Endpoint>
+
+## Access
+
+<Endpoint method="PATCH" path="/api/v1/communities/{communityId}/access" scopes={["communities:write"]}>
+
+Changes who can join a community. Owners, admins and moderators can call it, at most 30 times per minute. Pending applications are left as they are: use `PATCH /api/v1/profile/access?account=…` (see [Account and profile](/developers/api-account)) when switching a private community to open should also accept the pending applicants. Any value other than `open` needs the community to be on Honey Bee or above.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `communityId` | path | string | Yes | Account ID of the community. |
+| `accessType` | body | string | Yes | `open`, `private`, `open-subscription` or `private-subscription`. |
+| `subscriptionId` | body | string | For subscription types | ID of a subscription plan. Moderators must use an existing plan of the account. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/communities/account_456/access \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"accessType": "private"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/communities/account_456/access", {
+  method: "PATCH",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ accessType: "private" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/communities/account_456/access",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"accessType": "private"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200` with the stored access type and plan.
+
+```json
+{ "data": { "accessType": "private", "subscriptionId": null } }
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | `accessType` is missing or not one of the four values, or a subscription type has no `subscriptionId`. |
+| 403 | `forbidden` | The key owner has no manager role, the community is below Honey Bee, or a moderator picked a plan the account does not own (`Choose an existing subscription plan of this account`). |
+| 404 | `not_found` | `Account not found`. |
+
+</Endpoint>

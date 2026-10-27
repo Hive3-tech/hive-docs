@@ -1,0 +1,183 @@
+---
+title: "Get paid: subscriptions and tickets"
+description: Connect a payment provider, sell subscriptions and tickets, and handle refunds.
+plan: honey
+accent: community
+---
+
+Once you connect a payment provider, you can charge for access to your community with a subscription, or sell one-time tickets to an event, course, quest or add-on. Payments go through your own payment account, so you stay in control of your payouts.
+
+**Who can do this:** the owner and admins of a community on [Honey Bee or higher](/start/plans). Moderators cannot open <UI>Monetize</UI>. If your account is on Worker Bee, you can keep managing what you already sell, but connecting a provider, creating plans and switching plans or tickets back on come with Honey Bee.
+
+<Callout type="note">
+**Your Hive3 membership is separate from what you sell.** Your Hive3 plan (Honey Bee, Swarm or Royal Hive) is what you pay Hive3, as a monthly membership managed under <UI>Settings</UI> and <UI>Subscriptions</UI>. Subscriptions and tickets are what your audience pays you, at prices you choose. Changing one does not change the other.
+</Callout>
+
+<Walkthrough
+  src="/media/walkthroughs/get-paid.mp4"
+  poster="/media/walkthroughs/get-paid.poster.webp"
+  title="Payment providers and paid access"
+  chapters={[
+    { at: 0, label: "Open Monetize" },
+    { at: 3.5, label: "Payment providers" },
+    { at: 11.5, label: "Paid access on an event" },
+    { at: 23.5, label: "Leave without saving" },
+  ]}
+/>
+
+## Connect a payment provider
+
+<Path items={["My Hive", "My Dashboard", "Monetize"]} />
+
+Open your dashboard (or the dashboard of the community you manage) and select <UI>Monetize</UI>. The page is titled <UI>Monetize</UI> and begins with <UI>Choose how you get paid</UI>.
+
+| Provider | Use it for |
+|---|---|
+| **Stripe Connect** | Creator subscriptions, ticket sales and payouts. Required for subscriptions. |
+| **PayPal** | One-time purchases only. |
+
+If you want to sell subscriptions, connect Stripe. If you only sell one-time tickets, either provider works.
+
+### Connect Stripe
+
+<Steps>
+<Step title="Start onboarding">
+Under <UI>Stripe Connect</UI>, select <UI>Connect with Stripe</UI>. Hive3 takes you to Stripe's own onboarding.
+</Step>
+<Step title="Finish Stripe's questions">
+Stripe asks for the business and payout details it needs to pay you.
+</Step>
+<Step title="Return to Hive3">
+When you come back, the badge next to <UI>Stripe Connect</UI> shows where you stand:
+- <UI>Payments active</UI>: you can sell.
+- <UI>Requirements pending</UI> or <UI>Onboarding incomplete</UI>: Stripe still needs something from you. Select <UI>Continue Stripe onboarding</UI>, or <UI>Complete identity verification</UI> if Stripe asks for identity documents.
+</Step>
+</Steps>
+
+After payments are active, <UI>Open Stripe dashboard</UI> takes you to your Stripe account to see payouts and balances.
+
+<Figure
+  src="/media/community/get-paid/monetize-providers.webp"
+  alt="The Monetize page showing the Stripe Connect card marked Not connected with a Connect with Stripe button, and the Connect PayPal Account card."
+  caption="Connecting a payment provider."
+/>
+
+### Connect PayPal
+
+<Steps>
+<Step title="Start onboarding">
+On the PayPal card, select <UI>Connect PayPal Account</UI> and sign in to PayPal in the window or panel that opens.
+</Step>
+<Step title="Confirm the connection">
+When the card shows <UI>Connected</UI>, PayPal is ready for ticket sales.
+</Step>
+<Step title="Fix anything PayPal flags">
+If PayPal reports a problem, such as payments not yet receivable or an unconfirmed email address, the card shows a notice you can select to see what to do.
+</Step>
+</Steps>
+
+### Disconnect a provider
+
+Select <UI>Disconnect Stripe</UI> or <UI>Disconnect PayPal</UI> and confirm. Disconnecting Stripe turns off your Stripe subscription plans and stops new Stripe sales. People who already subscribe keep access until their current period ends, then their subscriptions end. Your Stripe account itself stays open at Stripe.
+
+## Create a subscription
+
+A subscription is a recurring plan that unlocks your community or paid items. It is available once Stripe shows <UI>Payments active</UI>.
+
+<Steps>
+<Step title="Open the form">
+In the <UI>Subscriptions</UI> section of Monetize, select <UI>Create Subscription</UI>.
+</Step>
+<Step title="Describe the plan">
+Enter a <UI>Title</UI> and a <UI>Description</UI> that explain what subscribers get.
+</Step>
+<Step title="Set the price">
+Enter an <UI>Amount</UI> and pick a <UI>Currency</UI>: USD, EUR or GBP.
+</Step>
+<Step title="Choose the billing interval">
+Pick <UI>Monthly</UI> or <UI>Yearly</UI> under <UI>Billing Interval</UI>.
+</Step>
+<Step title="Create it">
+Select <UI>Create Subscription</UI>. The plan appears in your list with an <UI>Active</UI> badge.
+</Step>
+</Steps>
+
+Each plan in the list has these buttons:
+
+| Button | What it does |
+|---|---|
+| <UI>Edit</UI> | Change the title, description, amount, currency or interval. |
+| <UI>Deactivate</UI> or <UI>Activate</UI> | Stop or resume offering the plan to new subscribers. |
+| <UI>Delete</UI> | Remove the plan. You type the plan name to confirm, and it cannot be undone. |
+
+### Gate your community or content with a plan
+
+A plan on its own does not lock anything. You choose what it unlocks:
+
+- **Your whole community.** In the Account Builder, open <UI>Community settings</UI>, choose <UI>Open + Subscription</UI> or <UI>Private + Subscription</UI>, then pick the plan under <UI>Required subscription plan</UI>. See [Members and applications](/community/members-and-applications).
+- **A single item.** In the item's Access step, set <UI>Visibility</UI> to <UI>Subscription / ticket</UI> (just <UI>Subscription</UI> for content), then pick the plan under <UI>Select subscription</UI>. If Stripe is not connected yet, the step shows <UI>Connect Stripe to enable paid access</UI> with an <UI>Open Payments</UI> button.
+
+A person needs an active subscription to your plan to get in. Having a Hive3 membership of their own does not unlock your paywall.
+
+## Sell tickets
+
+A ticket is a one-time purchase for a single event, course, quest or add-on. You set it up on the item itself, not on the Monetize page. Content and jobs do not use tickets.
+
+<Steps>
+<Step title="Open the item's Access step">
+Create or edit the event, course, quest or add-on and go to its Access step (for example <UI>Event Access</UI>).
+</Step>
+<Step title="Choose paid access">
+Under <UI>Visibility</UI>, select <UI>Subscription / ticket</UI>.
+</Step>
+<Step title="Turn on ticket pricing">
+Select <UI>Enable one-time ticket pricing</UI>, then enter a <UI>Price</UI> and pick a <UI>Currency</UI> (USD, EUR or GBP). You can offer a subscription, a ticket, or both.
+</Step>
+<Step title="Publish">
+Publish or update the item. Buyers see the ticket option on its page.
+</Step>
+</Steps>
+
+<Callout type="note">
+If the ticket section shows <UI>Connect PayPal to enable ticketing</UI> instead of the price fields, connect PayPal from <UI>Monetize</UI> first and come back.
+</Callout>
+
+Back in <UI>Monetize</UI>, the <UI>Tickets</UI> section lists every ticket you have created, with its price, status and the item it belongs to. For each ticket you can:
+
+- <UI>Edit on Event page</UI> (or Course or Quest): jump to the item's editor.
+- <UI>Edit</UI>: change the price, currency or status.
+- <UI>Deactivate</UI> or <UI>Activate</UI>: pause or resume sales.
+- <UI>Delete</UI>: remove the ticket.
+
+## Handle refunds
+
+Buyers can ask for a refund on an active ticket. You decide whether to grant it.
+
+<Steps>
+<Step title="Find the request">
+You receive a <UI>Ticket refund requested</UI> notification. Open <UI>Notifications</UI> to see who asked, which item, the amount, and the reason they gave.
+</Step>
+<Step title="Approve or reject">
+Select <UI>Approve</UI> or <UI>Reject</UI>. In the window that opens, you can add an optional review note for the buyer.
+</Step>
+<Step title="Confirm">
+Type `refund` to confirm, then select <UI>Approve refund</UI> or <UI>Reject refund</UI>.
+</Step>
+</Steps>
+
+Approving a refund sends the money back through the provider the buyer paid with, marks the ticket as refunded, and removes the buyer's access to the item. The buyer is notified either way. You can use the message button in the window to talk to the buyer first.
+
+Subscribers manage or cancel their own subscriptions under <UI>Settings</UI> and <UI>Subscriptions</UI>, with <UI>Manage billing in Stripe</UI>. See [Tickets and subscriptions](/explore/tickets-and-subscriptions) for what buyers see.
+
+## What happens next
+
+- Your plans and tickets appear on your community page and on the items they unlock.
+- Keep Stripe's status on <UI>Payments active</UI>. If Stripe asks for more information, the Monetize page shows a notice with a button to continue.
+- Questions about a payout belong in your Stripe dashboard: <UI>Open Stripe dashboard</UI>.
+
+## Related
+
+- [Members and applications](/community/members-and-applications)
+- [Roles and permissions](/community/roles-and-permissions)
+- [Create an event](/create/create-an-event)
+- [Tickets and subscriptions](/explore/tickets-and-subscriptions)

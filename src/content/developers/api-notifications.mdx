@@ -1,0 +1,275 @@
+---
+title: Notifications
+description: Read, mark, delete and mute the notifications of the account behind an API key.
+accent: developer
+---
+
+Use these endpoints to build an inbox view, show an unread badge, forward Hive3 notifications to another tool, or mute noisy sources. Notifications always belong to the key owner's own account; these routes do not accept `?account=`.
+
+Some field names still say `person` and `community`. In the API both identify accounts: a "community" is an account that other accounts join, and IDs of either kind are account IDs. API access needs a Honey Bee plan or above; see the [developer overview](/developers). Errors and rate limits follow [Requests, errors and limits](/developers/api-conventions#errors).
+
+Notification lists do not use cursors. They take `limit`, `offset` and `unreadOnly`, and return `hasMore` inside `data` instead of a [`page` object](/developers/api-conventions#pagination).
+
+Each endpoint shows curl. Endpoints with a request body or a list response also show JavaScript and Python; the others follow the same pattern with the same headers.
+
+## Notifications
+
+### List notifications
+
+<Endpoint method="GET" path="/api/v1/notifications" scopes={["account:read"]}>
+
+Returns your notifications, newest first, without deleted ones. Non-numeric or non-positive values for `limit` and `offset` fall back to the defaults, and values above the maximum are reduced to it.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `limit` | query | integer | No | Items to return, 1 to 100. Default 20. |
+| `offset` | query | integer | No | Items to skip, 0 to 1,000. Default 0. |
+| `unreadOnly` | query | boolean | No | Pass `true` to return only unread notifications. Any other value returns all. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl "https://app.hive3.tech/api/v1/notifications?unreadOnly=true&limit=20" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+</Tab>
+<Tab>
+
+```js
+const url = "https://app.hive3.tech/api/v1/notifications?unreadOnly=true&limit=20";
+const res = await fetch(url, {
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}` },
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.get(
+    "https://app.hive3.tech/api/v1/notifications",
+    params={"unreadOnly": "true", "limit": 20},
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`. To read the next page, send `offset` plus the number of items returned while `hasMore` is `true`. `total` is not a full count: it is the end of the current page, plus one when more items remain. `unreadCount` counts up to 1,000 unread notifications. `data` on each notification holds the notification's own fields plus `actorId`, `entityType` and `entityId`; account-valued fields are named `personId` or `communityId`.
+
+```json
+{
+  "data": {
+    "notifications": [
+      {
+        "id": "notification_123",
+        "type": "event_rsvp",
+        "title": "New RSVP",
+        "message": "Grace Hopper is attending Launch Night.",
+        "read": false,
+        "readAt": null,
+        "createdAt": "2026-10-27T09:15:00.000Z",
+        "data": { "actorId": "account_789", "entityType": "event", "entityId": "event_123" }
+      }
+    ],
+    "hasMore": false,
+    "total": 1,
+    "unreadCount": 1
+  }
+}
+```
+
+</Endpoint>
+
+### Count unread notifications
+
+<Endpoint method="GET" path="/api/v1/notifications/unread-count" scopes={["account:read"]}>
+
+Returns how many unread notifications you have, up to 1,000.
+
+```bash
+curl https://app.hive3.tech/api/v1/notifications/unread-count \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": { "unreadCount": 3 } }
+```
+
+</Endpoint>
+
+### Mark one notification read
+
+<Endpoint method="POST" path="/api/v1/notifications/{notificationId}/read" scopes={["account:write"]}>
+
+Marks a notification read. Marking a notification that is already read succeeds. Limited to 240 requests per minute.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `notificationId` | path | string | Yes | ID from the notification list. |
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/notifications/notification_123/read \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": { "id": "notification_123" } }
+```
+
+- `404 not_found`: `Notification not found`, for an unknown ID, a deleted notification, or one that belongs to another account.
+
+</Endpoint>
+
+### Mark all notifications read
+
+<Endpoint method="POST" path="/api/v1/notifications/mark-all-read" scopes={["account:write"]}>
+
+Marks every unread notification read, up to 5,000 per request. `updated` is the number of notifications changed; if it is large, call again until it reaches `0`. There is no request body. Limited to 30 requests per minute.
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/notifications/mark-all-read \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": { "updated": 12 } }
+```
+
+- `429 rate_limited`: `Too many notification updates`.
+
+</Endpoint>
+
+### Delete a notification
+
+<Endpoint method="DELETE" path="/api/v1/notifications/{notificationId}" scopes={["account:write"]}>
+
+Removes a notification from your inbox. It no longer appears in lists or in the unread count. Limited to 120 requests per minute.
+
+```bash
+curl -X DELETE https://app.hive3.tech/api/v1/notifications/notification_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": { "id": "notification_123", "removed": true } }
+```
+
+- `404 not_found`: `Notification not found`.
+
+</Endpoint>
+
+## Mutes
+
+A mute stops a source from notifying you. Mutes affect new notifications; notifications already in your inbox stay. Mute keys are stored in the account's `mutedNotifications` preference, which [`PATCH /api/v1/account/preferences`](/developers/api-account-settings#preferences) can replace as a whole.
+
+### List mutes
+
+<Endpoint method="GET" path="/api/v1/notification-mutes" scopes={["account:read"]}>
+
+Returns the account's mutes. `id` is the mute key, such as `event:event_123`. `scopeId` is `null` for `system`. `createdAt` is when the account's preferences were first saved, not when the mute was added.
+
+```bash
+curl https://app.hive3.tech/api/v1/notification-mutes \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. Mutes saved with the `community` or `person` scope are listed as `account`.
+
+```json
+{
+  "data": {
+    "mutes": [
+      {
+        "id": "event:event_123",
+        "scope": "event",
+        "scopeId": "event_123",
+        "createdAt": "2026-10-01T09:30:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+</Endpoint>
+
+### Mute or unmute a source
+
+<Endpoint method="PATCH" path="/api/v1/notification-mutes" scopes={["account:write"]}>
+
+Adds or removes one mute. Muting something that is already muted, or unmuting something that is not, succeeds. Limited to 60 requests per minute; bodies are limited to 16 KiB.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `scope` | body | string | Yes | `system` mutes all notifications. `account`, `person` and `community` mute notifications triggered by one account. `event`, `course`, `job`, `content` and `quest` mute notifications about one item. Use only these values. |
+| `muted` | body | boolean | Yes | `true` to mute, `false` to unmute. |
+| `scopeId` | body | string | For account scopes | Account ID or handle for `account`, `person` and `community`. For the other scopes (except `system`), the ID of the item. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/notification-mutes \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"scope":"event","scopeId":"event_123","muted":true}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/notification-mutes", {
+  method: "PATCH",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ scope: "event", scopeId: "event_123", muted: true }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/notification-mutes",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"scope": "event", "scopeId": "event_123", "muted": True},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`. For account scopes the response reports `scope` as `account` and `scopeId` as the account's ID.
+
+```json
+{ "data": { "muted": true, "scope": "event", "scopeId": "event_123" } }
+```
+
+- `400 invalid_request`: `scope and muted are required`, or `scopeId is required for account mutes`.
+- `404 not_found`: `Account not found`, when `scopeId` matches no account.
+- `429 rate_limited`: `Too many notification mute updates`.
+
+</Endpoint>

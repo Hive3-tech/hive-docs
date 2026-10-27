@@ -1,0 +1,280 @@
+---
+title: Account settings and profile builders
+description: Read account state, change preferences, disconnect linked communities, and save the overview, widgets and welcome page of a profile.
+accent: developer
+---
+
+Use these endpoints to mirror an account's settings in another tool, back up and restore a profile layout, or publish a welcome page from a script. The profile fields themselves are on [Account and profile](/developers/api-account).
+
+Some field names still say `community`. In the API a "community" is an account that other accounts join, and IDs of either kind are account IDs. API access needs a Honey Bee plan or above; see the [developer overview](/developers). Errors and rate limits follow [Requests, errors and limits](/developers/api-conventions#errors). JSON bodies are limited to 128 KiB.
+
+Each endpoint shows curl. Endpoints with a request body also show JavaScript and Python; the others follow the same pattern with the same headers.
+
+## Account state
+
+<Endpoint method="GET" path="/api/v1/account" scopes={["account:read"]}>
+
+Returns the key owner's account status, saved preferences and linked communities in one call. The deletion timestamps are Unix milliseconds and are `null` unless a deletion was requested or cancelled; see [Data export, deletion and key revocation](/developers/api-account-data).
+
+```bash
+curl https://app.hive3.tech/api/v1/account \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `linkedAt` is an ISO 8601 timestamp.
+
+```json
+{
+  "data": {
+    "accountStatus": "active",
+    "accountDeletionRequestedAt": null,
+    "accountDeletionScheduledAt": null,
+    "accountDeletionCancelledAt": null,
+    "preferences": { "theme": "system", "mutedNotifications": [] },
+    "linkedCommunities": [
+      {
+        "communityId": "account_456",
+        "communityName": "Design Guild",
+        "communityAvatar": null,
+        "linkedAt": "2026-10-01T09:30:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+</Endpoint>
+
+## Preferences
+
+<Endpoint method="PATCH" path="/api/v1/account/preferences" scopes={["account:write"]}>
+
+Saves the theme and the full list of muted notification keys. Fields you leave out keep their value, and fields with an unsupported type or value are ignored. To mute one source without rewriting the list, use [notification mutes](/developers/api-notifications#mutes). Limited to 60 requests per minute.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `theme` | body | string | No | `light`, `dark` or `system`. |
+| `mutedNotifications` | body | string[] | No | Replaces the whole list. Keys look like `system`, `account:account_456` or `event:event_123`. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/account/preferences \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"theme":"dark"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/account/preferences", {
+  method: "PATCH",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ theme: "dark" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/account/preferences",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"theme": "dark"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200` with the saved values. `updatedAt` is Unix milliseconds.
+
+```json
+{ "data": { "mutedNotifications": [], "theme": "dark", "updatedAt": 1793000000000 } }
+```
+
+- `400 invalid_request`: malformed JSON.
+
+</Endpoint>
+
+## Linked communities
+
+Linked communities are communities connected to your account through your earlier consent. Disconnecting revokes that consent.
+
+<Endpoint method="GET" path="/api/v1/account/linked-communities" scopes={["account:read"]}>
+
+Returns the `linkedCommunities` array from the account state above as `data`.
+
+```bash
+curl https://app.hive3.tech/api/v1/account/linked-communities \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{
+  "data": [
+    {
+      "communityId": "account_456",
+      "communityName": "Design Guild",
+      "communityAvatar": null,
+      "linkedAt": "2026-10-01T09:30:00.000Z"
+    }
+  ]
+}
+```
+
+</Endpoint>
+
+<Endpoint method="DELETE" path="/api/v1/account/linked-communities/{communityId}" scopes={["account:write"]}>
+
+Revokes the link to one community. It succeeds even when that community was not linked. `communityId` is an account ID or handle. Limited to 30 requests per minute.
+
+```bash
+curl -X DELETE https://app.hive3.tech/api/v1/account/linked-communities/account_456 \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": { "communityId": "account_456", "success": true } }
+```
+
+- `404 not_found`: `Community not found`, when no account matches `communityId`.
+
+</Endpoint>
+
+## Profile builders
+
+A profile has three builder documents: `overview`, `widgets` and `welcome-page`. They hold the layout that the Hive3 app's page builders save. Read a document with `GET`, change it, and send it back with `PATCH`.
+
+The three routes accept the same optional `account` query parameter as the profile routes, with the same rules; see [Managed accounts](/developers/api-account#managed-accounts).
+
+<Endpoint method="GET" path="/api/v1/profile/{builder}" scopes={["account:read"]}>
+
+`builder` is `overview`, `widgets` or `welcome-page`. Returns the saved document, or `null` as `data` when nothing has been saved yet. Documents carry `ownerType: "person"` in every case, which is a leftover of the older field names.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `builder` | path | string | Yes | `overview`, `widgets` or `welcome-page`. |
+| `account` | query | string | No | Managed account ID or handle. |
+
+```bash
+curl https://app.hive3.tech/api/v1/profile/welcome-page \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. For `overview` and `widgets` the saved config fields are returned alongside `createdAt`, `hasStoredConfig`, `ownerId`, `ownerType` and `updatedAt`. A welcome page looks like this:
+
+```json
+{
+  "data": {
+    "ownerId": "account_123",
+    "ownerType": "person",
+    "hasStoredConfig": true,
+    "published": true,
+    "spotlight": { "type": "none" },
+    "sections": [],
+    "subscriptionPlans": [],
+    "createdAt": 1793000000000,
+    "updatedAt": 1793000000000
+  }
+}
+```
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/profile/{builder}" scopes={["account:write"]}>
+
+Replaces the saved document and returns it in the shape above. Send the config either as the whole body or under a `config` key. Limited to 60 requests per minute per route, and to 500 builder saves per day per key owner. Saves to a managed account count against the key owner.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `builder` | path | string | Yes | `overview`, `widgets` or `welcome-page`. |
+| `account` | query | string | No | Managed account ID or handle. |
+| `config` | body | object | No | The document. Without it, the body itself is the document. For `overview` and `widgets`, export the current document with `GET`, edit it and send it back. |
+
+Every config must be plain JSON of at most 128 KiB, 12 levels deep, 4,096 values, 256 items per array, 128 keys per object and 16 KiB per string. A welcome page is also checked strictly:
+
+- `spotlight.type`: `none`, `custom`, `subscription`, `event`, `course`, `quest`, `content` or `job`.
+- `sections`: an array of `{ "sectionKey", "mode", "isEnabled", "maxItems", "entries", "title"? }`. `sectionKey` is `subscriptions`, `events`, `courses`, `content`, `quests` or `jobs`; `mode` is `auto` or `curated`.
+- Each entry needs `entityType` (`subscription`, `event`, `course`, `quest`, `content` or `job`), `entityId` and `sortOrder`.
+- `published` defaults to `true`; `layout` and `subscriptionPlans` (default empty) are optional.
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/profile/welcome-page \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"published":true,"spotlight":{"type":"none"},"sections":[{"sectionKey":"events","mode":"curated","isEnabled":true,"maxItems":3,"entries":[{"entityType":"event","entityId":"event_123","sortOrder":0}]}]}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const config = {
+  published: true,
+  spotlight: { type: "none" },
+  sections: [{
+    sectionKey: "events", mode: "curated", isEnabled: true, maxItems: 3,
+    entries: [{ entityType: "event", entityId: "event_123", sortOrder: 0 }],
+  }],
+};
+const res = await fetch("https://app.hive3.tech/api/v1/profile/welcome-page", {
+  method: "PATCH",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ config }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+config = {
+    "published": True,
+    "spotlight": {"type": "none"},
+    "sections": [{
+        "sectionKey": "events", "mode": "curated", "isEnabled": True, "maxItems": 3,
+        "entries": [{"entityType": "event", "entityId": "event_123", "sortOrder": 0}],
+    }],
+}
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/profile/welcome-page",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"config": config},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200` with the saved document.
+
+- `400 invalid_request`: the config breaks a limit above (`Invalid profile configuration: …`), a welcome page uses a value it does not accept, or the daily save limit was reached.
+- `429 rate_limited`: more than 60 saves in a minute; wait for `Retry-After`.
+
+</Endpoint>

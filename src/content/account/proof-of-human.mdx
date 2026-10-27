@@ -1,0 +1,112 @@
+---
+title: Liveness and proof of human
+description: What the Camera Liveness Check is and is not, and how to link World ID or Human ID to show a badge on your profile.
+accent: default
+---
+
+Hive3 offers three optional badges you can show on your profile: the Camera Liveness Check, World ID and Human ID. They work differently and make different claims, so this page keeps them apart.
+
+<Path items={["Settings", "Account"]} />
+
+All three are in the <UI>Account</UI> section of Settings, below <UI>Security</UI>.
+
+## Camera Liveness Check
+
+The Camera Liveness Check uses your camera to run a short, on-device check that a live face is in front of the screen. Hive3 describes it as a **client-unattested** check. It is a local check that runs in your browser.
+
+<Callout type="warning">
+This is not KYC or identity verification. It is a client-unattested completion, not KYC, identity, uniqueness, personhood, Sybil-resistance or adversarial-liveness verification. It creates no permanent credential and grants no consequential access.
+</Callout>
+
+### What stays on your device
+
+- Camera frames and landmark progress remain local, in memory and volatile. They are cleared when the attempt ends.
+- Hive3's server stores only account-linked method, policy, challenge, completion and expiry metadata. It receives no image, frame, landmark, descriptor or movement telemetry.
+
+### Run the check
+
+<Steps>
+<Step title="Open the card">
+In <UI>Account</UI> settings, find the <UI>Camera Liveness Check</UI> card. It tells you whether you have a current completion. If you have none, it reads "No current Camera Liveness completion."
+</Step>
+<Step title="Start">
+Select <UI>Start Camera Liveness Check</UI>. A window titled <UI>Before you start the Camera Liveness Check</UI> shows the notice above.
+</Step>
+<Step title="Acknowledge the notice">
+Tick the box that begins "I understand this is a client-unattested completion", then select <UI>Acknowledge and continue</UI>. You cannot continue until you tick it.
+</Step>
+<Step title="Allow the camera">
+Your browser asks to use your camera. Allow it. Hive3 loads its face detector on your device and starts the check.
+</Step>
+<Step title="Follow the prompts">
+The window, titled <UI>Camera Liveness Check</UI>, shows a cue for each step. When it asks, select <UI>Continue to blink</UI> and blink. If blink detection struggles, reduce glare or briefly take off your glasses for that step.
+</Step>
+</Steps>
+
+<Figure
+  src="/media/account/proof-of-human/camera-check-card.webp"
+  alt="The Camera Liveness Check card in Account settings showing a Start Camera Liveness Check button and a privacy note."
+  caption="The Camera Liveness Check card."
+/>
+
+### After the check
+
+The card reads "Client-asserted camera check completed", with the date you completed it and the date it expires, and a <UI>Current</UI> badge. While the check is current, a <UI>Camera Liveness Check</UI> badge can appear on your profile.
+
+A completion lasts 90 days. In the last 14 days the badge changes to <UI>Expiring</UI> and the button becomes <UI>Renew Camera Liveness Check</UI>. If it expires, the card says "Expired — complete a new check."
+
+If the check does not finish, the card says <UI>Camera Liveness Check did not complete</UI> and offers <UI>Retry Camera Liveness Check</UI>. If the card says the check is temporarily unavailable, try again later.
+
+## World ID
+
+World ID is a separate service, run by World, that you link to your Hive3 account. A linked World ID shows a badge such as <UI>World ID · Orb</UI> on your profile. Hive3 receives a zero-knowledge proof, not your identity.
+
+| Level | What it is |
+|---|---|
+| **Orb** | World's Orb verification. World describes it as showing that you are a unique human. |
+| **Selfie Check** | A lighter liveness check from World. It does not guarantee one person per account. |
+
+<Steps>
+<Step title="Open the World ID row">
+Under <UI>Proof of human</UI>, find <UI>World ID</UI>.
+</Step>
+<Step title="Choose a level">
+Select <UI>Verify with Orb</UI>, or <UI>Use Selfie Check</UI> for the lighter check.
+</Step>
+<Step title="Approve in World App">
+Follow the World ID window and approve the request in World App. Make sure World App is up to date, because Hive3 accepts World ID 4.0 credentials only.
+</Step>
+</Steps>
+
+A message confirms <UI>World ID linked to your Hive3 account</UI>. If you linked with Selfie Check and later verify at an Orb, select <UI>Upgrade to Orb</UI>. Select <UI>Unlink</UI> to remove it. If the row says World ID linking is not available yet, it is not turned on for your account yet.
+
+## Human ID
+
+Human ID, from human.tech, is a verification you complete once with a face check or a government ID. Hive3 looks for it on your linked wallet. A linked Human ID shows a badge such as <UI>Human ID · Biometrics</UI>.
+
+<Steps>
+<Step title="Verify with Human ID (if you have not)">
+Use <UI>Verify with biometrics</UI> or <UI>Verify with government ID</UI> in the row. These open Human ID's own site, where you verify with your wallet.
+</Step>
+<Step title="Check from Hive3">
+Back in Settings, select <UI>Already verified?</UI>. If you have no wallet linked yet, Hive3 asks you to connect the wallet you verified with. Otherwise it looks on the wallets you have already linked.
+</Step>
+<Step title="Link it">
+When Hive3 finds a verification, it links it and shows how long each method is valid. If it finds nothing, the row offers <UI>Connect that wallet</UI> in case you verified with a different wallet.
+</Step>
+</Steps>
+
+Select <UI>Check again</UI> to refresh a linked verification, or <UI>Unlink</UI> to remove it. If you verified before you joined, Hive3 may find and link it automatically the first time you open the row.
+
+## Good to know
+
+- A World ID or a Human ID wallet can back only one Hive3 account at a time. Unlinking frees it.
+- Hive3 stores which provider you linked, when, and the provider's anonymous identifier so it cannot be linked to a second account. Unlinking removes it.
+- The three badges are independent. A Camera Liveness Check badge does not mean you have a World ID or Human ID, and the other way round.
+- Each of these is optional. Hive3 describes World ID and Human ID as optional links that show a badge on your profile.
+
+## Related
+
+- [Sign in and security](/account/security)
+- [Wallets](/account/wallets)
+- [Privacy, export and deletion](/account/privacy-and-data)

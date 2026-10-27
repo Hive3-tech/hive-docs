@@ -1,0 +1,191 @@
+---
+title: "Quests: credits and objectives"
+description: Create and schedule quests through the API, including quest credits, objectives and the rules for quests that have started.
+accent: developer
+---
+
+Use these fields to publish quests with objectives from another system or an AI agent. Every quest you create spends one quest credit of the owning account, and the credit's plan sets the longest the quest can run. Quests use the shared operations in [Events, courses, content, quests and jobs](/developers/api-resources): list, get, update and archive on `/api/v1/quests`, with the same scopes, owner selector, visibility rules, `Idempotency-Key` header and limits (30 quest creates per day, 128 KiB per request). To enroll participants and review evidence, see [Participation workflows](/developers/api-workflows).
+
+The examples read the key from `HIVE_API_KEY`. Some field names still say `community` or `person`; both identify accounts.
+
+## Quest fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `title` | string | Required. |
+| `description` | string | Quest text. |
+| `questCreditPlan` | string | Required on create: `single` (7-day credit, quests up to 7 days) or `bundle` (30-day credit, quests up to 30 days). Fixed after creation. |
+| `startsAt` | string | Required on create. ISO 8601 with `Z` or an offset. |
+| `endsAt` | string | Optional end. Without it the quest runs 30 days from `startsAt`. |
+| `objectives` | array | What participants do. `tasks` is accepted as an alias. See [Objectives](#objectives). |
+| `autoEnroll` | boolean | Default `true`: participants join without approval. |
+| `credentials` | string array | IDs of credentials linked to the quest (`credentialIds` also works). |
+| `status` | string | Default `active`. Whether a quest is scheduled, active or ended follows `startsAt` and `endsAt`. |
+| `visibility`, `subscriptionId`, `badges` | | As in [Shared behavior](/developers/api-resources#shared-behavior). |
+
+The server owns `maxQuestDays`, `questCreditSource` and `questCreditId`; values you send for them are ignored. Responses show them in `data` together with `questCreditPlan`.
+
+### Objectives
+
+Objectives are stored as you send them. Each is an object:
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | string | Stable ID used when participants submit evidence. Defaults to the quest ID plus the position. |
+| `type` | string | `post_likes_given`, `post_comments_created`, `courses_completed`, `course_progress`, `metaverse_events_attended`, `virtual_events_attended`, `jobs_applied` or `custom`. Progress for the first seven is counted by Hive3; `custom` objectives are completed with evidence, and unknown types never advance. |
+| `name`, `shortDescription` | string | Labels shown to participants. |
+| `targetCount` | integer | How many times; default 1. |
+| `evidenceType` | string | For `custom`: `written`, `link` or `document`. |
+| `targetEventId`, `targetCourseId`, `targetJobId` | string | Limit an objective to one resource. |
+
+## Quest credits
+
+- Creating a quest spends one credit of the owning account (the community when you use the owner selector). The credit's length matches `questCreditPlan`.
+- The account's monthly allowance is spent first: Swarm includes one 7-day and one 30-day credit per UTC calendar month, Royal Hive two of each. Unused monthly credits expire at month end. Credits bought in the app are spent after that. Worker Bee and Honey Bee accounts have no monthly allowance.
+- With no credit left the request returns `403 forbidden` (`No 7-day quest credits left. Buy a quest credit to create this quest.`, or `30-day` for `bundle`). A request that fails validation spends no credit.
+- Archiving a quest does not refund its credit.
+- `questCreditPlan` is read without regard to case. A missing value returns `400` (`questCreditPlan is required: single (7-day) or bundle (30-day)`) and an unknown one returns `400` (`Quest credit plan not found: weekly`).
+
+## Schedule and duration
+
+A credited quest needs a valid `startsAt` (`Credited quests require a valid startsAt timestamp`), and a supplied `endsAt` must be valid too (`Quest endsAt must be a valid timestamp`). The span from `startsAt` to `endsAt` cannot exceed the plan: 7 days for `single` and 30 days for `bundle`, with one hour of tolerance for daylight-saving changes (`Quest duration cannot exceed 7 days for its quest credit plan`). Because an omitted `endsAt` means 30 days, a `single` quest always needs an explicit `endsAt` within 7 days.
+
+On `PATCH`, an omitted `startsAt` keeps the stored start; sending `startsAt`, including `null`, replaces it. The stored plan and `maxQuestDays` stay in force.
+
+### Quests that have started
+
+A quest is locked once its start time has passed or it has ended. A locked quest returns `409 conflict` on `PATCH` (`This quest has started and can no longer be edited.`) and on `DELETE` (`This quest has started and can no longer be cancelled.`). A quest created with a `startsAt` in the past is therefore locked from the first request. Quests whose `startsAt` is not a valid timestamp stay editable and cancellable. Archiving a quest that is already archived returns `200` again, like every other kind.
+
+## Create a quest
+
+<Endpoint method="POST" path="/api/v1/quests" scopes={["resources:write", "communities:write (community owner)"]}>
+
+Creates a quest, spends one quest credit and returns the quest. The example is a 7-day quest with two objectives.
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/quests \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: first-post-quest-001" \
+  -d '{"title":"Share Your First Post","description":"Post and comment in the feed.","questCreditPlan":"single","startsAt":"2030-03-01T00:00:00Z","endsAt":"2030-03-07T23:59:59Z","objectives":[{"id":"comments","type":"post_comments_created","name":"Comment on two posts","targetCount":2},{"id":"likes","type":"post_likes_given","name":"Like three posts","targetCount":3}]}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/quests", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+    "Idempotency-Key": "first-post-quest-001",
+  },
+  body: JSON.stringify({
+    title: "Share Your First Post",
+    description: "Post and comment in the feed.",
+    questCreditPlan: "single",
+    startsAt: "2030-03-01T00:00:00Z",
+    endsAt: "2030-03-07T23:59:59Z",
+    objectives: [
+      { id: "comments", type: "post_comments_created", name: "Comment on two posts", targetCount: 2 },
+      { id: "likes", type: "post_likes_given", name: "Like three posts", targetCount: 3 },
+    ],
+  }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/quests",
+    headers={
+        "Authorization": f"Bearer {os.environ['HIVE_API_KEY']}",
+        "Idempotency-Key": "first-post-quest-001",
+    },
+    json={
+        "title": "Share Your First Post",
+        "description": "Post and comment in the feed.",
+        "questCreditPlan": "single",
+        "startsAt": "2030-03-01T00:00:00Z",
+        "endsAt": "2030-03-07T23:59:59Z",
+        "objectives": [
+            {"id": "comments", "type": "post_comments_created", "name": "Comment on two posts", "targetCount": 2},
+            {"id": "likes", "type": "post_likes_given", "name": "Like three posts", "targetCount": 3},
+        ],
+    },
+)
+quest = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201`. `data` holds the accepted body plus the server-set credit fields; `questCreditSource` is `monthly` or `purchased`.
+
+```json
+{
+  "data": {
+    "id": "quest_123",
+    "type": "quest",
+    "title": "Share Your First Post",
+    "description": "Post and comment in the feed.",
+    "status": "active",
+    "visibility": "public",
+    "autoEnroll": true,
+    "badges": [],
+    "credentials": [],
+    "objectives": [
+      { "id": "comments", "type": "post_comments_created", "name": "Comment on two posts", "targetCount": 2 },
+      { "id": "likes", "type": "post_likes_given", "name": "Like three posts", "targetCount": 3 }
+    ],
+    "owner": { "type": "person", "personId": "account_123" },
+    "data": {
+      "title": "Share Your First Post",
+      "description": "Post and comment in the feed.",
+      "startsAt": "2030-03-01T00:00:00Z",
+      "endsAt": "2030-03-07T23:59:59Z",
+      "autoEnroll": true,
+      "visibility": "public",
+      "questCreditPlan": "single",
+      "maxQuestDays": 7,
+      "questCreditSource": "monthly"
+    },
+    "createdAt": 1767225600000,
+    "updatedAt": 1767225600000
+  }
+}
+```
+
+| Status | `code` | When |
+|---|---|---|
+| 400 | `invalid_request` | `Title is required`, a missing or unknown `questCreditPlan`, a missing or invalid `startsAt` or `endsAt`, or a duration over the plan limit. |
+| 403 | `forbidden` | No credit of that length left, the Worker Bee visibility or subscription rule, or a managed account outside the key's allowlist. |
+| 409 | `conflict` | The `Idempotency-Key` was used with a different request. |
+
+</Endpoint>
+
+## Update a quest
+
+<Endpoint method="PATCH" path="/api/v1/quests/{id}" scopes={["resources:write", "communities:write (community-owned)"]}>
+
+Partially updates a quest that has not started. The plan and its day limit stay as created, so a longer `endsAt` than the plan allows returns `400`.
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/quests/quest_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"description":"Post, comment and like in the feed.","endsAt":"2030-03-06T23:59:59Z"}'
+```
+
+Returns `200` with the updated quest. Errors: `400` (schedule or duration rules above), `404 not_found` (unknown or archived), `409 conflict` (the quest has started or ended).
+
+</Endpoint>

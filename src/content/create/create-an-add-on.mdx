@@ -1,0 +1,133 @@
+---
+title: Create an add-on
+description: List an extra, integration or service in the Honey Marketplace, and decide whether it is free or sold by subscription or ticket.
+accent: addons
+---
+
+An add-on is a listing in the Honey Marketplace for something you offer to other Hive3 members: an extra, an integration or a bundled service. Each listing has a banner, a description and an access rule. People open the listing, get access if it needs a purchase, and enable it on their account.
+
+**Who can do this:** any account on any plan, and the owner, admins and moderators of a community. Making an add-on members-only, or selling it by subscription or ticket, needs a [Honey Bee or higher](/start/plans) plan. A Worker Bee add-on is public. Each account can have up to 100 add-ons.
+
+<Walkthrough
+  src="/media/walkthroughs/create-an-add-on.mp4"
+  poster="/media/walkthroughs/create-an-add-on.poster.webp"
+  title="Create an add-on"
+  chapters={[
+    { at: 0, label: "Open Add Ons" },
+    { at: 6.5, label: "Basic info" },
+    { at: 23, label: "Access" },
+    { at: 25.5, label: "Publish" },
+  ]}
+/>
+
+## Start a new add-on
+
+<Path items={["My Hive", "My Dashboard", "Add Ons", "Create Add-on"]} />
+
+Open the dashboard of the account that is offering the add-on and select the <UI>Add Ons</UI> card. For a community, open [its dashboard](/create/your-dashboard) first. The <UI>Add-ons</UI> page opens with an <UI>Available Add-ons</UI> section and a <UI>Create Add-on</UI> button.
+
+The form is titled <UI>Create Add-on</UI>. A panel on the right shows its two steps, a preview card and the <UI>Back</UI> and <UI>Next</UI> buttons. Unlike events and courses, add-ons are not saved as drafts, so finish the form in one sitting.
+
+<Figure
+  src="/media/create/create-an-add-on/add-ons-page.webp"
+  alt="The Add-ons page with a Create Add-on button and the Available Add-ons grid."
+  caption="The Add-ons page."
+/>
+
+## Basic Info
+
+<Steps>
+<Step title="Add an Add-on Banner">
+Optional. Upload a wide image; 1200 × 400 pixels is recommended.
+</Step>
+<Step title="Enter the Title">
+Required. Up to 80 characters.
+</Step>
+<Step title="Write the Short Description">
+Required. Up to 160 characters. It appears on the marketplace card.
+</Step>
+<Step title="Add an External URL, if you have one">
+Optional. The field's hint is "Optional link to the add-on, docs, or install page." Hive3 stores the link with your add-on, but the add-on page does not display it, so put any link readers need in the description as well.
+</Step>
+<Step title="Write the Detailed Description">
+Required. Use the editor, up to 3,000 words, or select <UI>Upload Document</UI> and choose a PDF or Markdown file. Explain what the add-on does, who it is for and how to get started.
+</Step>
+<Step title="Choose badges">
+Up to 5 badges from the suggestions.
+</Step>
+</Steps>
+
+If your plan includes credentials, you also see a <UI>Credential image</UI> field. People who enable the add-on see the credential on its page.
+
+<Figure
+  src="/media/create/create-an-add-on/basic-info.webp"
+  alt="The Basic Info step of the Create Add-on form with banner, title, short description, external URL and detailed description."
+  caption="Basic Info."
+/>
+
+## Access
+
+This step is titled <UI>Add-on Access</UI>. Choose how people discover and get access.
+
+<Steps>
+<Step title="Choose the visibility">
+<UI>Public</UI> lets anyone view the add-on. <UI>Members only</UI> limits it to members or collaborators. <UI>Subscription / ticket</UI> requires a subscription or a one-time ticket purchase. Worker Bee accounts see only <UI>Public</UI>.
+</Step>
+<Step title="For paid access, connect payments">
+Connect Stripe for subscriptions and PayPal for one-time tickets in <UI>Monetize</UI>. See [Get paid](/community/get-paid).
+</Step>
+<Step title="Pick a plan or set a ticket price">
+Choose a plan under <UI>Select subscription</UI>, or turn on <UI>Enable one-time ticket pricing</UI> in the <UI>One-Time Add-on Ticket</UI> section and enter a <UI>Price</UI> and a <UI>Currency</UI> (USD, EUR or GBP). Paid access needs a subscription or a ticket. Owners and admins set prices.
+</Step>
+</Steps>
+
+If you do not choose paid access, owners and admins see a note that payments can be enabled later by editing the add-on.
+
+<Figure
+  src="/media/create/create-an-add-on/access.webp"
+  alt="The Add-on Access step with Public, Members only and Subscription / ticket options."
+  caption="Add-on Access."
+/>
+
+## Publish
+
+On the last step the button reads <UI>Publish Add-on</UI>. Select it and Hive3 asks <UI>Ready to publish?</UI>. Choose <UI>Create Add-on</UI> to confirm. Hive3 shows <UI>Add-on created successfully!</UI> and takes you to the add-on page.
+
+## What visitors see
+
+Visitors find your add-on in the <UI>Honey Marketplace</UI> in the sidebar, which has a search box and filters. Opening it shows your banner, title, description and badges, and an <UI>Access</UI> card.
+
+| Situation | Button the visitor sees |
+|---|---|
+| Free add-on | <UI>Enable Add-on</UI> |
+| Needs a subscription or ticket they do not have | <UI>Purchase Add-on</UI>, then <UI>Enable Add-on</UI> once paid |
+| Already enabled | <UI>Disable Add-on</UI> |
+
+Once enabled, the card shows <UI>Enabled</UI> and <UI>Renews</UI> dates. You see <UI>You manage this add-on.</UI> on your own add-on, and your account name and avatar identify the owner.
+
+<Figure
+  src="/media/create/create-an-add-on/add-on-page.webp"
+  alt="An add-on page with the banner, title and description, and the Access card on the right. As the owner you see You manage this add-on."
+  caption="The add-on page as the owner sees it."
+/>
+
+## Edit, hide or archive
+
+On your <UI>Add-ons</UI> page, the add-ons you created have a menu in the top corner of their card.
+
+- <UI>Edit</UI> reopens the form as <UI>Edit Add-on</UI>. The last button reads <UI>Update Add-on</UI>, and the confirmation reads <UI>Ready to update?</UI>. You can also select <UI>Edit Add-on</UI> on the add-on page.
+- <UI>Hide from profile</UI> removes the add-on from your public lists and from search without deleting it. Choose <UI>Unhide</UI> to bring it back.
+- <UI>Archive</UI> removes it. Add-ons you did not create do not show this menu.
+
+## Tips
+
+- Lead the description with what the add-on does for the person enabling it, not how it is built.
+- Start with <UI>Public</UI> and add payment later, once you know what the add-on is worth.
+- Use badges for the category people will search for.
+- Keep the short description under the limit by describing one benefit.
+
+## Related guides
+
+- [Get paid: subscriptions and tickets](/community/get-paid)
+- [Create and award credentials](/community/issue-credentials)
+- [Your dashboard](/create/your-dashboard)

@@ -1,0 +1,202 @@
+---
+title: Requests, errors and limits
+description: Base URL, response format, error codes, pagination, idempotency, rate limits and timestamp formats shared by every endpoint.
+accent: developer
+---
+
+Every endpoint follows the same conventions. Read this page once, then use the reference pages for the details of each area. All examples assume your key is in the `HIVE_API_KEY` environment variable; see [Authentication and API keys](/developers/api-authentication).
+
+## Base URL and requests
+
+All paths are served under one base URL, over HTTPS only:
+
+```text title="Base URL"
+https://app.hive3.tech/api/v1
+```
+
+- Send request bodies as a JSON object with `Content-Type: application/json`. An array or any other JSON value returns `400 invalid_request`.
+- Send filters and pagination as query parameters.
+- Identify the acting account only through the key. A request never needs, and cannot supply, a user ID as its authority.
+- Request bodies have size limits, from 16 KiB for small updates up to 256 KiB for courses and content. A larger body returns `413` with the code `invalid_request`.
+- The API is meant to be called from servers and scripts. Browsers on other websites are not allowed to call it, and a key placed in front-end code is exposed to every visitor.
+
+## Response format
+
+A successful response is a JSON object with a `data` field. List endpoints add a `page` object.
+
+```json title="One object"
+{ "data": { "id": "event_123", "title": "Portfolio night" } }
+```
+
+```json title="A list"
+{
+  "data": [{ "id": "event_123", "title": "Portfolio night" }],
+  "page": { "nextCursor": "1793126400000", "hasMore": true }
+}
+```
+
+Creates normally return `201`; reads and updates return `200`. Optional fields that are not set may be `null` or omitted; do not rely on a field being present unless the reference marks it as always returned. Some field names use the older words `person` and `community` where this documentation says account. Both are account IDs.
+
+## Errors
+
+Every response outside the `2xx` range has the same shape:
+
+```json title="Error response"
+{
+  "error": {
+    "code": "insufficient_scope",
+    "message": "API key does not include the required scope",
+    "requiredScopes": ["account:read"]
+  }
+}
+```
+
+Branch on `code`, which is stable. `message` is meant for people and can change. `requiredScopes` appears only on `insufficient_scope` errors.
+
+| Status | Code | Meaning |
+|---|---|---|
+| `400` | `invalid_request` | The JSON body or query parameters are malformed, or a value failed validation. The message names the problem. Also used for capacity limits, such as enrolling in a full event. |
+| `401` | `missing_authorization` | The `Authorization` header is absent. |
+| `401` | `malformed_authorization` | The header is not `Authorization: Bearer <api key>`. |
+| `401` | `invalid_api_key` | The key is unknown, revoked or expired, or its account is unavailable or scheduled for deletion. |
+| `403` | `insufficient_scope` | The key is valid but lacks the scope for this route. |
+| `403` | `plan_required` | The key owner's account is below Honey Bee. The key is kept and works again after an upgrade. |
+| `403` | `forbidden` | The key has the scope, but the account lacks the live role, ownership or plan the operation needs. |
+| `404` | `not_found` | The item does not exist, or is not visible to the key owner. |
+| `409` | `conflict` | A state conflict, such as reusing an idempotency key with a different request, or editing an event that has started. |
+| `413` | `invalid_request` | The request body is larger than the route allows. |
+| `429` | `rate_limited` | A rate limit was reached. See [Rate limits](#rate-limits). |
+| `500` | `server_error` | Something unexpected failed on Hive3's side. Retry later; if it persists, contact support. |
+
+A `404` is also returned when you ask for something you are not allowed to see, so that the API does not reveal whether it exists.
+
+## Pagination
+
+List endpoints accept `limit` and `cursor` unless the reference says otherwise.
+
+| Parameter | Notes |
+|---|---|
+| `limit` | Page size. Resource lists default to 25 and allow up to 100; a larger value is lowered to the maximum. A zero, negative or non-numeric value returns `400 invalid_request` on resource lists. Search allows 1 to 50 (default 20). |
+| `cursor` | The `page.nextCursor` value from the previous page. Treat it as opaque: store and return it, never build or parse it. |
+
+Lists are newest first and leave out archived items. When `page.hasMore` is `true`, pass `page.nextCursor` as `cursor` to continue; `nextCursor` is `null` on the last page. Walking `nextCursor` until `hasMore` is `false` visits the whole set.
+
+Two exceptions: notification lists use `limit`, `offset` and `unreadOnly` ([Notifications](/developers/api-notifications)), and several lists return a plain `data` array with no `page` object, capped as follows: event participants, course and quest enrollments, quest evidence and job applications (200 each), community applications (100) and members (200), plus wallets, linked communities and notification mutes. Notifications return `{ notifications, hasMore, total, unreadCount }` inside `data`.
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl "https://app.hive3.tech/api/v1/events?limit=50&cursor=1793126400000" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+</Tab>
+<Tab>
+
+```js
+const base = "https://app.hive3.tech/api/v1";
+const headers = { Authorization: `Bearer ${process.env.HIVE_API_KEY}` };
+const events = [];
+let cursor;
+do {
+  const url = new URL(`${base}/events`);
+  url.searchParams.set("limit", "100");
+  if (cursor) url.searchParams.set("cursor", cursor);
+  const { data, page } = await (await fetch(url, { headers })).json();
+  events.push(...data);
+  cursor = page.hasMore ? page.nextCursor : undefined;
+} while (cursor);
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+base = "https://app.hive3.tech/api/v1"
+headers = {"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"}
+events, cursor = [], None
+while True:
+    params = {"limit": 100, **({"cursor": cursor} if cursor else {})}
+    body = requests.get(f"{base}/events", headers=headers, params=params).json()
+    events += body["data"]
+    if not body["page"]["hasMore"]:
+        break
+    cursor = body["page"]["nextCursor"]
+```
+
+</Tab>
+</Tabs>
+
+## Idempotency
+
+Send an `Idempotency-Key` header on a create request so you can retry it after a timeout or dropped connection without creating a duplicate. It is read on these routes:
+
+- `POST` to `/posts`, `/events`, `/courses`, `/content`, `/quests` and `/jobs`
+- `POST /broadcasts`
+- `POST /ai-assistant/documents`
+
+```bash title="Create an event safely"
+curl https://app.hive3.tech/api/v1/events \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Idempotency-Key: portfolio-night-2026-11" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Portfolio night","description":"Bring two projects"}'
+```
+
+- Choose a unique value per intended action, such as a UUID or your own record ID. Keys are limited to 128 characters; longer values are cut.
+- Keys are scoped to your account and remembered for 48 hours.
+- A repeat with the same key, method, path and body returns the first response again, with the same status, and creates nothing new.
+- A repeat with the same key but a different body or path returns `409 conflict` with `Idempotency key was already used with a different request`.
+- Only successful creates are remembered. If the first attempt failed, retrying with the same key runs it again.
+- Other write routes ignore the header. Where an action is naturally repeatable, such as awarding a credential to someone who already has it, the reference says so.
+
+## Rate limits
+
+Limits protect the service and use fixed windows that start on the clock minute, hour or day, so a count resets at the next boundary rather than a fixed time after your first request.
+
+- **Account budget.** All keys of one account share **600 requests per minute**. Every request counts, including requests that fail with a missing scope.
+- **Route budgets.** Writes and expensive reads also have their own budget per account, summarized below. Budgets for creating and changing resources are kept separately for each kind (events, courses and so on) and for each workflow area.
+
+| Area | Budget |
+|---|---|
+| Create resource | 60 per minute per kind, plus per day: posts 100, events 20, courses 10, content 50, quests 30, jobs 20 |
+| Update / archive resource | 120 / 60 per minute per kind |
+| Create comment | 60 per minute and 500 per day |
+| Update or delete a comment | 90 per minute each |
+| Like a post or comment | 30 per minute each |
+| Workflow actions (enroll, apply, evidence) | 60 per minute for new actions, 120 per minute for decisions, per area |
+| RSVP changes | 10 per minute and 100 per day, shared with the app |
+| Membership join or apply / leave | 20 / 30 per minute |
+| Application review, role change, member removal | 120 per minute each |
+| Community access change | 30 per minute |
+| Profile update, builders, preferences | 60 per minute each; profile access 30 |
+| Upload URLs | 60 per minute and 1,000 per day |
+| Data export | 2 per hour |
+| Notifications | mark read 240, delete 120, mutes 60, mark all read 30 per minute |
+| Search | 60 per minute |
+| Broadcasts | writes 30 per minute; test 10 per hour; send 10 per hour |
+| Tickets | updates 60 per minute |
+| AI assistant | saving the assistant, upload URLs and attaching documents 30 per minute; deleting a document 60 |
+| Credential awards | 30 requests per minute and 500 people per day, shared with the app |
+
+When a limit is reached the API returns `429` with the code `rate_limited`. Route budgets return `Retry-After` (seconds to wait), except on post likes, comment edits, deletes and likes, and the notification write routes. The 600-per-minute account budget also has no `Retry-After`. Budgets shared with the app (RSVP changes, credential awards, quest evidence) do return it. Build your client to handle both:
+
+1. If `Retry-After` is present, wait at least that many seconds.
+2. If it is absent, wait for the next clock minute and add random jitter, then retry with exponential backoff.
+3. Spread bulk work over time instead of sending it in a burst, and retry only requests that are safe to repeat (reads, or creates sent with an `Idempotency-Key`).
+
+A few limits return `400 invalid_request` with a plain message instead of `429`: the per-day and per-item budgets behind post and comment likes, the shared profile builder save budget, the daily data-export limit, and the AI assistant document attach limits. Plan and cadence rules from the app, such as how often a plan may send broadcasts, are reported as `400` or `403` the same way. Read `error.message` and do not retry those automatically. Budgets are counted against the key owner's account, including when the key acts on a managed account.
+
+## Timestamps
+
+Timestamps you send are ISO 8601 strings that include an offset, for example `2030-01-01T10:00:00.000Z` or `2030-01-01T12:00:00+02:00`. A value without `Z` or an offset is rejected rather than guessed from a time zone.
+
+Timestamps in responses use two formats, depending on the object:
+
+| Object | Format | Example |
+|---|---|---|
+| Posts, events, courses, content, quests and jobs: `createdAt`, `updatedAt`, `archivedAt` | Unix time in milliseconds (number) | `1793126400000` |
+| Comments, workflow rows, notifications, applications, broadcasts, tickets, AI assistant, credentials | ISO 8601 in UTC (string) | `"2026-10-27T18:00:00.000Z"` |

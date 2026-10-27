@@ -1,0 +1,192 @@
+---
+title: CLI commands for resources and workflows
+description: Create and manage posts, events, courses, content, quests and jobs, and run RSVP, enrollment, evidence and application workflows from the hive CLI.
+accent: developer
+---
+
+Use these commands to publish events, courses, content, quests and jobs, and to run what happens around them: RSVPs, enrollments, attendance, quest evidence and job applications. All of them print JSON. Conventions such as exit codes, `--file` merging and `--account` are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference).
+
+These commands also exist in CLI version 0.3, so nothing on this page carries the (0.4+) marker.
+
+## Common actions
+
+`posts`, `events`, `courses`, `content`, `quests` and `jobs` share the same five actions. Replace `<kind>` with the family name.
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive <kind> list` | Lists items, newest first, archived items left out. | `--limit <n>`, `--cursor <cursor>`, `--owner-type <type>`, `--community-id <id>` | `resources:read` (`posts:read` for posts) |
+| `hive <kind> get <id>` | Reads one item you can see. | None | `resources:read` (`posts:read`) |
+| `hive <kind> create` | Creates an item. Prints the new item as JSON. | Fields, owner options and `--idempotency-key` below | `resources:write` (`posts:write`) |
+| `hive <kind> update <id>` | Changes fields of an item. At least one field is required. | Fields below and `--file`; no owner options | `resources:write` (`posts:write`) |
+| `hive <kind> archive <id>` | Archives the item; it is not deleted. | None | `resources:write` (`posts:write`) |
+
+For an item owned by a community, add `communities:write` to the write scopes and `communities:read` to reads on other accounts, and you need a current role there.
+
+| Field flag | Sets |
+|---|---|
+| `--title <text>` | `title` (required for everything except posts) |
+| `--body <text>` | `body` (required for posts) |
+| `--description <text>` | `description` |
+| `--content-type <type>` | `contentType` (used by content) |
+| `--image-url <url>` | `imageUrl` |
+| `--visibility <value>` | `public`, `protected` or `private`. Anything other than public needs Honey Bee or above on the owning account. |
+| `--file <path>` | A JSON object with any other fields. See [payload files](/developers/cli-commands#payload-files). |
+
+| Owner and list flag | What it does |
+|---|---|
+| `--owner-type <type>` | `person` or `community`. On `create` it picks who owns the new item. On `list` it only works together with `--community-id`; it is not a type filter. |
+| `--community-id <id>` | The community's account ID. Required whenever `--owner-type` is `community`. |
+| `--idempotency-key <key>` | Makes a retried `create` safe. See [idempotency](/developers/api-conventions#idempotency). |
+
+`--account` is not supported on these commands; use `--owner-type community --community-id <account-id>` to create for an account you help run, after `hive capabilities` shows it.
+
+Things to know before you create:
+
+- **Events** need RSVP approval by default. Put `"autoEnroll": true` in the file to accept attendees automatically. `eventSlots` entries need ISO 8601 `startsAt` and `endsAt` with a `Z` or offset, and each end must come after its start.
+- **Quests** need `questCreditPlan` (`single` for quests up to 7 days, `bundle` for up to 30) and spend one quest credit of the owning account. A credited quest needs a valid `startsAt`.
+- Once an event or quest has started, `update` and `archive` return `409 conflict`.
+- Plan rules apply as in the app. A Worker Bee account publishes publicly only and cannot attach subscriptions.
+
+```json title="event.json"
+{
+  "title": "Portfolio night",
+  "description": "Bring two projects for feedback.",
+  "visibility": "public",
+  "autoEnroll": true,
+  "location": "Online",
+  "eventSlots": [
+    { "startsAt": "2026-12-12T18:00:00Z", "endsAt": "2026-12-12T20:00:00Z" }
+  ]
+}
+```
+
+```bash title="Create, check and archive an event"
+hive events create --file event.json --idempotency-key portfolio-night-2026
+hive events list --limit 5
+hive events archive "<event-id>"
+```
+
+```bash title="Create for a community you manage"
+hive capabilities
+hive posts create --body "Moderator update" --owner-type community --community-id "<account-id>"
+```
+
+## Events
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive events participants <event-id>` | Lists RSVPs. Event managers only; the list includes primary email addresses. | None | `resources:read` |
+| `hive events rsvp <event-id>` | Creates your RSVP, or withdraws it. | `--enroll <bool>` (`false` withdraws), `--file <path>` | `resources:write` |
+| `hive events approve <event-id> <enrollment-id>` | Approves an RSVP. Needs the person's current access to the event. | None | `resources:write` |
+| `hive events deny <event-id> <enrollment-id>` | Denies an RSVP. | None | `resources:write` |
+| `hive events attendance <event-id> <enrollment-id>` | Records attendance. | `--attended <bool>`, `--file <path>` | `resources:write` |
+
+RSVPs share the app's limits of 10 per minute and 100 per day. Attendance needs an approved RSVP on an event that is not archived; the first recorded time is kept, the attendee is notified, and clearing attendance (`--attended false`) is refused with `409 conflict`. Treat approving, denying and recording attendance as decisions that need a human check.
+
+## Courses
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive courses enrollments <course-id>` | Lists enrollments. Course managers only. | None | `resources:read` |
+| `hive courses enroll <course-id>` | Enrolls you, or withdraws. | `--enroll <bool>`, `--file <path>` | `resources:write` |
+| `hive courses approve <course-id> <account-id>` | Approves a student's enrollment. `<account-id>` is the student's account ID. | None | `resources:write` |
+| `hive courses deny <course-id> <account-id>` | Denies a student's enrollment. | None | `resources:write` |
+| `hive courses complete <course-id> <lesson-id>` | Marks a lesson complete for you. | None | `resources:write` |
+
+```json title="course.json"
+{
+  "title": "Intro to critique",
+  "description": "Four short lessons.",
+  "visibility": "public",
+  "lessons": [
+    { "id": "lesson-1", "title": "Give useful feedback" },
+    { "id": "lesson-2", "title": "Receive feedback" }
+  ]
+}
+```
+
+## Content
+
+`hive content` has only the [common actions](#common-actions), with `--content-type <type>` choosing the kind of content (the default is `article`).
+
+```json title="content.json"
+{
+  "title": "Welcome guide",
+  "description": "How this community works.",
+  "contentType": "article",
+  "visibility": "public"
+}
+```
+
+## Quests
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive quests enrollments <quest-id>` | Lists enrollments. Quest managers only. | None | `resources:read` |
+| `hive quests enroll <quest-id>` | Enrolls you, or withdraws. | `--enroll <bool>`, `--file <path>` | `resources:write` |
+| `hive quests approve <quest-id> <enrollment-id>` | Approves an enrollment. | None | `resources:write` |
+| `hive quests deny <quest-id> <enrollment-id>` | Denies an enrollment. | None | `resources:write` |
+| `hive quests evidence list <quest-id>` | Lists submitted evidence. | `--status <status>`, for example `pending` | `resources:read` |
+| `hive quests evidence submit <quest-id>` | Submits evidence for an objective. | `--objective-id <id>` (required), `--content <text>`, `--file <path>` | `resources:write` |
+| `hive quests evidence approve <quest-id> <evidence-id>` | Approves evidence. | None | `resources:write` |
+| `hive quests evidence deny <quest-id> <evidence-id>` | Denies evidence. | None | `resources:write` |
+
+```json title="quest.json"
+{
+  "title": "Ship a portfolio page",
+  "description": "Publish a page and share the link.",
+  "questCreditPlan": "single",
+  "startsAt": "2026-12-01T00:00:00Z",
+  "endsAt": "2026-12-05T00:00:00Z",
+  "objectives": [
+    { "id": "objective-1", "type": "custom", "completionCriteria": "Submit a link", "evidenceType": "link" }
+  ]
+}
+```
+
+To attach a file as evidence, upload it first and reference the returned upload ID. Use the `byteSize` and `contentType` of the file you uploaded.
+
+```json title="evidence.json"
+{
+  "attachments": [
+    { "storageId": "<upload-id>", "fileName": "proof.pdf", "contentType": "application/pdf", "byteSize": 100000 }
+  ]
+}
+```
+
+```bash title="Submit and review evidence"
+hive upload ./proof.pdf --purpose document
+hive quests evidence submit "<quest-id>" --objective-id objective-1 --content "https://proof.example" --file evidence.json
+hive quests evidence list "<quest-id>" --status pending
+hive quests evidence approve "<quest-id>" "<evidence-id>"
+```
+
+## Jobs
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive jobs apply <job-id>` | Applies to a job. The file must contain `resume`. | `--file <path>` (required) | `resources:write` |
+| `hive jobs applications <job-id>` | Lists applications to a job. Job managers only; includes primary email addresses. | None | `resources:read` |
+| `hive jobs applications` | Lists your own applications. | None | `resources:read` |
+| `hive jobs status <application-id>` | Changes an application's status. | `--status <status>` (required): `pending`, `reviewed`, `accepted` or `rejected` | `resources:write` |
+
+`resume` and the optional `coverLetter` each need `fileName`, `contentType` and a positive `byteSize`, plus a `storageId` from `hive upload --purpose document`.
+
+```json title="application.json"
+{
+  "resume": { "storageId": "<upload-id>", "fileName": "resume.pdf", "contentType": "application/pdf", "byteSize": 124000 },
+  "coverLetter": { "storageId": "<upload-id>", "fileName": "cover-letter.pdf", "contentType": "application/pdf", "byteSize": 84000 }
+}
+```
+
+```json title="job.json"
+{
+  "title": "Community manager",
+  "description": "Run weekly events and welcome new members.",
+  "employerName": "Design Guild",
+  "location": "Remote",
+  "visibility": "public"
+}
+```
+
+Participant, enrollment and application lists include each person's primary email address when you manage the resource. Keep that output out of logs, chats and prompts.

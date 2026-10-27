@@ -1,0 +1,215 @@
+---
+title: CLI command reference
+description: Conventions, safety flags and the commands for sign-in, accounts, uploads, posts, notifications, wallets and communities.
+accent: developer
+---
+
+Use this page to look up a `hive` command, its flags and the scopes it needs. It covers how output, errors and exit codes work, the options shared by many commands, the confirmation flags, and the commands for sign-in, account and profile, uploads, posts and comments, notifications, wallets and NFTs, and communities. Events, courses, content, quests and jobs are on [Resources and workflows](/developers/cli-commands-resources); search, broadcasts, tickets, the AI assistant and credentials are on [Search, broadcasts, tickets, assistant, credentials](/developers/cli-commands-areas).
+
+Run `hive <command> --help` for the actions and flags of one command. `--help` or `-h` anywhere after a command prints that command's help and never runs it, including `logout`, `whoami`, `capabilities`, `login` and `update`. In versions before 0.4, `hive logout --help` signed you out and `whoami --help` and `capabilities --help` failed. Help never needs a login.
+
+## How to read this reference
+
+- `<id>` is a required value, `[--flag]` is optional. Write values that contain spaces in quotes.
+- **(0.4+)** marks commands and flags that exist only in CLI version 0.4 and later. Unmarked items also exist in 0.3. `npm install --global @hive3/cli` installs the latest release on npm; if it is older than 0.4, marked items are not available yet. `hive update --check` shows your version.
+- The **Scopes** column lists the scopes the key needs. When a command targets another account with `--account`, `--owner-type community` or a community ID, it also needs `communities:read` for reads or `communities:write` for writes, plus your current role on that account. See [scopes](/developers/api-authentication#scopes) and [managed accounts](/developers/api-authentication#managed-accounts).
+- A Read only key covers every `:read` scope in the tables. Anything that changes data needs Full access or exact scopes. See [CLI sign-in and configuration](/developers/cli-authentication#choose-read-only-or-full-access).
+
+## Output and exit codes
+
+Commands that return data print one pretty-printed JSON document on stdout. Successful API responses are wrapped in `data`; lists add a `page` object with `hasMore` and `nextCursor`. `login`, `logout`, `update`, `whoami`, `capabilities` and `profile` builder `export` print plain text. Help prints to stdout and exits 0.
+
+Errors go to stderr as one line. API errors have this form:
+
+```text title="API error"
+Hive API error 403 (insufficient_scope): API key does not include the required scope. Required scopes: posts:write.
+```
+
+Mistakes the CLI catches itself print only the message, for example `--confirm must exactly match the wallet address`. A `plan_required` error prints `Your Hive plan doesn't include API access: the API and CLI need Honey Bee or above.` and tells you to upgrade under Settings.
+
+| Exit code | Meaning |
+|---|---|
+| `0` | Success, including help output. |
+| `1` | Not signed in: `Not logged in. Run hive login first.` |
+| `2` | Any other error: unknown command or option, missing or invalid value, unreadable `--file`, an API error, or a network failure. |
+
+A server-side `401` (for example `invalid_api_key`) exits with `2`, not `1`. After a successful interactive command the CLI may print an update notice on stderr; it does not change the exit code. The CLI does not retry a `429 rate_limited`; wait and run the command again. See [rate limits](/developers/api-conventions#rate-limits) and [errors](/developers/api-conventions#errors).
+
+## Shared options
+
+### Pagination
+
+`--limit <n>` and `--cursor <cursor>` page through lists. Copy `nextCursor` from the previous response into `--cursor`. See [pagination](/developers/api-conventions#pagination).
+
+- Resource lists (`posts`, `events`, `courses`, `content`, `quests`, `jobs`) are newest first, default to 25 items and return at most 100. `--limit` must be a positive number.
+- `search` (0.4+) takes 1 to 50 (default 20). Broadcasts, tickets and credentials (0.4+) take a whole number from 1 to 100. Comments take a positive number. Notifications use `--limit` with `--offset` instead of a cursor.
+
+### Payload files
+
+`--file <path>` reads a JSON object from a file. A file that is not a JSON object stops the command with `<path> must contain a JSON object` (or `--file must contain a JSON object` for resource commands).
+
+- **Resource `create` and `update`, and workflow commands** apply their options left to right and merge top-level fields; a later value replaces an earlier one for the same field. Put `--file` first to let flags override it, or last to let the file override flags. Nested objects are replaced whole, not merged. `--owner-type` and `--community-id` always set `owner`, replacing any `owner` in the file.
+- **Broadcasts `create` and `update`** (0.4+) read the file first; flags always override it, in any order.
+- **Profile builders** (`overview`, `widgets`, `welcome-page` with `save` or `import`) send the whole file as the builder configuration; there is no merge.
+
+### Idempotency
+
+`--idempotency-key <key>` sends an `Idempotency-Key` header so a retry of a create does not create a second item. It is accepted by resource `create` commands, `broadcasts create` (0.4+) and `assistant documents add` (0.4+). See [idempotency](/developers/api-conventions#idempotency).
+
+## Act on another account
+
+`--account <id-or-handle>` runs a command against an account where you are owner, admin or moderator, instead of your own. Give it once, after the action name. Giving it twice stops the command with `--account may only be given once`.
+
+| Supported by | Notes |
+|---|---|
+| `profile get`, `update`, `handle`, `access`, and every builder action | Reads need `communities:read`, writes `communities:write`. |
+| `broadcasts list`, `audience`, `create` (0.4+) | Other broadcast actions use the account that owns the broadcast. |
+| `tickets list` (0.4+) | Owners and admins only. Other ticket actions use the ticket's account. |
+| `assistant get`, `update`, `documents`, `documents add` (0.4+) | `documents delete` uses the document's account. |
+| `credentials list` (0.4+) | Other credential actions use the credential's account. |
+
+Every other command acts as the signed-in account and rejects `--account` as an unknown option. To create or list resources for another account, use `--owner-type community --community-id <account-id>`. To work on members and applications, use the community commands. Moderators cannot change roles or anything involving payments. Run `hive capabilities` first to see which accounts the key can reach.
+
+## Confirmation flags
+
+Some commands refuse to run without an explicit confirmation.
+
+| Command | Required confirmation |
+|---|---|
+| `wallets remove <address>` | `--confirm <address>` |
+| `communities remove-member <community-id> <account-id>` | `--confirm <account-id>` |
+| `account linked-communities disconnect <community-id>` (0.4+) | `--confirm <community-id>` |
+| `assistant documents delete <document-id>` (0.4+) | `--confirm <document-id>` |
+| `broadcasts send <broadcast-id>` (0.4+) | `--yes` |
+| `credentials award <credential-id>` (0.4+) | `--yes` |
+
+`--confirm` must repeat the exact ID. For `wallets remove`, `communities remove-member` and `linked-communities disconnect`, place it directly after the ID. `--yes` is a switch with no value. Other risky commands have no flag: `archive`, role changes, application and evidence decisions, attendance and replacing builder JSON run immediately. Treat those as confirmation-worthy yourself. See [Use Hive3 with AI agents](/developers/cli-agents#confirm-before-risky-actions).
+
+Account deletion cannot be requested from the CLI. `hive account deletion request` stops with `Account deletion can't be requested from the CLI. Delete your account in the Hive app under Settings.` Version 0.3 accepted `--confirm DELETE` for it; 0.4 and later never do.
+
+## Sign in and session
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive login` | Starts browser approval and stores the key. | `--access <mode>` (`read` or `full`), `--scope <scope>` (repeatable), `--label <label>`, `--no-open`, `--timeout-ms <ms>`, `--api-url <url>`, `--app-url <url>`, `-h`, `--help` | None; the approving account needs Honey Bee or above |
+| `hive logout` | Revokes the key on the server, deletes the local file. | `-h`, `--help` | None |
+| `hive update` | Installs the latest published version. | None | None |
+| `hive update --check` | Reports the latest version without installing. | `--check`, `-h`, `--help` | None |
+| `hive whoami` | Prints the account, the key's scopes and the accounts it can act on. | `-h`, `--help` | `account:read` |
+| `hive capabilities` | Lists the accounts the key can act on with role and abilities (`read`, `write`, `moderate`). | `-h`, `--help` | `communities:read` |
+| `hive help`, `hive --help` | Prints the command list. | None | None |
+
+Each flag of `hive login` is described in [CLI sign-in and configuration](/developers/cli-authentication#login-options). `hive logout`, `hive whoami` and `hive capabilities` take no other options.
+
+## Account and profile
+
+`profile` actions accept `--account <id-or-handle>`. The `account`, `wallets` and `nfts` commands always act as you.
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive profile get` | Reads the profile. | `--account` | `account:read` |
+| `hive profile update` | Changes profile fields. At least one field is required. | `--name`, `--username`, `--title`, `--experience`, `--short-description`, `--description`, `--location`, `--image-storage-id <upload-id>`, `--hero-image-storage-id <upload-id>`, `--attachment-storage-id <upload-id>`, `--show-collaborator-count <bool>`, `--custom-collaborator-count <n>`, `--badges <a,b>`, `--socials-json <json>`, `--account` | `account:write` |
+| `hive profile handle <handle>` | Checks whether a handle is available. | `--account` | `account:read` |
+| `hive profile access --type <type>` | Sets who can join: `open`, `private`, `open-subscription` or `private-subscription`. Non-open types need Honey Bee or above. | `--type` (required), `--subscription-id <id>`, `--account` | `account:write` |
+| `hive profile overview get`, `widgets get`, `welcome-page get` | Reads a builder configuration. | `--account` | `account:read` |
+| `hive profile overview save`, `widgets save`, `welcome-page save` | Replaces the builder configuration with the file. `import` does the same. | `--file <path>` (required), `--account` | `account:write` |
+| `hive profile overview export`, `widgets export`, `welcome-page export` | Writes the configuration to a local file. | `--file <path>` (required), `--account` | `account:read` |
+| `hive account get` | Reads account settings and linked communities. | None | `account:read` |
+| `hive account preferences` | Changes preferences. | `--theme <theme>` (`light`, `dark` or `system`), `--muted-notifications <a,b>` | `account:write` |
+| `hive account export` | Requests a data export; the response contains a download link. Limited to 2 per hour. | None | `account:write` |
+| `hive account linked-communities` | Lists linked communities. `list` is the default action. (0.4+) | None | `account:read` |
+| `hive account linked-communities disconnect <community-id>` | Disconnects a linked community. (0.4+) | `--confirm <community-id>` | `account:write` |
+| `hive account deletion cancel` | Cancels a pending account deletion. | None | `account:write` |
+
+Boolean values accept `true`, `false`, `yes`, `no`, `1` and `0`. `--badges` and `--muted-notifications` take comma-separated lists. A builder `save` replaces what is stored; run `export` first to keep a copy. `<upload-id>` is the ID returned by `hive upload`.
+
+```bash title="Edit a community's profile"
+hive profile update --account design-guild --name "Design Guild" --short-description "Weekly critiques"
+hive profile overview export --account design-guild --file overview.json
+hive profile overview save --account design-guild --file overview.json
+```
+
+## Uploads
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive upload <file>` | Uploads an image or document as the signed-in account and prints its upload ID. | `--purpose <purpose>` (`image` default, or `document`), `--content-type <mime>` | `account:write` |
+
+Images: GIF, JPEG, PNG and WebP up to 8 MB. Documents: PDF, DOC, DOCX, Markdown and plain text up to 25 MB. The CLI infers the content type from the file extension; pass `--content-type` for other extensions. `--account` is not supported; an upload by one account can still be attached to a managed account's profile. Before it sends any file, the CLI checks the upload address the server returns. It refuses the upload unless the address is `https` (plain `http` only for a local development server), points at the API host or a Hive3 storage host, and is the Hive3 upload path; redirects are refused and no key is sent with the file. The response is JSON containing the upload ID; put it in `--image-storage-id`, in a profile flag, or in a `--file` payload.
+
+```bash title="Upload and attach"
+hive upload ./banner.png --purpose image
+hive profile update --hero-image-storage-id "<upload-id>"
+```
+
+## Posts and comments
+
+`posts` uses the common resource actions described in [Resources and workflows](/developers/cli-commands-resources#common-actions): `list`, `get <id>`, `create`, `update <id>` and `archive <id>`, with the same flags, owner options and `--file` rules. A post needs a body: `--body`, or `body` in the file.
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive posts list`, `hive posts get <id>` | Reads posts. | `--limit`, `--cursor`, `--owner-type`, `--community-id` (list only) | `posts:read` |
+| `hive posts create` | Creates a post. | `--body`, `--title`, `--description`, `--image-url`, `--visibility`, `--file`, `--owner-type`, `--community-id`, `--idempotency-key` | `posts:write` (+ `communities:write` for community-owned) |
+| `hive posts update <id>`, `hive posts archive <id>` | Edits or archives a post. `update` takes the same fields as `create`, without owner flags. | `--body`, `--title`, `--description`, `--content-type`, `--image-url`, `--visibility`, `--file` | `posts:write` |
+| `hive posts like <id>` | Toggles your like. | None | `posts:write` |
+| `hive comments list` | Lists comments on a post. | `--post-id <id>` (required), `--limit`, `--cursor` | `posts:read` |
+| `hive comments create` | Adds a comment. | `--post-id <id>`, `--content <text>` (both required), `--image-url <url>` | `posts:write` |
+| `hive comments update <id>` | Edits a comment. | `--content <text>` (required) | `posts:write` |
+| `hive comments delete <id>` | Deletes a comment. Deleting another person's comment on a post you do not own is moderation and also needs `communities:moderate` or `communities:write`. | None | `posts:write` |
+| `hive comments like <id>` | Toggles your like on a comment. | None | `posts:write` |
+
+```bash title="Post and comment"
+hive posts create --body "Office hours move to Thursday." --visibility public
+hive comments create --post-id "<post-id>" --content "See you there"
+```
+
+## Notifications
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive notifications list` | Lists notifications. | `--limit <n>`, `--offset <n>`, `--unread-only` | `account:read` |
+| `hive notifications unread-count` | Prints the unread count. (0.4+) | None | `account:read` |
+| `hive notifications read <id>` | Marks one notification read. | None | `account:write` |
+| `hive notifications read-all` | Marks every notification read. | None | `account:write` |
+| `hive notifications delete <id>` | Removes a notification. | None | `account:write` |
+| `hive notifications mutes` | Lists mutes. `list` is the default action. | None | `account:read` |
+| `hive notifications mutes set` | Mutes or unmutes one scope. | `--scope <scope>`, `--muted <bool>` (both required), `--scope-id <id>` | `account:write` |
+
+`--scope` is one of `system`, `account`, `person`, `community`, `event`, `course`, `job`, `content` or `quest`. `account`, `person` and `community` need `--scope-id`. `--offset` must be zero or greater.
+
+## Wallets and NFTs
+
+The CLI changes only which wallets and NFTs are visible. It never signs, transfers or holds wallet keys.
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive wallets list` | Lists linked wallets. | None | `account:read` |
+| `hive wallets default <address>` | Sets the default wallet. | None | `account:write` |
+| `hive wallets visibility <address>` | Shows or hides a wallet on your public profile. | `--public <bool>` (required) | `account:write` |
+| `hive wallets remove <address>` | Removes a linked wallet. | `--confirm <address>` (required) | `account:write` |
+| `hive nfts visibility` | Shows or hides your NFTs publicly. | `--public <bool>` (required) | `account:write` |
+
+## Communities
+
+These commands run as you. `<community-id>` is the account ID of the community. Reads on a community and the actions that need a role require your current role; see the table.
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive communities join <community-id>` | Joins, or applies to, a community. | `--message <text>` | `communities:write` |
+| `hive communities apply <community-id>` | Applies to a community. | `--message <text>` | `communities:write` |
+| `hive communities leave <community-id>` | Leaves a community. | `--message <text>` | `communities:write` |
+| `hive communities applications <community-id>` | Lists applications. Owner, admin or moderator. | None | `communities:read` |
+| `hive communities approve <application-id>` | Accepts an application. Owner, admin or moderator. | None | `communities:moderate` |
+| `hive communities deny <application-id>` | Rejects an application. Owner, admin or moderator. | None | `communities:moderate` |
+| `hive communities members <community-id>` | Lists up to 200 accepted members. Owner, admin or moderator. | None | `communities:read` |
+| `hive communities role <community-id> <account-id>` | Sets a member's role. Owner or admin. | `--role <role>` (`admin`, `moderator` or `member`; required) | `communities:moderate` |
+| `hive communities remove-member <community-id> <account-id>` | Removes a member. Moderators can remove only plain members. | `--confirm <account-id>` (required) | `communities:moderate` |
+| `hive communities access <community-id>` | Changes the community's access type. Subscription types need one of its own plans. | `--type <type>` (required), `--subscription-id <id>` | `communities:write` |
+
+Changing access with `communities access` leaves pending applications pending; use `hive profile access --type open --account <id>` to switch a private account to open and accept pending applicants.
+
+```bash title="Review an application and promote a member"
+hive communities applications "<community-id>"
+hive communities approve "<application-id>"
+hive communities role "<community-id>" "<account-id>" --role moderator
+```

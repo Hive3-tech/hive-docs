@@ -1,0 +1,159 @@
+---
+title: Go live
+description: Stream to your audience from OBS, design your stream page, and manage chat and recordings.
+accent: default
+---
+
+Live streaming gives your account a channel with its own watch page, live chat and automatic recordings. You set it up once in the Streaming studio, connect streaming software such as OBS, and then go live whenever you are ready.
+
+**Who can do this:** every plan, including Worker Bee. The owner, admins and moderators of an account can set up and run its stream. A community streams as itself, so open the community's [dashboard](/create/your-dashboard) first.
+
+<Walkthrough
+  src="/media/walkthroughs/go-live.mp4"
+  poster="/media/walkthroughs/go-live.poster.webp"
+  title="Set up your channel in the Streaming studio"
+  chapters={[
+    { at: 0, label: "Open Streaming" },
+    { at: 4, label: "Name your channel" },
+    { at: 7.5, label: "Create stream" },
+  ]}
+/>
+
+## Create your stream
+
+<Path items={["My Hive", "My Dashboard", "Streaming"]} />
+
+Select the <UI>Streaming</UI> card on your dashboard. The page is titled <UI>Account streaming</UI>. If you have no stream yet, it shows <UI>Set up your stream</UI>.
+
+<Steps>
+<Step title="Name your channel">
+Enter a <UI>Channel title</UI>, up to 120 characters. It starts as "Live stream". It is the headline of your watch page, and you can change it later.
+</Step>
+<Step title="Create the stream">
+Select <UI>Create stream</UI>. Hive3 confirms with <UI>Stream created</UI> and opens the <UI>Stream studio</UI>.
+</Step>
+<Step title="Copy your stream key straight away">
+A yellow box says <UI>Copy your stream key now.</UI> Select <UI>Copy stream key</UI>, then <UI>Done</UI>. The key is shown once and cannot be shown again.
+</Step>
+</Steps>
+
+<Callout type="warning">
+Treat your stream key like a password. Anyone who has it can stream to your channel. If you lose it, or it leaks, use <UI>Regenerate key</UI> to get a new one. Hive3 asks <UI>Regenerate stream key?</UI> first, and your old key stops working at once.
+</Callout>
+
+<Figure
+  src="/media/create/go-live/studio.webp"
+  alt="The Account streaming page before a stream exists, with a Channel title field and a Create stream button."
+  caption="Setting up your stream."
+/>
+
+## Set up OBS
+
+The <UI>Go live with OBS</UI> card holds the two values your software needs: the <UI>RTMP server</UI> and your <UI>Stream key</UI>. Select the copy button next to the server address to copy it.
+
+<Steps>
+<Step title="Open the stream settings in OBS">
+In OBS Studio, open <UI>Settings</UI> and then <UI>Stream</UI>.
+</Step>
+<Step title="Choose a custom service">
+Set <UI>Service</UI> to <UI>Custom...</UI>.
+</Step>
+<Step title="Paste the server and key">
+Paste the RTMP server into <UI>Server</UI> and your stream key into <UI>Stream Key</UI>, then select <UI>OK</UI>.
+</Step>
+<Step title="Start streaming">
+Select <UI>Start Streaming</UI> in OBS. Back in the studio, the status pill changes from <UI>Offline</UI> to <UI>Ready</UI> or <UI>Live</UI>, depending on the mode you chose below.
+</Step>
+</Steps>
+
+Any other streaming software that can send RTMP uses the same two values.
+
+## Choose how you go live
+
+In the <UI>Broadcast</UI> card, under <UI>When your streaming software connects</UI>, pick one of two modes.
+
+| Mode | What happens when your software connects |
+|---|---|
+| <UI>Go live automatically</UI> | Your stream goes straight to your audience. |
+| <UI>Wait for me</UI> | Only you can see the stream. You check it, then press <UI>Go live</UI>. |
+
+<UI>Wait for me</UI> is a private rehearsal. Open the watch page, check your picture and sound, and go live when you are ready. Select <UI>End stream</UI> when you finish.
+
+The card tells you where things stand:
+
+| Status | Meaning |
+|---|---|
+| <UI>Offline</UI> | Your software is not connected. |
+| <UI>Ready to go live</UI> | Connected, and only you can see it. |
+| <UI>Live</UI> | Viewers can see your stream and the chat is open. |
+| <UI>Live, but the signal dropped</UI> | You are still live, but your software has stopped sending. Reconnect soon, or the broadcast will end. |
+
+<UI>Go live</UI> is unavailable until your software is connected and the stream has a title.
+
+## Share your watch page
+
+Select <UI>Open watch page</UI> to see your channel as viewers do, or <UI>Copy URL</UI> to copy its link. While you are live, a banner at the top of Hive3 also tells people that an account is live, with a link to watch.
+
+On the watch page, viewers can:
+
+- Watch the stream. Live streams are open to everyone, whether or not they are signed in.
+- Chat, if they are signed in. Messages can be up to 500 characters, with emoji and replies.
+- Select <UI>Join account</UI> to join the account, like the stream, share it, or report it.
+
+When the stream ends, the page says <UI>Thanks for watching</UI> and shows the recording once it has finished processing. Past broadcasts appear under <UI>Recent broadcasts</UI>. Recordings are for signed-in members: someone who is signed out sees <UI>Sign in to watch the replay</UI>.
+
+### Moderate the chat
+
+Owners, admins and moderators can look after the chat from the watch page. On a message, open <UI>Message actions</UI> and choose:
+
+- <UI>Remove message</UI>
+- <UI>Remove all messages from this person</UI>
+- <UI>Ban from chat</UI>
+
+Select <UI>Banned</UI> with the count to open <UI>Banned from this chat</UI>, where <UI>Unban</UI> lets someone post again.
+
+## Design your stream page
+
+The <UI>Stream page</UI> card opens the page builder, where you set up how your watch page looks.
+
+<Path items={["My Hive", "My Dashboard", "Streaming", "Open page builder"]} />
+
+<Steps>
+<Step title="Edit the title, description and badges on the page">
+These are edited directly on the page, not in the side panel. The title takes up to 120 characters, the description up to 2,000, and you can add up to 4 badges.
+</Step>
+<Step title="Style the background">
+Select <UI>Creative background</UI> to add background layers: <UI>Solid</UI>, <UI>Gradient</UI>, <UI>Pattern</UI> or <UI>Image</UI>. Select <UI>Chat appearance</UI> to style the chat panel.
+</Step>
+<Step title="Add layers">
+Select <UI>Add</UI> and choose <UI>Text</UI>, <UI>Blank card</UI>, <UI>Image</UI>, <UI>Hive item</UI>, <UI>Rectangle</UI>, <UI>Circle</UI> or <UI>Line</UI>. A <UI>Hive item</UI> opens <UI>Add a Hive item</UI>, where you pick one of your events, courses, quests or content to feature. A page can have up to 30 layers.
+</Step>
+<Step title="Arrange them">
+Drag layers on the page. Use the pencil icon on a layer's row to rename it, and the trash icon to remove it.
+</Step>
+<Step title="Save and exit">
+Changes save as you go: the panel shows <UI>Saving…</UI>, then <UI>Saved</UI>. Select <UI>Save and exit</UI> when you are done. On a phone, <UI>Visualize stream</UI> takes you back to the page.
+</Step>
+</Steps>
+
+## Manage your recordings
+
+Every broadcast is recorded. Open the <UI>Broadcasts</UI> tab on your [dashboard](/create/your-dashboard) to see <UI>Past broadcasts</UI>, each with its date and length. Select a recording to watch it, or <UI>Delete</UI> to remove it. Deleting asks <UI>Delete broadcast?</UI> and removes the recording permanently.
+
+## Reset or delete your stream
+
+- <UI>Regenerate key</UI> issues a new stream key and cancels the old one.
+- <UI>Delete stream</UI> removes your stream settings, chat and OBS key. Your recordings are kept. You can create a new stream afterwards.
+
+## Tips
+
+- Run a rehearsal in <UI>Wait for me</UI> mode before your first public stream.
+- Give your stream a clear title before you go live. Hive3 will not let you go live without one.
+- Link to an upcoming event or course with a <UI>Hive item</UI> layer so viewers can sign up while they watch.
+- Keep your stream key out of screenshots and recordings of your screen.
+
+## Related guides
+
+- [Watch live streams](/explore/watch-live)
+- [Create an event](/create/create-an-event)
+- [Your dashboard](/create/your-dashboard)

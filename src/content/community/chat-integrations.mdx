@@ -1,0 +1,106 @@
+---
+title: Discord and Telegram
+description: Connect a Discord channel or Telegram group so messages flow between it and your community chat.
+plan: honey
+accent: community
+---
+
+If your members already talk on Discord or Telegram, you do not have to choose between the two. A chat integration connects a Discord channel or a Telegram group to your community's chat, so messages can flow between them in the direction you choose.
+
+**Who can do this:** the owner, admins and moderators of a community on [Honey Bee or higher](/start/plans). You also need to be an administrator of the Discord server or Telegram group you are connecting.
+
+## Before you start
+
+- Your community chat is the shared chat for your members. See [Messages](/explore/messages).
+- Decide which channel (Discord) or group (Telegram) should be connected. Each integration links one target.
+
+## Connect Discord
+
+<Path items={["My Hive", "My Dashboard", "Chat Settings"]} />
+
+<Steps>
+<Step title="Open Chat Settings">
+On your dashboard, select <UI>Chat Settings</UI>. The page is titled <UI>Chat Settings</UI> and starts with a short <UI>Instructions</UI> card.
+</Step>
+<Step title="Add the Hive3 bot to your server">
+In the <UI>Discord Bot</UI> card, select <UI>Add Bot</UI>. Discord asks you to choose a server and approve the permissions the bot needs: view channels, send messages, manage messages, read message history and manage webhooks.
+</Step>
+<Step title="Add the integration">
+Under <UI>Bot Integrations</UI>, select <UI>Add Integration</UI>. In the <UI>Add Bot Integration</UI> window, keep <UI>Platform</UI> set to <UI>Discord</UI>.
+</Step>
+<Step title="Choose the channel">
+Enter your <UI>Discord Server ID</UI> and select <UI>Load channels</UI>. Then pick a text channel under <UI>Discord Channel</UI>.
+</Step>
+<Step title="Choose a sync direction">
+Pick <UI>Bidirectional</UI>, <UI>Inbound</UI> or <UI>Outbound</UI>. See the table below. Select <UI>Add</UI>.
+</Step>
+<Step title="Verify">
+The integration appears with a <UI>verification pending</UI> badge and a command that starts with `/hive-verify`. Post that exact command in the Discord channel as a server administrator. See [Verify the connection](#verify-the-connection).
+</Step>
+</Steps>
+
+## Connect Telegram
+
+<Steps>
+<Step title="Add the bot to your group">
+In the <UI>Telegram Bot</UI> card, select <UI>Add Bot</UI>, or add `@hive3_bot` to your Telegram group yourself. Make the bot an administrator of the group.
+</Step>
+<Step title="Add the integration">
+Select <UI>Add Integration</UI>, set <UI>Platform</UI> to <UI>Telegram</UI>, and enter the <UI>Telegram Group ID</UI>.
+</Step>
+<Step title="Choose a sync direction and add it">
+Pick a <UI>Sync Direction</UI> and select <UI>Add</UI>.
+</Step>
+<Step title="Verify">
+Post the displayed `/hive-verify` command in the group as a group administrator.
+</Step>
+</Steps>
+
+<Figure
+  src="/media/community/chat-integrations/chat-settings.webp"
+  alt="The Chat Settings page with Discord and Telegram bot cards and a list of integrations showing their status."
+  caption="Chat Settings with a Discord integration."
+/>
+
+## Choose a sync direction
+
+| Direction | What it does |
+|---|---|
+| <UI>Bidirectional</UI> | Messages go both ways: from Discord or Telegram into your community chat, and from your community chat out to Discord or Telegram. |
+| <UI>Inbound</UI> | Messages from Discord or Telegram appear in your community chat. Nothing is sent back. |
+| <UI>Outbound</UI> | Messages from your community chat are sent to Discord or Telegram. Nothing comes back. |
+
+You can change the direction later from the integration's own menu.
+
+## Verify the connection
+
+An integration does nothing until Hive3 has confirmed that you control the Discord server or Telegram group. Until then its badge reads <UI>verification pending</UI> and the controls are locked.
+
+1. Copy the `/hive-verify` command shown on the integration.
+2. Post it, exactly as shown, in the connected Discord channel or Telegram group. You must be an administrator there.
+3. Hive3 recognizes the command and the badge changes to <UI>active</UI>.
+
+The command expires after 7 days. If it does, delete the integration and add it again to get a fresh one.
+
+## Manage an integration
+
+Each integration in the list shows its platform, the channel or group ID, and a status badge.
+
+| Control | What it does |
+|---|---|
+| Direction menu | Change between Bidirectional, Inbound and Outbound. |
+| <UI>Pause</UI> or <UI>Resume</UI> | Stop or restart the relay without deleting it. |
+| <UI>Delete</UI> | Remove the integration. |
+
+The badge tells you the state: <UI>active</UI>, <UI>paused</UI> or <UI>verification pending</UI>. A <UI>delivery issue</UI> badge means Hive3 had trouble delivering a message, and hovering over it shows the reason. After repeated delivery failures an integration is switched off and marked <UI>auto-paused</UI>. Fix the cause, such as a removed bot or changed permissions, then select <UI>Resume</UI>.
+
+## Permissions to check
+
+- **Discord, deleting messages.** To delete a Discord-written message from the Hive3 side, the bot needs the Manage Messages permission. If you connected before this was required, invite the bot again with <UI>Add Bot</UI> or grant that permission in Discord.
+- **Telegram, reactions.** Reactions only sync when the bot is a group administrator.
+
+## Related
+
+- [Messages](/explore/messages)
+- [Roles and permissions](/community/roles-and-permissions)
+- [Members and applications](/community/members-and-applications)

@@ -1,0 +1,194 @@
+---
+title: Create an event
+description: Publish an in-person, linked or 3D-world event, decide who can RSVP, and optionally charge for entry.
+accent: events
+---
+
+An event is a single block of time that people can RSVP to. It can take place in person, at a link such as a map or a video call, or inside a 3D world on Hive3. This guide walks through the four steps of the event form and what you can do once the event is live.
+
+**Who can do this:** any account on any plan can publish events, and so can the owner, admins and moderators of a community. Some options need more:
+
+- Members-only access, subscriptions and tickets need a [Honey Bee or higher](/start/plans) plan. A Worker Bee account publishes every event publicly.
+- Metaverse events need Honey Bee or higher. See [Host in a 3D world](/create/host-in-a-world).
+- Setting a ticket price or connecting payments is for owners and admins.
+
+<Walkthrough
+  src="/media/walkthroughs/create-an-event.mp4"
+  poster="/media/walkthroughs/create-an-event.poster.webp"
+  title="Create an event"
+  chapters={[
+    { at: 0, label: "Open your dashboard" },
+    { at: 5, label: "Basic info" },
+    { at: 19, label: "Event type" },
+    { at: 24, label: "Scheduling" },
+    { at: 31, label: "Event access" },
+    { at: 33.5, label: "Publish" },
+  ]}
+/>
+
+## Start a new event
+
+<Path items={["My Hive", "My Dashboard", "Events", "New Event"]} />
+
+Open the dashboard of the account that should host the event. If you manage a community, open [its dashboard](/create/your-dashboard) first so the event is published as the community. Select <UI>New Event</UI> on the <UI>Events</UI> tab.
+
+The form is titled <UI>Create Event</UI>. The panel on the right lists the four steps, shows a live preview card and holds the <UI>Back</UI> and <UI>Next</UI> buttons. You can select a step you have already reached to jump back to it.
+
+Hive3 saves your progress automatically as a draft once you have entered a title, a description or an image. Select <UI>Drafts</UI> in the panel to reopen a <UI>Saved drafts</UI> entry or delete it. If you select <UI>Cancel</UI>, Hive3 asks <UI>Leave event creation?</UI> and offers <UI>Discard draft</UI>, <UI>Keep editing</UI> and <UI>Save & exit</UI>.
+
+## Basic Info
+
+This step holds what people see first on the event page and in lists.
+
+<Steps>
+<Step title="Add an Event Banner">
+Upload a wide image. Hive3 recommends 1200 × 400 pixels. The banner is optional.
+</Step>
+<Step title="Write the Event Title">
+Required. Up to 60 characters, with a live counter.
+</Step>
+<Step title="Write the Short Description">
+Required. Up to 125 characters. This is the line that appears on event cards.
+</Step>
+<Step title="Write the Full Description">
+Required. Write in the editor, which supports headings, lists, links, images, tables and embedded YouTube videos, up to 3,000 words. Or select <UI>Upload Document</UI> and choose a PDF or Markdown file. Hive3 converts a Markdown file to text, and shows an uploaded PDF on the event page.
+</Step>
+<Step title="Choose badges">
+Pick up to 5 badges from the suggestions. Badges help people find the event.
+</Step>
+</Steps>
+
+If your plan includes credentials, you also see a <UI>Credential image</UI> field. Hive3 generates a badge from the event name, or you can upload your own square image (400 × 400 pixels recommended). People who complete the event can earn the credential. Accounts without a plan that includes credentials see a note on the last step: <UI>Credentials are included with Honey Bee and above.</UI>
+
+<Figure
+  src="/media/create/create-an-event/basic-info.webp"
+  alt="The Basic Info step of the Create Event form with banner upload, Event Title, Short Description and Full Description fields."
+  caption="Basic Info."
+/>
+
+## Event Type
+
+Choose where the event happens.
+
+<Steps>
+<Step title="Select IRL Event or Metaverse Event">
+<UI>IRL Event</UI> is for an in-person event or one at a linked location. <UI>Metaverse Event</UI> is hosted in a 3D world. There is no separate online type: use <UI>IRL Event</UI> with a video-call link.
+</Step>
+<Step title="For an IRL event, add the Event Link">
+Required. Paste a map link such as `https://maps.google.com/...` or a call link such as `https://zoom.us/...`. Select <UI>Unlimited participants</UI>, or clear it and enter a maximum RSVP count.
+</Step>
+<Step title="For a Metaverse Event, set the capacity and choose the world">
+Enter <UI>Maximum participants</UI>. It is required: up to 500 in a shared world and up to 100 in a Royal Hive world. Then choose the world. Honey Bee picks one of the shared worlds for each event. Swarm uses its default shared world and Royal Hive uses its own world. If you do not have a world yet, a <UI>Choose your world</UI> button opens your Worlds page in a new tab so you keep your place.
+</Step>
+</Steps>
+
+<Callout type="plan">
+Worker Bee accounts cannot book a 3D world, so the <UI>Metaverse Event</UI> option is not usable on that plan. Honey Bee and above can book worlds.
+</Callout>
+
+<Figure
+  src="/media/create/create-an-event/event-type-metaverse.webp"
+  alt="The Event Type step with Metaverse Event selected, a Maximum participants field and the shared world available to your plan."
+  caption="Choosing a metaverse event and its world."
+/>
+
+## Scheduling
+
+An event is one block of time on one day.
+
+<Steps>
+<Step title="Pick the day">
+Use the arrows at the top to move between weeks.
+</Step>
+<Step title="Drag across the time you need">
+Press on the calendar where the event starts and drag to where it ends. The grid works in 15-minute steps. Drag the handles at the top and bottom of the block to adjust it.
+</Step>
+<Step title="Check the time zone">
+The time zone menu next to <UI>TZ</UI> starts with your own zone. Change it if the event is for people elsewhere.
+</Step>
+</Steps>
+
+You need a start and an end, and the end must come after the start. For a metaverse event, times that other events already hold in that world show as <UI>Booked</UI>, and you see <UI>That time is already booked.</UI> if you drag over them.
+
+For an event in a shared world, a banner above the calendar tells you how much metaverse time you have. If the event is longer than your balance, it says how many minutes you are over. Owners and admins then see a <UI>Top up</UI> button in place of <UI>Next</UI> until the event is shortened or time is bought. In a Royal Hive world the banner says <UI>Unlimited time in your own world</UI>. See [Host in a 3D world](/create/host-in-a-world) for how time is counted.
+
+<Figure
+  src="/media/create/create-an-event/scheduling.webp"
+  alt="The Scheduling step showing a weekly calendar with a selected block of time, the time zone menu and a metaverse time message."
+  caption="Scheduling an event."
+/>
+
+## Event Access
+
+Choose how people RSVP and who can see the event.
+
+<Steps>
+<Step title="Choose the Enrollment Type">
+<UI>Auto-enroll participants</UI> lets people RSVP directly. <UI>Apply for entry</UI> makes people apply and wait for your approval.
+</Step>
+<Step title="Choose the Visibility">
+<UI>Public</UI> lets anyone view the event and start the RSVP. <UI>Members only</UI> limits it to members or collaborators. <UI>Subscription / ticket</UI> asks for an active subscription or lets people buy a one-time ticket. Worker Bee accounts see only <UI>Public</UI>.
+</Step>
+<Step title="For paid access, connect payments">
+If payments are not connected yet, a <UI>Connect Stripe to enable paid access</UI> notice appears with an <UI>Open Payments</UI> button. Stripe is required for subscriptions. See [Get paid](/community/get-paid).
+</Step>
+<Step title="Pick a subscription or set a ticket price">
+Under <UI>Select subscription</UI>, choose a plan, or leave it on <UI>None (No gate)</UI> if you sell tickets only. For a ticket, turn on <UI>Enable one-time ticket pricing</UI> in the <UI>One-Time Event Ticket</UI> section, then enter a <UI>Price</UI> and a <UI>Currency</UI> (USD, EUR or GBP). The price is required once tickets are on.
+</Step>
+</Steps>
+
+One-time tickets need PayPal connected. Until it is, this section shows <UI>Connect PayPal to enable ticketing</UI>. Moderators can choose an existing subscription plan but cannot set a ticket price.
+
+<Figure
+  src="/media/create/create-an-event/event-access.webp"
+  alt="The Event Access step with Subscription / ticket selected, showing the Connect Stripe to enable paid access notice and an Open Payments button."
+  caption="Event Access. Paid access needs a connected payment provider."
+/>
+
+## Publish
+
+On the last step the button in the panel reads <UI>Create Event</UI>. Select it and Hive3 asks <UI>Ready to publish?</UI> with the message that it will create your event and take you to the published event page. Choose <UI>Create Event</UI> to confirm, or <UI>Keep editing</UI> to go back.
+
+<Figure
+  src="/media/create/create-an-event/publish-dialog.webp"
+  alt="The Ready to publish confirmation window with Keep editing and Create Event buttons."
+  caption="The publish confirmation."
+/>
+
+## After you publish
+
+You land on the event page. As the host you see these buttons at the top:
+
+- <UI>Enter as host</UI> for events in a world. See [Host in a 3D world](/create/host-in-a-world).
+- <UI>Enrollments</UI> opens <UI>Manage Enrollment</UI>.
+- <UI>Edit Event</UI>, until the event starts.
+
+### Manage RSVPs
+
+<UI>Manage Enrollment</UI> lists everyone who RSVP'd, with tabs for <UI>All</UI>, <UI>Pending</UI>, <UI>Approved</UI> and <UI>Denied</UI> and a count on each. With <UI>Apply for entry</UI>, review each request and select <UI>Approve</UI> or <UI>Deny</UI>. For approved guests you can select <UI>Mark attended</UI>, which then shows <UI>Attended</UI>.
+
+<Figure
+  src="/media/create/create-an-event/enrollments.webp"
+  alt="The Manage Enrollment page with All, Pending, Approved and Denied tabs and one approved guest marked Attended, with a Revoke button."
+  caption="Managing RSVPs. Guests appear here with their status; pending applicants also get Approve and Deny buttons."
+/>
+
+### Edit, hide or delete
+
+From your [dashboard](/create/your-dashboard), use <UI>Edit</UI>, <UI>Delete</UI> or the <UI>More actions</UI> menu. The form reopens as <UI>Edit Event</UI> and the last button reads <UI>Update Event</UI>, then <UI>Ready to update?</UI>.
+
+Once an event has started it can no longer be edited or deleted. After it has finished you can hide it from your profile. If you delete a metaverse event before it starts, the purchased metaverse time it used goes back to your balance.
+
+## Tips
+
+- Keep the title short enough to read on a card. The <UI>Short Description</UI> carries the detail.
+- Choose <UI>Apply for entry</UI> when your space is limited and you want to see who is coming.
+- Check your metaverse time on the dashboard before you schedule a long event in a shared world.
+- Everything on this page can be edited until the event starts, including the time and the access rules.
+
+## Related guides
+
+- [Host in a 3D world](/create/host-in-a-world)
+- [Get paid: subscriptions and tickets](/community/get-paid)
+- [Attend events](/explore/attend-events)
+- [Your dashboard](/create/your-dashboard)

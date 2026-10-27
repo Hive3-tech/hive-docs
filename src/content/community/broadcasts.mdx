@@ -1,0 +1,131 @@
+---
+title: Email broadcasts
+description: Write, preview, test, schedule and send email updates to the members of your community who have opted in.
+plan: honey
+accent: community
+---
+
+A broadcast is an email from your community to its members. Use it for announcements, event reminders or a regular update. You write it once, preview it, send yourself a test, and then send it now or schedule it for later.
+
+**Who can do this:** the owner, admins and moderators of a community on [Honey Bee or higher](/start/plans). How often you can send depends on your plan.
+
+In the app the dashboard card is called <UI>Broadcasts</UI>. The page it opens is headed <UI>Community Newsletter</UI>, and the button to write a new one reads <UI>New newsletter</UI>. They are the same feature.
+
+<Walkthrough
+  src="/media/walkthroughs/broadcasts.mp4"
+  poster="/media/walkthroughs/broadcasts.poster.webp"
+  title="Write and preview a broadcast"
+  chapters={[
+    { at: 0, label: "Open Broadcasts" },
+    { at: 4, label: "Write the email" },
+    { at: 13, label: "Preview" },
+    { at: 18.5, label: "Send or save a draft" },
+  ]}
+/>
+
+## Who receives a broadcast
+
+Only members who want your emails receive them. A member is eligible when all of these are true:
+
+- They have joined your community.
+- They have a verified email address.
+- They have switched on <UI>Community newsletters by email</UI> under <UI>Settings</UI> and <UI>Display & notifications</UI>.
+- They have not unsubscribed from your community or from all newsletters.
+
+Every broadcast includes an unsubscribe link, so a member can opt out of your community without changing their other email settings. The editor shows the number of eligible recipients above the **Preview** button. A single broadcast reaches at most **5,000** unique recipients.
+
+<Callout type="note">
+The recipient count reflects members who have opted in, not your total member count. Members who have not turned on newsletters or verified their email do not receive broadcasts.
+</Callout>
+
+## How often you can send
+
+You can send one broadcast per cadence period. The period depends on your Hive3 plan.
+
+| Plan | You can send a broadcast |
+|---|---|
+| Worker Bee | Not available |
+| Honey Bee | Every 30 days |
+| Swarm | Every 14 days |
+| Royal Hive | Every 7 days |
+
+The clock starts from your last send. If you try to send before the next allowed date, Hive3 shows when sending opens again and lets you schedule the broadcast for that date or later instead.
+
+## Write a broadcast
+
+<Path items={["My Hive", "My Dashboard", "Broadcasts", "New newsletter"]} />
+
+<Steps>
+<Step title="Open Broadcasts">
+On your dashboard, select <UI>Broadcasts</UI>, then <UI>New newsletter</UI>.
+</Step>
+<Step title="Add a subject">
+Type the <UI>Subject</UI>. It can be up to 180 characters.
+</Step>
+<Step title="Check your branding">
+The <UI>Branding</UI> card shows the logo and banner that appear in every broadcast, plus an <UI>Accent color</UI> for the header bar and footer links. Select <UI>Edit logo and banner</UI> to change the images, or <UI>Reset</UI> to return to the default color.
+</Step>
+<Step title="Add a hero image (optional)">
+Select <UI>Upload</UI> under <UI>Hero image</UI>. If you skip it, your community banner is used when you have one.
+</Step>
+<Step title="Write the message">
+Use the <UI>Rich text</UI> tab to write in the editor. It supports basic formatting, links, lists, headings, quotes, tables and images, up to 3,000 words. Appearance can vary between email apps.
+</Step>
+</Steps>
+
+<Figure
+  src="/media/community/broadcasts/editor.webp"
+  alt="The Community Newsletter editor with the subject field, branding card, hero image area and rich text editor."
+  caption="The broadcast editor."
+/>
+
+### Use your own HTML instead
+
+If you already design your emails elsewhere, open the <UI>HTML file</UI> tab and select <UI>Upload HTML file</UI>. Files must be `.html` or `.htm` and no larger than 256 KB. Hive3 removes unsupported elements, attributes and styles before it previews, saves and sends the email, and external stylesheets and CSS imports are not supported.
+
+Switching between the two tabs asks <UI>Switch authoring mode?</UI>, because the content you wrote in one is not carried into the other. Choose <UI>Keep current mode</UI> to stay put.
+
+## Preview and test
+
+- Select <UI>Preview</UI> to open <UI>Email preview</UI> and see the email as members will receive it.
+- Select <UI>Send test to me</UI> to email the broadcast to your own primary email address first. Your account needs a primary email for this to work.
+
+<Callout type="tip">
+Send yourself a test and open it on your phone before you send to the whole community.
+</Callout>
+
+## Save drafts
+
+Select <UI>Save draft</UI> at any time. Open <UI>Drafts</UI> (the number shows how many you have) to go back to a broadcast. Each entry shows a status badge: draft, scheduled, sending, sent or failed.
+
+## Send or schedule
+
+<Steps>
+<Step title="Start the send">
+Select <UI>Send newsletter</UI>. A window asks <UI>Send this newsletter?</UI> and shows the recipient count, your cadence and, if it applies, the next date you can send.
+</Step>
+<Step title="Pick when">
+Choose <UI>Send now</UI>, or choose <UI>Schedule</UI> and set a <UI>Delivery time</UI>. A scheduled time must be at least a minute away, and no earlier than the next allowed send date.
+</Step>
+<Step title="Confirm">
+Select <UI>Send newsletter</UI> (or <UI>Schedule newsletter</UI>). Delivery cannot be recalled once it starts.
+</Step>
+</Steps>
+
+### After you send
+
+- While a broadcast is sending, a progress bar shows how many emails the email service accepted, how many failed and how many are uncertain.
+- A scheduled broadcast shows <UI>Scheduled for</UI> and its date. Select <UI>Cancel schedule</UI> to return it to a draft.
+- A sent broadcast is read-only. Write a new one for your next update.
+
+## Tips
+
+- Keep one clear message per broadcast, because you can only send every few weeks.
+- If your recipient count is lower than you expect, remind members to turn on <UI>Community newsletters by email</UI> in their settings.
+- Schedule around your events so reminders arrive at the right time.
+
+## Related
+
+- [Members and applications](/community/members-and-applications)
+- [Notifications](/explore/notifications)
+- [Broadcasts API](/developers/api-broadcasts)

@@ -1,0 +1,387 @@
+---
+title: Broadcasts
+description: Draft, test, schedule and send email broadcasts to the members of an account from your own tools.
+accent: developer
+---
+
+Use the broadcast endpoints to publish newsletters from a content pipeline, a CMS or an AI agent: create a draft, email a test copy to yourself, then send it to your opted-in members now or schedule it. Broadcasts are the same objects as the email broadcasts you write in the Hive3 app, and the same content, plan and cadence rules apply.
+
+JavaScript and Python follow the same request pattern as the tabbed examples; the cards that show only curl are trivial to translate.
+
+## Scopes, plan and targeting
+
+| Scope | Allows |
+| --- | --- |
+| `broadcasts:read` | List and read broadcasts, and read the audience summary. |
+| `broadcasts:write` | Create and edit drafts, send a test to yourself, send or schedule, and cancel a scheduled send. |
+
+No other scope implies these. Keys created before they existed cannot use broadcasts until you create a new key ([scopes](/developers/api-authentication#scopes)). API access needs Honey Bee or above ([overview](/developers)); sending a broadcast needs the account that owns it to be on Honey Bee, Swarm or Royal Hive. Drafting and testing work on any plan.
+
+Routes act on the key owner's own account unless you add `?account=<account ID or @handle>`. The API calls an account that others join a community, so for another account the key also needs `communities:read` (reads) or `communities:write` (writes), must include that account if the key is limited to selected accounts, and the key owner must currently be an owner, admin or moderator of it. Routes that take a broadcast ID use the account that owns the broadcast and ignore `?account=`. Details: [managed accounts](/developers/api-authentication#managed-accounts).
+
+| Route group | Budget |
+| --- | --- |
+| Create, edit, cancel | 30 per minute |
+| `POST …/test` | 10 per hour |
+| `POST …/send` | 10 per hour |
+
+All routes also count toward the account-wide budget ([rate limits](/developers/api-conventions#rate-limits)). Over the limit returns `429 rate_limited` with a `Retry-After` header.
+
+## The broadcast object
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `id`, `accountId` | string | Broadcast ID and the account that sends it. |
+| `subject` | string | 1 to 180 characters. |
+| `status` | string | `draft`, `scheduled`, `sending`, `sent` or `failed`. |
+| `bodyMode` | string | `editor` or `html`. |
+| `bodyText`, `bodyHtml` | string | Only in create, edit, get and action responses; list items omit them. |
+| `heroImageUrl` | string or null | `https` URL. An `http` or other URL returns `400`. |
+| `scheduledAt`, `sentAt` | string or null | ISO 8601 timestamps ([timestamps](/developers/api-conventions#timestamps)). |
+| `recipientCount`, `sentCount`, `failedCount` | integer | Delivery counters; they start at 0 and fill in while the broadcast sends. |
+| `createdAt`, `updatedAt` | string | ISO 8601 timestamps. |
+
+## Check your audience
+
+<Endpoint method="GET" path="/api/v1/broadcasts/audience" scopes={["broadcasts:read"]}>
+
+Returns the plan cadence, the next time you may send, and how many members would receive a broadcast. `recipientCount` counts members who accepted membership, have a verified email and opted in to broadcasts, among the first 200 memberships; `recipientCountCapped` is `true` when the account has more, so the real audience is larger. A single send reaches at most 5,000 recipients. `cadenceDays` is `null` on Worker Bee.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `account` | query | string | No | Account ID or `@handle`. Defaults to the key owner. |
+
+```bash
+curl "https://app.hive3.tech/api/v1/broadcasts/audience?account=@design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": { "cadenceDays": 30, "maxRecipients": 5000, "nextAllowedAt": null, "recipientCount": 128, "recipientCountCapped": false } }
+```
+
+Errors: `403 insufficient_scope`, `403 forbidden` (your role on the account does not allow this), `404 not_found` (account not found).
+
+</Endpoint>
+
+## List and read broadcasts
+
+<Endpoint method="GET" path="/api/v1/broadcasts" scopes={["broadcasts:read"]}>
+
+Lists the account's broadcasts, newest first. Pass `page.nextCursor` back as `cursor` ([pagination](/developers/api-conventions#pagination)).
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `account` | query | string | No | Account ID or `@handle`. Defaults to the key owner. |
+| `limit` | query | integer | No | 1 to 100, default 25. |
+| `cursor` | query | string | No | Opaque; from the previous page. |
+
+```bash
+curl "https://app.hive3.tech/api/v1/broadcasts?limit=10" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with the broadcast fields above, without `bodyText` and `bodyHtml`, and a `page` object.
+
+```json
+{
+  "data": [{ "id": "broadcast_123", "accountId": "account_123", "subject": "November news", "status": "sent", "bodyMode": "editor", "heroImageUrl": null, "scheduledAt": null, "sentAt": "2026-10-12T15:00:00.000Z", "recipientCount": 128, "sentCount": 127, "failedCount": 1, "createdAt": "2026-10-11T09:30:00.000Z", "updatedAt": "2026-10-12T15:04:00.000Z" }],
+  "page": { "nextCursor": null, "hasMore": false }
+}
+```
+
+</Endpoint>
+
+<Endpoint method="GET" path="/api/v1/broadcasts/{broadcastId}" scopes={["broadcasts:read"]}>
+
+Returns one broadcast with its `bodyText` and `bodyHtml`. `404 not_found` (`Broadcast not found`) when the ID does not exist; `403 forbidden` when you may not manage the account that owns it.
+
+```bash
+curl https://app.hive3.tech/api/v1/broadcasts/broadcast_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with the object shown under [create](#post-api-v1-broadcasts).
+
+</Endpoint>
+
+## Create and edit drafts
+
+<Endpoint method="POST" path="/api/v1/broadcasts" scopes={["broadcasts:write"]}>
+
+Creates a draft. Plain text in `bodyText` becomes HTML paragraphs (a blank line starts a new paragraph) when you omit `bodyHtml`. HTML is cleaned the same way as in the app editor. The request body can be up to 400 KiB (`413` above that). The route reads the `Idempotency-Key` header: repeating a create with the same key and body returns the first response, and the same key with a different body returns `409 conflict` ([idempotency](/developers/api-conventions#idempotency)).
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `account` | query | string | No | Account ID or `@handle`. Defaults to the key owner. |
+| `subject` | body | string | Yes | 1 to 180 characters. |
+| `bodyText` | body | string | Yes | Not empty, up to 102,400 characters. |
+| `bodyHtml` | body | string | No | Up to 262,144 characters. Built from `bodyText` when omitted. |
+| `bodyMode` | body | string | No | `editor` (default) or `html`. |
+| `heroImageUrl` | body | string | No | `https` URL, up to 2,048 characters. Any other scheme returns `400` (`heroImageUrl must be an https URL`). |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST "https://app.hive3.tech/api/v1/broadcasts?account=@design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: november-news" \
+  -d '{"subject":"November news","bodyText":"Portfolio night is back.\n\nSee you on the 12th."}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/broadcasts?account=@design-guild", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+    "Idempotency-Key": "november-news",
+  },
+  body: JSON.stringify({ subject: "November news", bodyText: "Portfolio night is back.\n\nSee you on the 12th." }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/broadcasts",
+    params={"account": "@design-guild"},
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"], "Idempotency-Key": "november-news"},
+    json={"subject": "November news", "bodyText": "Portfolio night is back.\n\nSee you on the 12th."},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201`.
+
+```json
+{
+  "data": {
+    "id": "broadcast_123", "accountId": "account_123", "subject": "November news", "status": "draft", "bodyMode": "editor",
+    "bodyText": "Portfolio night is back.\n\nSee you on the 12th.", "bodyHtml": "<p>Portfolio night is back.</p><p>See you on the 12th.</p>",
+    "heroImageUrl": null, "scheduledAt": null, "sentAt": null, "recipientCount": 0, "sentCount": 0, "failedCount": 0,
+    "createdAt": "2026-10-27T18:00:00.000Z", "updatedAt": "2026-10-27T18:00:00.000Z"
+  }
+}
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | `subject` or `bodyText` is missing (`subject and bodyText are required`), a field has the wrong type or limit, `bodyMode` is not `editor` or `html`, or `heroImageUrl` is not an https URL. |
+| 403 | `insufficient_scope`, `forbidden` | The key lacks `broadcasts:write` (or `communities:write` for another account), the account is not in the key's allowlist, or your role does not allow it. |
+| 404 | `not_found` | `?account=` names an account that does not exist. |
+| 409 | `conflict` | `Idempotency-Key` was used with a different request. |
+| 413 | `invalid_request` | The body is larger than 400 KiB. |
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/broadcasts/{broadcastId}" scopes={["broadcasts:write"]}>
+
+Edits a draft. Send only the fields you want to change. If you change `bodyText` and omit `bodyHtml`, the HTML is rebuilt from the text. Only drafts can be edited: a scheduled, sending or sent broadcast returns `400` (`Only draft newsletters can be edited`); cancel a scheduled send first.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `subject`, `bodyText`, `bodyHtml`, `bodyMode` | body | string | No | Same limits as create. |
+| `heroImageUrl` | body | string or null | No | `null` removes the image. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/broadcasts/broadcast_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"subject":"November news: portfolio night","heroImageUrl":null}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/broadcasts/broadcast_123", {
+  method: "PATCH",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ subject: "November news: portfolio night", heroImageUrl: null }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/broadcasts/broadcast_123",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"subject": "November news: portfolio night", "heroImageUrl": None},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200` with the updated broadcast (same shape as create). Errors: `400 invalid_request` (limits, or the broadcast is not a draft), `403`, `404 not_found`, `413`.
+
+</Endpoint>
+
+## Test, send, schedule and cancel
+
+<Endpoint method="POST" path="/api/v1/broadcasts/{broadcastId}/test" scopes={["broadcasts:write"]}>
+
+Emails the draft, with `[Test]` before the subject, to the primary email of the key owner. The address must be verified. It never goes to anyone else, and a test does not count toward your send cadence. Send no body.
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/broadcasts/broadcast_123/test \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": { "sent": true } }
+```
+
+Errors: `400 invalid_request` (`Add a primary email to your account before sending a test broadcast`, or `Verify your primary email before sending a test newsletter` when the address is not verified), `403`, `404 not_found`, `429 rate_limited` after 10 tests in an hour.
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/broadcasts/{broadcastId}/send" scopes={["broadcasts:write"]}>
+
+Sends the broadcast to opted-in members now, or schedules it when you pass `scheduledAt`. The account that owns the broadcast must be on Honey Bee or above, and the plan sets how often it may send: one broadcast every 30 days on Honey Bee, 14 on Swarm and 7 on Royal Hive. Only members with an accepted membership, a verified email and broadcasts turned on receive it, up to 5,000 recipients. Only drafts can be sent, and a delivery that has started cannot be retried.
+
+<Callout type="warning">
+Sending now cannot be undone, and a send that has started cannot be stopped or recalled. Run the audience and test steps first. A scheduled send can be returned to draft with `cancel` until it starts.
+</Callout>
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `scheduledAt` | body | string or integer | No | ISO 8601 timestamp (or epoch milliseconds) from 1 minute to 90 days ahead. Omit to send now. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/broadcasts/broadcast_123/send \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"scheduledAt":"2026-11-02T15:00:00Z"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/broadcasts/broadcast_123/send", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ scheduledAt: "2026-11-02T15:00:00Z" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/broadcasts/broadcast_123/send",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"scheduledAt": "2026-11-02T15:00:00Z"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200` with the broadcast. A scheduled send has `status` `scheduled` and `scheduledAt` set; sending now returns `status` `sending` with `sentAt` set and counters at 0.
+
+```json
+{
+  "data": {
+    "id": "broadcast_123", "accountId": "account_123", "subject": "November news", "status": "scheduled", "bodyMode": "editor",
+    "bodyText": "Portfolio night is back.\n\nSee you on the 12th.", "bodyHtml": "<p>Portfolio night is back.</p><p>See you on the 12th.</p>",
+    "heroImageUrl": null, "scheduledAt": "2026-11-02T15:00:00.000Z", "sentAt": null, "recipientCount": 0, "sentCount": 0, "failedCount": 0,
+    "createdAt": "2026-10-27T18:00:00.000Z", "updatedAt": "2026-10-27T18:10:00.000Z"
+  }
+}
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | `scheduledAt` is not a valid timestamp, is less than a minute ahead (`Choose a schedule time at least a minute in the future`) or more than 90 days ahead (`Choose a schedule time within 90 days`). |
+| 400 | `invalid_request` | The cadence limit applies (`Newsletter cadence limit reached. The next send is allowed on <timestamp>`), or another broadcast is scheduled within the cadence window (`Another newsletter is already scheduled for <timestamp>…`). |
+| 400 | `invalid_request` | The broadcast is not a draft or failed broadcast (`Newsletter has already been sent`), or its delivery already started. |
+| 403 | `forbidden` | The account is on Worker Bee (`The account owner needs a Honey Bee membership or higher`), or your role or key does not allow it. |
+| 404 | `not_found` | `Broadcast not found`. |
+| 429 | `rate_limited` | More than 10 send requests in an hour. |
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/broadcasts/{broadcastId}/cancel" scopes={["broadcasts:write"]}>
+
+Cancels a scheduled send and returns the broadcast to `draft`, so you can edit it or schedule it again. Send no body.
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/broadcasts/broadcast_123/cancel \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with the broadcast, now `draft` with `scheduledAt` set to `null`. Errors: `400 invalid_request` (`Newsletter is not scheduled`), `403`, `404 not_found`.
+
+</Endpoint>
+
+## Send a broadcast end to end
+
+<Steps>
+<Step title="Check the audience">
+
+Call `GET /api/v1/broadcasts/audience`. Continue when `cadenceDays` is not `null` and `nextAllowedAt` is `null` or in the past.
+
+</Step>
+<Step title="Create the draft">
+
+Call `POST /api/v1/broadcasts` with a `subject` and `bodyText`. Keep the returned `id`.
+
+</Step>
+<Step title="Send yourself a test">
+
+Call `POST /api/v1/broadcasts/{broadcastId}/test`, check the email, and use `PATCH` to fix anything.
+
+</Step>
+<Step title="Schedule or send">
+
+Call `POST /api/v1/broadcasts/{broadcastId}/send` with `scheduledAt`, or without a body to send now. Poll `GET /api/v1/broadcasts/{broadcastId}` until `status` is `sent`, or `failed` if delivery could not complete.
+
+</Step>
+</Steps>
+
+```bash
+BASE=https://app.hive3.tech/api/v1
+AUTH="Authorization: Bearer $HIVE_API_KEY"
+ID=$(curl -s -X POST $BASE/broadcasts -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"subject":"November news","bodyText":"Portfolio night is back."}' | jq -r .data.id)
+curl -s -X POST $BASE/broadcasts/$ID/test -H "$AUTH"
+curl -s -X POST $BASE/broadcasts/$ID/send -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"scheduledAt":"2026-11-02T15:00:00Z"}'
+```

@@ -1,0 +1,62 @@
+---
+title: Wallets
+description: Create a Hive3 wallet with a passkey, link wallets you already own, choose a default, and control NFT visibility.
+accent: default
+---
+
+A wallet holds the credentials you claim and lets you sign in with a wallet if you want to. Hive3 gives you two options: a Hive3 wallet secured by a passkey on your device, or wallets you already own that you link to your account.
+
+<Path items={["Settings", "Wallets"]} />
+
+You can also reach this section from the <UI>Wallets</UI> card on your own dashboard.
+
+## Create your Hive3 wallet
+
+Your Hive3 wallet is secured by your device's passkey and lets you claim credentials on Hive3-supported networks. No wallet extension is needed.
+
+<Steps>
+<Step title="Open Wallets">
+In Settings, choose <UI>Wallets</UI>. The <UI>Hive3 wallet</UI> card is at the top.
+</Step>
+<Step title="Create it">
+Select <UI>Create my Hive3 wallet</UI> and approve the passkey prompt on your device. A message says <UI>Your Hive3 wallet is ready.</UI>
+</Step>
+</Steps>
+
+If your browser or device cannot create a passkey, the card tells you why and the button stays off. Hive3 wallets also cannot be created on a web address other than Hive3's own.
+
+Once created, the card shows your wallet address, a <UI>Default</UI> badge when it is your default, and your balances on each network. Select <UI>Refresh</UI> to update them, and <UI>Send</UI> beside a network to send funds from the wallet. A send is signed with your passkey, and while one is still settling you can check its status or cancel it.
+
+<Callout type="note">
+The passkey that protects your Hive3 wallet cannot be used to sign in to Hive3. To add a sign-in passkey, see [Sign in and security](/account/security).
+</Callout>
+
+## Link a wallet you already own
+
+<Steps>
+<Step title="Start linking">
+Under <UI>Linked wallets</UI>, select <UI>Link a wallet</UI> (or <UI>Link another wallet</UI>).
+</Step>
+<Step title="Choose and sign">
+Pick your wallet app and approve the request to sign a message. This proves you control the wallet and costs nothing.
+</Step>
+</Steps>
+
+A wallet that already signs in to a different Hive3 account cannot be linked here. Hive3 tells you, and you can switch to that account instead. To remove a wallet, select <UI>Remove</UI> beside it. You cannot remove your only sign-in method.
+
+## Choose a default wallet
+
+Beside any wallet, select <UI>Set as default</UI>. The default wallet shows a <UI>Default</UI> badge.
+
+## Control NFT visibility
+
+Under <UI>Privacy</UI>, <UI>Public profile NFT privacy</UI> decides whether NFTs from your wallets can appear on your public profile.
+
+- <UI>Show NFTs on my public profile</UI> is the master switch. When it is off, your NFTs are hidden from your public profile.
+- Under <UI>Per-wallet public discoverability</UI>, switch each wallet on or off. A wallet's NFTs appear only when both the master switch and that wallet's switch are on.
+
+## Related
+
+- [Your credentials](/account/credentials)
+- [Sign in and security](/account/security)
+- [Liveness and proof of human](/account/proof-of-human)

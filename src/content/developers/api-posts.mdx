@@ -1,0 +1,395 @@
+---
+title: Posts and comments
+description: Publish posts from your account or a community you manage, read and moderate comment threads, and like posts and comments.
+accent: developer
+---
+
+Use these endpoints to publish updates from your own account or from a community you manage, read posts, run comment threads, and moderate them with the same live roles the Hive3 app uses. API access needs a Honey Bee plan or above; see the [developer overview](/developers). Requests use the scopes `posts:read` and `posts:write`; acting for a community also needs `communities:write` (see [Scopes](/developers/api-authentication#scopes) and [Managed accounts](/developers/api-authentication#managed-accounts)).
+
+The examples read the key from `HIVE_API_KEY`. The curl-only operations below follow the same pattern in JavaScript (`fetch`) and Python (`requests`) as the full examples. Some field names still say `community` or `person`; both identify accounts, and a "community" is an account that others join. Lists, errors and paging follow [Requests, errors and limits](/developers/api-conventions#response-format).
+
+## Owner and visibility
+
+Create a post for your own account by omitting `owner`, or send `{ "type": "person" }`. To publish as a community you manage, send the owner selector with the account ID or `@handle`:
+
+```json
+{ "owner": { "type": "community", "communityId": "account_456" } }
+```
+
+The key needs `communities:write`, the key owner must currently be an owner, admin or moderator of that account, and the key's account allowlist (if it has one) must include it. Any other `owner` value is ignored and the post belongs to your own account. In responses, `owner` is `{ "type": "person", "personId": "…" }` or `{ "type": "community", "communityId": "…" }`; treat the ID as the account ID either way.
+
+| `visibility` | Who can see the post |
+|---|---|
+| `public` (default) | Everyone. Any unknown value is stored as `public`. |
+| `members_only` | The owning account, its accepted members and its managers. `protected` is accepted as an alias. |
+| `private` | The owning account, its accepted members and its managers. |
+
+Plan rule: the owning account's plan decides. A Worker Bee owner can only publish `public` posts; setting another value returns `403 forbidden` with `A Honey Bee subscription is required to make content members-only or private`. A value the post already stores can stay on update.
+
+### Moderation rules
+
+- Editing a post needs current authority: the post's author, and the author must still be the owner of the owning account or able to moderate it. A post by an author who lost that role cannot be edited through the API.
+- Archiving a post owned by a community you manage needs `communities:moderate` or `communities:write` and a live owner, admin or moderator role, whoever wrote the post (`403 insufficient_scope` or `403 forbidden` otherwise). `communities:write` implies `communities:moderate`. For a post on your own account you must be its author.
+- Deleting someone else's comment follows the same rule; see [Delete a comment](#comments).
+- Members-only and private posts follow live membership; a viewer who is no longer a member gets `404 not_found`.
+
+## Posts
+
+<Endpoint method="GET" path="/api/v1/posts" scopes={["posts:read"]}>
+
+Lists active posts of your own account, newest first. With `communities:read` the list also includes posts of up to 25 communities you currently moderate; pass `communityId` to list one account. Archived posts are excluded.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `limit` | query | integer | No | 1 to 100, default 25. Zero or negative returns `400 invalid_request`. |
+| `cursor` | query | string | No | The `page.nextCursor` of the previous page. |
+| `communityId` | query | string | No | Account ID or `@handle` to list. Needs `communities:read` and a live role. Unknown accounts return an empty list. |
+| `ownerType` | query | string | No | `person` or `community`; any other value is `400`. `community` without `communityId` returns an empty list. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl "https://app.hive3.tech/api/v1/posts?limit=10" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/posts?limit=10", {
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}` },
+});
+const { data, page } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.get(
+    "https://app.hive3.tech/api/v1/posts",
+    params={"limit": 10},
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+)
+posts = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`. Post timestamps are epoch milliseconds.
+
+```json
+{
+  "data": [
+    {
+      "id": "post_123",
+      "type": "post",
+      "title": "Launch notes",
+      "body": "Launch day notes are live.",
+      "visibility": "public",
+      "owner": { "type": "person", "personId": "account_123" },
+      "createdAt": 1767225600000,
+      "updatedAt": 1767225600000
+    }
+  ],
+  "page": { "nextCursor": null, "hasMore": false }
+}
+```
+
+Errors: `403 insufficient_scope` (`communities:read` missing for `communityId`), `403 forbidden` (account not managed by the key).
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/posts" scopes={["posts:write", "communities:write (community owner)"]}>
+
+Creates a post for your account or, with the owner selector, for a community you manage. Send an `Idempotency-Key` header (up to 128 characters) to make retries safe: the same key with the same body returns the first response, and the same key with a different body returns `409 conflict`.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `body` | body | string | Yes | Post text. `description` and `content` are accepted as aliases. |
+| `title` | body | string | No | Optional headline. |
+| `visibility` | body | string | No | `public`, `members_only`, `private`. See [Owner and visibility](#owner-and-visibility). |
+| `imageUrl` | body | string | No | An `http`, `https` or `blob` URL (`image` is an alias). Anything else returns `400` (`Invalid image URL`). |
+| `imageStorageId` | body | string | No | An image upload ID from [Uploads](/developers/api-uploads), made by the same account. Ignored when `imageUrl` is set. |
+| `owner` | body | object | No | [Owner selector](#owner-and-visibility). |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/posts \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: launch-notes-001" \
+  -d '{"title":"Launch notes","body":"Launch day notes are live.","visibility":"public"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/posts", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+    "Idempotency-Key": "launch-notes-001",
+  },
+  body: JSON.stringify({ title: "Launch notes", body: "Launch day notes are live.", visibility: "public" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/posts",
+    headers={
+        "Authorization": f"Bearer {os.environ['HIVE_API_KEY']}",
+        "Idempotency-Key": "launch-notes-001",
+    },
+    json={"title": "Launch notes", "body": "Launch day notes are live.", "visibility": "public"},
+)
+post = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201` with the post.
+
+```json
+{
+  "data": {
+    "id": "post_123",
+    "type": "post",
+    "title": "Launch notes",
+    "body": "Launch day notes are live.",
+    "visibility": "public",
+    "owner": { "type": "person", "personId": "account_123" },
+    "createdAt": 1767225600000,
+    "updatedAt": 1767225600000
+  }
+}
+```
+
+| Status | `code` | When |
+|---|---|---|
+| 400 | `invalid_request` | `Post body is required`, `Invalid image URL`, malformed JSON, or the payload exceeds about 32 KiB (`posts payload is too large`; a raw body over 36 KiB returns `413`). |
+| 403 | `insufficient_scope` | A community owner without `communities:write` (`requiredScopes`). |
+| 403 | `forbidden` | The key does not include that account, your role is too low, or the Worker Bee visibility rule applies. |
+| 404 | `not_found` | Unknown owner account or upload ID. |
+| 409 | `conflict` | `Idempotency-Key` reused with a different request. |
+| 429 | `rate_limited` | More than 60 creates per minute or 100 per day per account. |
+
+</Endpoint>
+
+<Endpoint method="GET" path="/api/v1/posts/{postId}" scopes={["posts:read"]}>
+
+Returns one post you can see, including public posts of other accounts. Archived posts, posts you cannot see, and posts of managed accounts that the key's allowlist excludes return `404 not_found`.
+
+```bash
+curl https://app.hive3.tech/api/v1/posts/post_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with the same post object as above.
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/posts/{postId}" scopes={["posts:write", "communities:write (community-owned post)"]}>
+
+Partially updates a post: send only the fields to change, using the same names as create (`body`, `title`, `visibility`, `imageUrl`, `imageStorageId`). `owner` is not accepted. An image cannot be cleared; send a new `imageUrl` to replace it. Needs the [editing authority](#moderation-rules) described above.
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/posts/post_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"body":"Launch day notes are live. Updated with the schedule."}'
+```
+
+Returns `200` with the updated post. Errors: `403 forbidden` (`You do not have permission to edit this post`, or the Worker Bee visibility rule), `404 not_found`, `429` above 120 updates per minute.
+
+</Endpoint>
+
+<Endpoint method="DELETE" path="/api/v1/posts/{postId}" scopes={["posts:write", "communities:moderate (community-owned post)"]}>
+
+Archives a post, so it stops appearing in lists and reads. On your own account you archive posts you wrote. On a community's post, a live owner, admin or moderator role plus `communities:moderate` or `communities:write` is enough.
+
+```bash
+curl -X DELETE https://app.hive3.tech/api/v1/posts/post_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with `{ "data": { "deleted": true, "id": "post_123" } }`. An already archived post returns `404 not_found`. Limit: 60 per minute.
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/posts/{postId}/like" scopes={["posts:write"]}>
+
+Toggles your like on a visible post: the first call likes, the next call removes the like. There is no request body.
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/posts/post_123/like \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with `{ "data": { "count": 4, "liked": true } }`, where `count` is the new like total. Limit: 30 per minute at the route; the per-account, per-day and per-item like budgets return `400 invalid_request` with a message such as `Like rate limit reached. Try again later.`
+
+</Endpoint>
+
+## Comments
+
+Comments belong to a post you can see. They are listed oldest first. Comment timestamps are ISO 8601 strings, and `personId`, `personName` and `personUsername` describe the comment's author account.
+
+<Endpoint method="GET" path="/api/v1/comments" scopes={["posts:read"]}>
+
+Lists the comments of one post. Removed comments are not returned.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `postId` | query | string | Yes | The post to read. A missing or invisible post returns `404 not_found` (`Post not found`). |
+| `limit` | query | integer | No | 1 to 100, default 50. |
+| `cursor` | query | string | No | The `page.nextCursor` of the previous page. |
+
+```bash
+curl "https://app.hive3.tech/api/v1/comments?postId=post_123&limit=20" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with `data` (an array of comment objects as shown below) and `page`.
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/posts/{postId}/comments" scopes={["posts:write"]}>
+
+Adds a comment to a visible post as the key's account. The post's author is notified, and so are accounts mentioned in the comment.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `content` | body | string | Yes | The text. It may be empty only when `imageUrl` is set; otherwise `400` (`Comment content is required`). |
+| `imageUrl` | body | string | No | An `http`, `https` or `blob` URL. |
+| `mentionedPersonIds` | body | string array | No | Account IDs or `@handles` to notify. Only the first 10 are used. `@handle` text in `content` also notifies (up to 10). |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/posts/post_123/comments \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"content":"Congratulations!"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/posts/post_123/comments", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ content: "Congratulations!" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/posts/post_123/comments",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"content": "Congratulations!"},
+)
+comment = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201` with the comment.
+
+```json
+{
+  "data": {
+    "id": "comment_123",
+    "postId": "post_123",
+    "content": "Congratulations!",
+    "imageUrl": null,
+    "likeCount": 0,
+    "isLikedByMe": false,
+    "isOwnedByMe": true,
+    "mentionedPersonIds": [],
+    "mentionedCommunityIds": [],
+    "personId": "account_123",
+    "personName": "Ada Lovelace",
+    "personUsername": "ada",
+    "createdAt": "2026-01-01T09:30:00.000Z",
+    "updatedAt": "2026-01-01T09:30:00.000Z"
+  }
+}
+```
+
+Errors: `400 invalid_request` (`content is required` when `content` is not a string, `Comment content is required`, `Invalid image URL`, body over about 20 KiB returns `413`), `404 not_found` (`Post not found`), `429 rate_limited` above 60 comments per minute or 500 per day per account.
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/comments/{commentId}" scopes={["posts:write"]}>
+
+Edits the text of your own comment. Send `content` as a non-empty string. You can only edit comments you wrote, and only while you can still see the post.
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/comments/comment_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"content":"Congratulations to the whole team!"}'
+```
+
+Returns `200` with the updated comment. Errors: `400` (`content is required`, `Comment content is required`), `403 forbidden` (`You do not have permission to edit this comment`), `404 not_found` (`Comment not found` or `Post not found`), `429` above 90 per minute.
+
+</Endpoint>
+
+<Endpoint method="DELETE" path="/api/v1/comments/{commentId}" scopes={["posts:write", "communities:moderate (moderating others)"]}>
+
+Removes a comment. Authors can remove their own comments and the owner account of the post can remove any comment on it. Anyone else is moderating: the key owner needs a live owner, admin or moderator role on the post's account and the `communities:moderate` or `communities:write` scope.
+
+```bash
+curl -X DELETE https://app.hive3.tech/api/v1/comments/comment_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with `{ "data": { "deleted": true, "id": "comment_123" } }` and lowers the post's comment count. Errors: `403 forbidden` (`You do not have permission to delete this comment`), `403 insufficient_scope` (`requiredScopes: ["communities:moderate"]`), `404 not_found`, `429` above 90 per minute.
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/comments/{commentId}/like" scopes={["posts:write"]}>
+
+Toggles your like on a comment. There is no request body.
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/comments/comment_123/like \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with `{ "data": { "count": 1, "liked": true } }`. Limit: 30 per minute, with the same per-account, per-day and per-item like budgets as post likes.
+
+</Endpoint>
+
+## Limits
+
+Every request also counts toward the 600 requests per minute account budget ([Rate limits](/developers/api-conventions#rate-limits)). The route budgets named in each operation are per account across all its keys; create routes return a `Retry-After` header when limited.

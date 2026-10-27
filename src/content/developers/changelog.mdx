@@ -1,0 +1,116 @@
+---
+title: API and CLI changelog
+description: What changed in the Hive3 public API and the hive command-line tool, newest first, and what integrators need to do.
+accent: developer
+---
+
+This page lists changes that can affect an integration: new endpoints and scopes, changed behavior, and corrections to earlier documentation. Each entry ends with what you need to do. The API stays at `/api/v1`: existing paths, scopes and field names are unchanged unless an entry says otherwise.
+
+## October 27, 2026: API update
+
+This update adds five endpoint families, makes plan and permission checks stricter, and aligns several workflows with the Hive3 app.
+
+### New
+
+- **Five new families.** [Search](/developers/api-search), [Broadcasts](/developers/api-broadcasts), [Tickets](/developers/api-tickets), [AI assistant](/developers/api-ai-assistant) and [Credentials](/developers/api-credentials).
+- **Eight new scopes.** `broadcasts:read`, `broadcasts:write`, `tickets:read`, `tickets:write`, `ai:read`, `ai:write`, `credentials:read` and `credentials:write`. No existing scope implies them. In the app, Read access adds the four `:read` scopes and Full access adds all eight. See [Scopes](/developers/api-authentication#scopes).
+- **`DELETE /api/v1/account/keys/current`.** A key can revoke itself. It needs no scope. See [Export and deletion](/developers/api-account-data).
+- **Quests in welcome pages.** The welcome-page builder accepts `quests` sections, entries and spotlights, as the app does.
+
+**What to do:** keys created before this update cannot reach the new families. Create a new key with the new scopes to use them.
+
+### Access and plans
+
+- **Honey Bee or above is required.** If the key owner's account is below Honey Bee, every request returns `403` with the code `plan_required`. The key is not revoked and works again after an upgrade. Creating keys and approving CLI logins need Honey Bee or above too.
+- **Accounts scheduled for deletion.** Their keys return `401 invalid_api_key` on every route except `DELETE /api/v1/account/deletion`, which still lets the account cancel the deletion. That route skips the plan check only while a deletion is pending. Cancelling now also makes the account searchable again.
+- **No staff shortcuts.** API keys never carry Hive3 Team staff permissions. A staff member's key needs a real owner, admin or moderator role on an account to act on it, and the app's Honey Bee checks apply.
+- **Moderation scopes.** Deleting someone else's comment, reviewing community applications, removing members and changing roles need `communities:moderate` or `communities:write`, plus a current owner, admin or moderator role. `communities:write` includes `communities:moderate`.
+- **Live roles on every call.** Access to another account depends on your role at the time of the request, and on the key's account allowlist if it has one. See [Managed accounts](/developers/api-authentication#managed-accounts).
+
+**What to do:** handle `403 plan_required` and `403 insufficient_scope` without retrying in a loop. If a key relied on staff permissions, give its owner a real role on the accounts it manages, or use a key owned by an account that has one.
+
+### Reading data
+
+- **Search visibility.** `GET /api/v1/search` lists public and paid-preview items for everyone. Another account's members-only and private items appear only when the key has `communities:read` and its allowlist, if any, includes that account. Each result's `visibility` is the effective value: the item's own setting combined with its account's access type. See [Search](/developers/api-search).
+- **List order.** Lists of posts, events, courses, content, quests and jobs are newest first, leave out archived items, and `nextCursor` walks the whole set.
+
+**What to do:** if you search for members-only items, add `communities:read` to the key.
+
+### Creating and changing things
+
+- **Events need approval by default.** Events created through the API default to `autoEnroll: false`. Send `"autoEnroll": true` to accept RSVPs automatically.
+- **Moving a world event.** Changing an event's `worldId` removes join links that pointed into the previous world.
+- **Quests.** Creating a quest needs `questCreditPlan` (`single` or `bundle`) and spends a quest credit. A missing `endsAt` defaults to 30 days after `startsAt`, so a `single` quest needs an explicit `endsAt` within 7 days. A quest's `subscriptionId` follows the same plan and plan-choice checks as other resources.
+- **Archiving is repeatable.** Archiving an already archived resource returns `200`, quests included. It no longer returns `409` for a quest. A quest or event that has started still returns `409`.
+- **Event timestamps.** Event slot `startsAt` and `endsAt` must be ISO 8601 with `Z` or an offset, and each end must be after its start.
+- **Job application files.** A `url` on a job application must be `http` or `https`; other schemes return `400`.
+
+**What to do:** set `autoEnroll` and `questCreditPlan` explicitly, remove any retry logic that treated a repeated quest archive as a failure, and send timestamps with an offset.
+
+### Participation workflows
+
+- **Attendance.** Recording attendance needs an approved RSVP (`409` otherwise) and an event that is not archived (`404`). The first recorded time is kept, the attendee is notified, and setting `attended: false` on recorded attendance returns `409`.
+- **Approvals re-check access.** Accepting an event or course participant who no longer has access returns `403`.
+- **RSVP limits.** RSVP changes share the app's budget of 10 per minute and 100 per day, and return `429` with `Retry-After`.
+
+**What to do:** approve RSVPs before recording attendance, and pace RSVP calls.
+
+### Broadcasts and credentials
+
+- **Test sends need a verified email.** `POST /broadcasts/{id}/test` returns `400` until the key owner's primary email is verified. This also applies in the app.
+- **Hero images must be `https`.** `heroImageUrl` accepts only `https` URLs through the API.
+- **Award limits.** Credential awards are limited per awarding account to 30 requests per minute and 500 people per day, shared with the app. Over a limit returns `429` with `Retry-After`.
+- **Uniform `notFound`.** Handles of unknown, private, still-being-set-up, deletion-pending and deleted accounts are all returned in `notFound` alike.
+
+**What to do:** verify your email before testing broadcasts, serve hero images over `https`, and retry awards after the `Retry-After` delay. Do not treat `notFound` as proof that a handle does not exist.
+
+### Rate limits and errors
+
+- **Account budget.** Each account has 600 requests per minute across its keys; the `429` for this budget has no `Retry-After` header.
+- **Where `Retry-After` is missing.** It is also absent on post likes, comment edits, deletes and likes, and notification writes. Back off to the next clock minute with jitter.
+- **Limits that return `400`.** The per-day and per-item like limits, the shared profile builder save budget, the daily data-export limit and the AI assistant document attach limits return `400 invalid_request` with a message, not `429`.
+- **`413`.** A request body larger than a route accepts returns `413` with the code `invalid_request`.
+
+**What to do:** do not rely on `Retry-After` being present; see [Rate limits](/developers/api-conventions#rate-limits).
+
+### Corrections to the documentation
+
+These behaviors were already in place; the documentation now matches them. If your code assumed otherwise, adjust it: expect `404` for other accounts' public resources fetched by ID, parse timestamps by object type, and treat `email` and `resolvedWallet` as personal data.
+
+- Ticket routes are for owners and admins only; moderators cannot manage tickets.
+- Reading one event, course, content item, quest or job by ID returns only your own resources or a managed account's (with `communities:read` and the allowlist). Anything else returns `404`, even when it is public in the app. Posts follow normal post visibility.
+- Participants, enrollments, evidence, job applications, community applications and members, wallets, linked communities and notification mutes return a plain array with no `page` object, capped as listed in [Pagination](/developers/api-conventions#pagination).
+- Posts, events, courses, content, quests and jobs return `createdAt`, `updatedAt` and `archivedAt` as Unix milliseconds. Other objects return ISO 8601 strings. See [Timestamps](/developers/api-conventions#timestamps).
+- Participant, enrollment and application lists include each person's `email`, and event participants include `resolvedWallet`. Store and log them as personal data.
+- A world event has exactly one slot and an attendee limit of 1 to 500 on the shared Dome, or 1 to 100 in a Royal Hive's own world (the earlier text said 900).
+- `Idempotency-Key` is read on resource creates (including posts), `POST /broadcasts` and `POST /ai-assistant/documents`, and remembered for 48 hours.
+- The participant list field is `email`, not `primaryEmail`.
+- The "must use the account's own plans" rule for subscription access applies to moderators. Owners and admins are not limited to that list.
+- `join` and `apply` membership actions behave the same: an open account accepts immediately and a private one records a pending application.
+- Data export is limited to 2 per hour and 2 new exports per day.
+- AI assistant limits are counted against the key owner, not the account being managed.
+- A credential award returns `200`, not `201`.
+
+## CLI 0.4.0
+
+CLI 0.4.0 is not published yet. Until it is, `npm install --global @hive3/cli` installs the previous release. Run `hive update --check` to see the latest published version. Items in the CLI pages marked "(0.4+)" need this version or later.
+
+### New commands
+
+- `hive search`, `hive broadcasts`, `hive tickets`, `hive assistant` and `hive credentials`. See [CLI commands: search, broadcasts, tickets, assistant, credentials](/developers/cli-commands-areas).
+- `get <id>` for every resource family, `hive notifications unread-count`, and `hive account linked-communities` with `list` and `disconnect`.
+- `--account <id-or-handle>` on profile, builder, broadcast, ticket, assistant and credential commands, to act on an account you own, administer or moderate.
+- `hive broadcasts update --remove-hero-image`.
+
+### Safer by default
+
+- **Confirmation flags.** `--confirm <exact id>` is required by `hive wallets remove`, `hive communities remove-member`, `hive account linked-communities disconnect` and `hive assistant documents delete`. `--yes` is required by `hive broadcasts send` and `hive credentials award`.
+- **Account deletion.** `hive account deletion request` is gone. Delete an account in the Hive3 app under Settings. `hive account deletion cancel` still cancels a pending deletion.
+- **Upload address check.** Before sending a file, `hive upload` and `hive assistant documents add` refuse an upload address that is not `https` (plain `http` only for a local development server), is not on the API host or a Hive3 storage host, or redirects. No key is sent with the file.
+- **Help never runs a command.** `--help` or `-h` after any command prints help, including `logout`, `whoami`, `capabilities`, `login` and `update`. In earlier versions `hive logout --help` signed you out.
+- **Private config files.** The config file and update cache are written through a private staging directory with mode `0600` and an atomic rename.
+- **`hive update`** installs exactly the version it reports.
+- **`plan_required`.** The CLI now shows a clear message when the account is below Honey Bee.
+- **`hive logout`** revokes the key on the server through `DELETE /api/v1/account/keys/current` before removing the local file.
+
+**What to do:** update scripts that used `hive account deletion request`, add `--yes` or `--confirm` where the commands above run unattended, and run `hive login` again if you need the new scopes. Keep using the same login if you only use existing commands.

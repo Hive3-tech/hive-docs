@@ -1,0 +1,270 @@
+---
+title: Wallets and NFT exposure
+description: List the wallets linked to an account, choose the default wallet, control public visibility, and remove wallets.
+accent: developer
+---
+
+Use these endpoints to show which wallets are linked to an account, pick the wallet that receives credentials, and control what other people can see. The API never signs transactions, moves funds or holds private keys; it only changes settings stored in Hive3.
+
+<Callout type="warning">
+Removing a wallet and changing visibility are high-impact. A key with `account:write` can change or remove wallets and can [export all account data](/developers/api-account-data), so treat it like a password and give automations a key with only the scopes they need. See [Authentication and API keys](/developers/api-authentication#scopes).
+</Callout>
+
+API access needs a Honey Bee plan or above; see the [developer overview](/developers). Wallet routes act on the key owner's own account only and do not accept `?account=`. Errors and rate limits follow [Requests, errors and limits](/developers/api-conventions#errors). Wallet addresses in paths are matched case-insensitively and should be URL-encoded.
+
+Each endpoint shows curl. Endpoints with a request body also show JavaScript and Python; the others follow the same pattern with the same headers.
+
+## List wallets
+
+<Endpoint method="GET" path="/api/v1/wallets" scopes={["account:read"]}>
+
+Returns up to 100 wallets and the account's NFT exposure setting. `defaultWalletAddress` is `null` when no wallet can currently claim credentials.
+
+```bash
+curl https://app.hive3.tech/api/v1/wallets \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `kind` is `evm` for an external wallet you linked, or `circle` for a Hive3 wallet: your passkey wallet or a retired Hive3-managed one.
+
+```json
+{
+  "data": {
+    "defaultWalletAddress": "0x1111111111111111111111111111111111111111",
+    "publicNftExposure": false,
+    "wallets": [
+      {
+        "id": "wallet_123",
+        "address": "0x1111111111111111111111111111111111111111",
+        "chainNamespace": "eip155",
+        "chainId": 1,
+        "kind": "evm",
+        "isDefault": true,
+        "publicallyDiscoverable": false
+      }
+    ]
+  }
+}
+```
+
+</Endpoint>
+
+## Choose the default wallet
+
+<Endpoint method="PATCH" path="/api/v1/wallets/default" scopes={["account:write"]}>
+
+Makes one linked wallet the default. Only an external wallet or the passkey wallet can be the default. Limited to 60 requests per minute.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `walletAddress` | body | string | Yes | Address of a linked wallet. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/wallets/default \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"walletAddress":"0x1111111111111111111111111111111111111111"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/wallets/default", {
+  method: "PATCH",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ walletAddress: "0x1111111111111111111111111111111111111111" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/wallets/default",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"walletAddress": "0x1111111111111111111111111111111111111111"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{ "data": { "defaultWalletAddress": "0x1111111111111111111111111111111111111111", "success": true } }
+```
+
+- `400 invalid_request`: `walletAddress is required`.
+- `404 not_found`: `Wallet not found`.
+- `409 conflict`: `This wallet can no longer claim credentials.` for a retired Hive3-managed wallet.
+
+</Endpoint>
+
+## Control wallet visibility
+
+<Endpoint method="PATCH" path="/api/v1/wallets/{walletAddress}/visibility" scopes={["account:write"]}>
+
+Sets whether a wallet can be found publicly. The field name is spelled `publicallyDiscoverable` in the request and the response. Limited to 60 requests per minute.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `walletAddress` | path | string | Yes | Address of a linked wallet. |
+| `publicallyDiscoverable` | body | boolean | Yes | `true` makes the wallet discoverable. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/wallets/0x1111111111111111111111111111111111111111/visibility \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"publicallyDiscoverable":true}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const address = "0x1111111111111111111111111111111111111111";
+const res = await fetch(`https://app.hive3.tech/api/v1/wallets/${address}/visibility`, {
+  method: "PATCH",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ publicallyDiscoverable: true }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+address = "0x1111111111111111111111111111111111111111"
+res = requests.patch(
+    f"https://app.hive3.tech/api/v1/wallets/{address}/visibility",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"publicallyDiscoverable": True},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{
+  "data": {
+    "walletAddress": "0x1111111111111111111111111111111111111111",
+    "publicallyDiscoverable": true,
+    "success": true
+  }
+}
+```
+
+- `400 invalid_request`: `publicallyDiscoverable is required`.
+- `404 not_found`: `Wallet not found`.
+
+</Endpoint>
+
+## Remove a wallet
+
+<Endpoint method="DELETE" path="/api/v1/wallets/{walletAddress}" scopes={["account:write"]}>
+
+Unlinks a wallet from the account. If it was the default, another wallet becomes the default. Hive3 wallets (`kind` of `circle`) cannot be removed, and you cannot remove the wallet that is your only way to sign in. Limited to 30 requests per minute.
+
+```bash
+curl -X DELETE https://app.hive3.tech/api/v1/wallets/0x1111111111111111111111111111111111111111 \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": { "removedWalletAddress": "0x1111111111111111111111111111111111111111", "success": true } }
+```
+
+- `403 forbidden`: `Circle wallets cannot be removed from My Wallets`, or `Cannot remove your only sign-in method`.
+- `404 not_found`: `Wallet not found`.
+
+</Endpoint>
+
+## Control NFT exposure
+
+<Endpoint method="PATCH" path="/api/v1/nfts/exposure" scopes={["account:write"]}>
+
+Turns public NFT exposure on or off for the account. The current value is returned as `publicNftExposure` by `GET /api/v1/wallets` and in the [profile](/developers/api-account#get-a-profile). Limited to 60 requests per minute.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `enabled` | body | boolean | Yes | `true` exposes the account's NFTs publicly. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/nfts/exposure \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"enabled":true}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/nfts/exposure", {
+  method: "PATCH",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ enabled: true }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/nfts/exposure",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"enabled": True},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{ "data": { "enabled": true, "success": true } }
+```
+
+- `400 invalid_request`: `enabled is required`.
+
+</Endpoint>

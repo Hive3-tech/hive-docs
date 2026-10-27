@@ -1,0 +1,84 @@
+---
+title: Developer overview
+description: Build on Hive3 with the public API, the hive command-line tool, and the agent skill.
+plan: honey
+accent: developer
+---
+
+Hive3 has a public API, a command-line tool called `hive`, and an agent skill that lets an AI assistant use the command-line tool for you. All three act as an account you control, with the same rules, limits and plan checks as the Hive3 app.
+
+<Callout type="plan">
+Developer access needs a <PlanBadge tier="honey" /> account or above. If the account behind a key drops below Honey Bee, every request with that key returns `403` with the code `plan_required`. The key is not revoked: it works again as soon as the account is back on Honey Bee or above. Creating a key, or approving a command-line login, also needs Honey Bee or above.
+</Callout>
+
+## What you can build
+
+- **Publishing automations.** Create and update posts, events, courses, content, quests and jobs from a script, a scheduler or a CMS.
+- **Community operations.** Review applications, change member roles, approve RSVPs and enrollments, record attendance, and review quest evidence.
+- **Email broadcasts.** Draft, test, schedule and send email to a community's opted-in members.
+- **Credentials.** Award custom credentials to people by handle and read who holds what.
+- **Support tooling.** Manage the AI assistant's name, visibility and training documents.
+- **Dashboards and reports.** Read tickets, search results, notifications, members and participants into your own tools.
+
+## API, CLI or agent skill
+
+| | Public API | `hive` command-line tool | Agent skill |
+|---|---|---|---|
+| What it is | HTTP endpoints that return JSON | A Node.js program that calls the API for you | Instructions that teach an AI agent to use `hive` safely |
+| Sign in | API key you create in Settings | Browser approval; the key is stored for you | Uses the signed-in `hive` session |
+| Best for | Servers, integrations, anything in code | Terminals, shell scripts, CI jobs, quick checks | Letting an assistant manage your account under your supervision |
+| Start here | [Authentication and API keys](/developers/api-authentication) | [CLI quickstart](/developers/cli-quickstart) | [Use Hive3 with AI agents](/developers/cli-agents) |
+
+## Make your first request
+
+<Steps>
+<Step title="Create an API key">
+Open <Path items={["Settings", "Help & feedback", "Developer API keys", "Manage API keys"]} /> and select <UI>Create API key</UI>. Copy the key when it appears; it is shown once. See [Authentication and API keys](/developers/api-authentication#create-a-key).
+</Step>
+<Step title="Call the API">
+Send the key as a Bearer token. This request returns the account behind the key and the accounts it can act on.
+
+```bash title="Who am I?"
+curl https://app.hive3.tech/api/v1/me \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+</Step>
+<Step title="Read the response">
+Every successful response wraps its payload in `data`. Errors use an `error` object with a stable `code`. See [Requests, errors and limits](/developers/api-conventions).
+</Step>
+</Steps>
+
+## Explore the documentation
+
+<CardGrid>
+<LinkCard href="/developers/api-authentication" title="Authentication and API keys" icon="key-round" accent="developer">Create keys, choose scopes, and act on communities you manage.</LinkCard>
+<LinkCard href="/developers/api-conventions" title="Requests, errors and limits" icon="book-open" accent="developer">Response format, error codes, pagination, idempotency and rate limits.</LinkCard>
+<LinkCard href="/developers/api-resources" title="Events, courses, content, quests, jobs" icon="calendar-days" accent="developer">Create and manage the things people join.</LinkCard>
+<LinkCard href="/developers/api-broadcasts" title="Broadcasts" icon="send" accent="developer">Draft, test and send email to your members.</LinkCard>
+<LinkCard href="/developers/cli-quickstart" title="CLI quickstart" icon="terminal" accent="developer">Install `hive`, sign in, and run your first commands.</LinkCard>
+<LinkCard href="/developers/cli-agents" title="Use Hive3 with AI agents" icon="bot" accent="developer">Give an assistant least-privilege access to your account.</LinkCard>
+</CardGrid>
+
+## Reference pages
+
+| Area | Page |
+|---|---|
+| Account and profile | [Account and profile](/developers/api-account), [Account settings](/developers/api-account-settings) |
+| Wallets, data export, deletion | [Wallets](/developers/api-wallets), [Export and deletion](/developers/api-account-data) |
+| File uploads | [Uploads](/developers/api-uploads) |
+| Posts and comments | [Posts and comments](/developers/api-posts) |
+| Events, courses, content, quests, jobs | [Shared rules and jobs](/developers/api-resources), [Events](/developers/api-resources-events), [Courses and content](/developers/api-resources-content), [Quests](/developers/api-resources-quests) |
+| RSVPs, enrollments, evidence, applications | [Event workflows](/developers/api-workflows), [Course and job workflows](/developers/api-workflows-courses-jobs), [Quest workflows](/developers/api-workflows-quests) |
+| Membership, roles, access | [Communities and members](/developers/api-communities) |
+| Notifications and mutes | [Notifications](/developers/api-notifications) |
+| Search | [Search](/developers/api-search) |
+| Email broadcasts | [Broadcasts](/developers/api-broadcasts) |
+| Tickets | [Tickets](/developers/api-tickets) |
+| AI assistant | [AI assistant](/developers/api-ai-assistant) |
+| Credentials | [Credentials](/developers/api-credentials) |
+
+## Good to know
+
+- **One version.** The API lives under `/api/v1`. Existing paths, scopes and field names do not change. Some field names still use the older words `person` and `community`; both refer to Hive3 accounts. A community is an account that other people join.
+- **The key acts as you.** A request never names the acting account. Hive3 resolves it from the key. Access to other accounts you help run depends on your role there at the moment of the request.
+- **Not available.** The API and CLI do not handle wallet keys or signing, payments or refunds, credential creation or minting, private messages, or hard deletion of communities. They can change which wallets and NFTs are publicly visible.

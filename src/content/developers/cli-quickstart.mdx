@@ -1,0 +1,184 @@
+---
+title: CLI quickstart
+description: Install the hive command-line tool, sign in through your browser, and create a post, search, and list events in a few minutes.
+plan: honey
+accent: developer
+---
+
+The `hive` command-line tool lets you create and manage posts, events, courses, quests, jobs, broadcasts and more from a terminal or a script. This page takes you from installation to your first three commands: creating a post, searching, and listing events.
+
+<Callout type="plan">
+Approving a command-line login needs a <PlanBadge tier="honey" /> account or above. On a lower plan the approval page shows **A Honey Bee subscription is required to create API keys.** and the approve button stays disabled. See [What Honey Bee and above means](#what-honey-bee-and-above-means).
+</Callout>
+
+## Before you start
+
+- **Node.js 20 or newer.** Check with `node --version`.
+- **A Hive3 account on Honey Bee or above.** The account you sign in with when you approve the login is the account the CLI acts as.
+- **A web browser.** It can be on another machine; you only need to open one URL and type one code.
+
+## Install the CLI
+
+<Steps>
+<Step title="Install the package">
+```bash title="Install"
+npm install --global @hive3/cli
+```
+
+The package adds two command names, `hive` and `hive3`. They run the same program, so every example on these pages works with either name.
+</Step>
+<Step title="Check that it runs">
+```bash title="Show the command list"
+hive --help
+```
+
+Help never needs a login. Run `hive <command> --help` (for example `hive events --help`) to see the actions and flags of one command.
+</Step>
+</Steps>
+
+<Callout type="note">
+Commands and flags marked **(0.4+)** need CLI version 0.4 or later. `npm install --global @hive3/cli` installs the latest release published to npm; if that release is older than 0.4, marked commands, such as `hive search`, are not available yet. Run `hive update --check` to see your installed version.
+</Callout>
+
+## Sign in
+
+<Steps>
+<Step title="Start the login">
+```bash title="Start browser approval"
+hive login
+```
+
+The terminal prints an approval URL and a one-time code, then tries to open your browser:
+
+```text title="Terminal output"
+Open this URL to approve Hive CLI access: https://app.hive3.tech/cli/authorize
+Code: ABCD-EF2G (type it on the approval page)
+```
+
+On a machine without a browser, run `hive login --no-open` and open the URL anywhere you are signed in to Hive3.
+</Step>
+<Step title="Enter the code">
+On the approval page, sign in if asked. Under <UI>Enter the code</UI>, type the code from your terminal into <UI>CLI code</UI>. The URL never contains the code, so the page cannot be approved without you typing it.
+</Step>
+<Step title="Choose the access level and approve">
+The page shows <UI>Approve login</UI> with the account you are approving as and the name of the request. Choose <UI>Read only</UI> or <UI>Full access</UI>. The page lists the <UI>Granted scopes</UI> for your choice. Select <UI>Approve login</UI>, or <UI>Cancel</UI> to refuse.
+
+Start with <UI>Read only</UI> unless you plan to change things. [CLI sign-in and configuration](/developers/cli-authentication#choose-read-only-or-full-access) lists exactly what each choice grants.
+</Step>
+<Step title="Return to the terminal">
+When the page says **Hive CLI approved**, the terminal finishes:
+
+```text title="Terminal output"
+Hive CLI authenticated as API key hive_sk_…
+Credential stored at /home/you/.config/hive/config.json.
+```
+
+The key is stored in a private file on your machine and is never printed. It expires after 90 days.
+</Step>
+</Steps>
+
+<Callout type="warning">
+Approve only a code that your own terminal just printed. Anyone can start a login request with any name, and approving someone else's code gives them access to your account.
+</Callout>
+
+To skip the choice on the page, for example in a script you supervise, preselect a bundle:
+
+```bash title="Preselect Read only or Full access"
+hive login --access read
+hive login --access full
+```
+
+## Check who you are
+
+```bash title="Identity and reachable accounts"
+hive whoami
+hive capabilities
+```
+
+`hive whoami` prints the account, the scopes of your key, and every account the key can act on:
+
+```text title="Example output"
+Account: Ada
+Handle: @ada
+Scopes: account:read, ai:read, broadcasts:read, communities:read, credentials:read, posts:read, resources:read, tickets:read
+Accounts this key can act on: 2
+- Ada (owner): read, write, moderate
+- Design Guild (admin): read, write, moderate
+```
+
+`hive capabilities` prints the same accounts, one per line, without the header. You can act on your own account and on any account where you are currently owner, admin or moderator. If only your own account is listed, commands for other accounts will fail. See [managed accounts](/developers/api-authentication#managed-accounts).
+
+If a command prints `Not logged in. Run hive login first.`, no credential is stored yet. Run `hive login`.
+
+## Run your first commands
+
+### Create a post
+
+Creating content needs <UI>Full access</UI>. With a Read only key the command fails with `insufficient_scope` and tells you the missing scope.
+
+```bash title="Create a post"
+hive posts create --body "Hello from the Hive CLI" --visibility public
+```
+
+The CLI prints the new post as JSON, wrapped in a `data` object, including its `id`. To switch to Full access, run `hive login --access full` and approve again. The new key replaces the stored one; the earlier key stays valid until it expires or you revoke it in the app. See [Sign out and revoke a key](/developers/cli-authentication#sign-out-and-revoke-a-key).
+
+### Search (0.4+)
+
+Search works with a Read only key.
+
+```bash title="Search accounts"
+hive search "design guild" --type accounts --limit 5
+```
+
+`--type` is one of `all`, `accounts`, `events`, `courses`, `content`, `quests` or `jobs`. Results show only what your account can see.
+
+### List events
+
+```bash title="List the newest events"
+hive events list --limit 5
+```
+
+Lists are newest first. The response includes a `page` object with `hasMore` and `nextCursor`. Pass the cursor back to read the next page:
+
+```bash title="Read the next page"
+hive events list --limit 5 --cursor "<nextCursor>"
+```
+
+See [pagination](/developers/api-conventions#pagination) for the details.
+
+## Update and uninstall
+
+The CLI checks npm for a newer release at most once a day while you use it interactively, and prints a short notice on stderr after a command finishes. You can also check yourself:
+
+```bash title="Check for and install updates"
+hive update --check
+hive update
+```
+
+`hive update` installs exactly the version it reports with `npm install --global @hive3/cli@<version>`. Set `HIVE_NO_UPDATE_CHECK=1` to turn off the daily check.
+
+To uninstall, sign out first so the key is revoked on the server, then remove the package:
+
+```bash title="Sign out and uninstall"
+hive logout
+npm uninstall --global @hive3/cli
+```
+
+Uninstalling the package alone does not revoke the key or delete the stored credential file.
+
+## What Honey Bee and above means
+
+<PlanBadge tier="honey" /> is the lowest plan that can create API keys and approve a CLI login. See [Plans and pricing](/start/plans) for the full plan comparison.
+
+- **Signing in** needs the approving account to be on Honey Bee or above at the moment you approve.
+- **Using a key** needs the key owner's account to stay on Honey Bee or above. If the plan drops, the key is kept but every request returns `plan_required`. The CLI prints `Your Hive plan doesn't include API access: the API and CLI need Honey Bee or above.` and asks you to upgrade under Settings. The same key works again once the plan is active; you do not need to sign in again.
+- **Other limits still apply.** Paid-plan rules in the app, such as broadcast frequency or members-only content, apply to the CLI in the same way.
+
+## Next steps
+
+<CardGrid>
+<LinkCard href="/developers/cli-authentication" title="CLI sign-in and configuration" icon="key-round" accent="developer">Read only versus Full access, exact scopes, stored files, logout and troubleshooting.</LinkCard>
+<LinkCard href="/developers/cli-commands" title="CLI command reference" icon="terminal" accent="developer">Every command, flag and scope, grouped by area.</LinkCard>
+<LinkCard href="/developers/cli-agents" title="Use Hive3 with AI agents" icon="bot" accent="developer">Give an assistant least-privilege access and keep a human in the loop.</LinkCard>
+<LinkCard href="/developers/api-authentication" title="Authentication and API keys" icon="shield-check" accent="developer">Create keys in the app and call the API directly.</LinkCard>
+</CardGrid>

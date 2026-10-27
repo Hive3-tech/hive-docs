@@ -1,0 +1,146 @@
+---
+title: Courses and content
+description: Fields, lessons, office hours and sections for creating courses and content through the API.
+accent: developer
+---
+
+Use these fields to publish courses and content (articles, videos and downloads) for your account or a community you manage. Both kinds use the shared operations in [Events, courses, content, quests and jobs](/developers/api-resources): list, create, get, update and archive on `/api/v1/courses` and `/api/v1/content`, with the same scopes, owner selector, visibility rules, `Idempotency-Key` header and limits. To enroll learners or track lesson progress, see [Participation workflows](/developers/api-workflows).
+
+The examples read the key from `HIVE_API_KEY`. Some field names still say `community` or `person`; both identify accounts.
+
+## Course fields
+
+Courses store the whole body in `data`. Responses add `lessons`, `status` and `visibility`.
+
+| Field | Type | Notes |
+|---|---|---|
+| `title` | string | Required. |
+| `description` | string | Course summary. |
+| `lessons` | array | Lesson objects. Each lesson needs a string `id` so learners can complete it through [Participation workflows](/developers/api-workflows). Lessons grouped in `sections[].lessons` take precedence for progress. |
+| `officeHours` | object | Optional schedule. `type` is `none`, `virtual` or `metaverse`; other types need `timezone` and 1 to 7 `blocks` of `{ "daysOfWeek": [1, 3], "startTime": "10:00", "endTime": "11:00" }`. `virtual` needs an `http(s)` `url`; `metaverse` needs a `worldId`. An invalid schedule returns `400` (`Invalid office hours: …`). |
+| `status` | string | Default `published`. |
+| `maxCapacity` | integer | Enrollment limit; a full course rejects enrollments. |
+| `visibility`, `subscriptionId`, `badges` | | As in [Shared behavior](/developers/api-resources#shared-behavior). |
+| `imageUrl`, `heroImage`, `imageStorageId`, `heroImageStorageId` | string | Cover images (`thumbnailUrl`, `bannerImageUrl` also work). |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/courses \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Intro to Hive3","description":"Learn the basics.","lessons":[{"id":"lesson-1","title":"Welcome"}]}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/courses", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    title: "Intro to Hive3",
+    description: "Learn the basics.",
+    lessons: [{ id: "lesson-1", title: "Welcome" }],
+  }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/courses",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={
+        "title": "Intro to Hive3",
+        "description": "Learn the basics.",
+        "lessons": [{"id": "lesson-1", "title": "Welcome"}],
+    },
+)
+course = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201` with `type: "course"`, `status: "published"`, the `lessons` array and a `data` object that echoes the body.
+
+## Content fields
+
+Content stores the whole body in `data`. Responses add `contentType`, `headline`, `sections` and `tags`.
+
+| Field | Type | Notes |
+|---|---|---|
+| `title` | string | Required. |
+| `description` | string | Summary. |
+| `contentType` | string | Free text, default `article`. The app treats `video` specially. |
+| `headline` | string | Defaults to the description. |
+| `sections` | array | Page sections: `{ "sectionType": "text", "seqNr": 1, "items": [{ "seqNr": 1, "title": "…", "headline": "…", "content": "…", "image": "" }] }`. Stored as sent. |
+| `tags` | array | Tags. |
+| `attachmentUrl`, `attachmentStorageId` | string | A linked or uploaded document (`documentUrl` also works). |
+| `visibility`, `subscriptionId`, `badges` | | As in [Shared behavior](/developers/api-resources#shared-behavior). |
+| `imageUrl`, `heroImage`, `imageStorageId`, `heroImageStorageId` | string | Cover images. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/content \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Release notes","contentType":"article","headline":"What changed in October","tags":["release"]}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/content", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    title: "Release notes",
+    contentType: "article",
+    headline: "What changed in October",
+    tags: ["release"],
+  }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/content",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={
+        "title": "Release notes",
+        "contentType": "article",
+        "headline": "What changed in October",
+        "tags": ["release"],
+    },
+)
+content = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201` with `type: "content"`, the `contentType`, `headline`, `sections`, `tags` and a `data` object that echoes the body.

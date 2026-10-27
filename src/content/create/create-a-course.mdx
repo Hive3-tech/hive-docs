@@ -1,0 +1,185 @@
+---
+title: Create a course
+description: Build a course with lessons, optional live office hours and your own enrollment rules, then track how learners progress.
+accent: courses
+---
+
+A course is a set of lessons that people work through at their own pace, with optional weekly office hours where they can meet you live. Learners enroll and move through the lessons, and they can earn a credential when your plan includes credentials. This guide covers the four steps of the course form and what you can do after you publish.
+
+**Who can do this:** any account on any plan, and the owner, admins and moderators of a community. Members-only access, subscriptions and tickets need a [Honey Bee or higher](/start/plans) plan; Worker Bee courses are public. Metaverse office hours need Honey Bee or higher.
+
+<Walkthrough
+  src="/media/walkthroughs/create-a-course.mp4"
+  poster="/media/walkthroughs/create-a-course.poster.webp"
+  title="Create a course"
+  chapters={[
+    { at: 0, label: "Open your dashboard" },
+    { at: 5.5, label: "Basic info" },
+    { at: 20, label: "Office hours" },
+    { at: 26, label: "Lessons" },
+    { at: 35, label: "Course access" },
+    { at: 37, label: "Publish" },
+  ]}
+/>
+
+## Start a new course
+
+<Path items={["My Hive", "My Dashboard", "Courses", "New Course"]} />
+
+Open the dashboard of the account that should publish the course, then select <UI>New Course</UI> on the <UI>Courses</UI> tab. For a community, open [its dashboard](/create/your-dashboard) first.
+
+The form is titled <UI>Create New Course</UI>. The panel on the right shows the four steps, a preview card, a <UI>Drafts</UI> menu and the <UI>Back</UI> and <UI>Next</UI> buttons. Your progress is saved automatically as a draft, and <UI>Cancel</UI> offers <UI>Discard draft</UI>, <UI>Keep editing</UI> and <UI>Save & exit</UI>.
+
+## Basic Info
+
+<Steps>
+<Step title="Add a Hero Banner">
+Optional. Upload a wide image; 1200 × 400 pixels is recommended.
+</Step>
+<Step title="Write the Course Title">
+Required. Up to 60 characters.
+</Step>
+<Step title="Write the Short Description">
+Required. Up to 125 characters. It appears on course cards.
+</Step>
+<Step title="Choose the Course Difficulty">
+Required. Select <UI>Beginner</UI> (no prior knowledge required), <UI>Intermediate</UI> (some experience helpful) or <UI>Advanced</UI> (strong background needed).
+</Step>
+<Step title="Set a start and end date, if you want one">
+Optional. Select <UI>Set a start and end date</UI>, then click the first and last day on the calendar. Select <UI>No end date / continuous course</UI> if the course has a start but no end. Leave the whole section off for a course that is always open.
+</Step>
+<Step title="Write the Full Description">
+Required. Use the editor, up to 3,000 words, or select <UI>Upload Document</UI> and choose a PDF or Markdown file.
+</Step>
+<Step title="Choose badges and add instructors">
+Pick up to 5 badges. For a community you can also search for people under <UI>Instructors</UI> and add them. Instructors are listed on the course.
+</Step>
+</Steps>
+
+If your plan includes credentials you also see a <UI>Credential image</UI> field. Hive3 generates a badge from the course name unless you upload your own square image (400 × 400 pixels recommended).
+
+<Figure
+  src="/media/create/create-a-course/basic-info.webp"
+  alt="The Basic Info step of the Create New Course form with the hero banner, title, short description and difficulty choices."
+  caption="Basic Info."
+/>
+
+## Office Hours
+
+Office hours are a regular live session for your learners. Choose one of three options.
+
+| Option | What it means |
+|---|---|
+| <UI>No office hours</UI> | A self-paced course. |
+| <UI>Virtual office hours</UI> | Hosted with a video link. |
+| <UI>Metaverse office hours</UI> | Hosted in a 3D world. |
+
+<Steps>
+<Step title="Add the link, for virtual office hours">
+Enter the <UI>Office Hours Link</UI>, for example a Zoom meeting. It is required and must be a safe web address.
+</Step>
+<Step title="Choose a world, for metaverse office hours">
+Under <UI>Choose a world</UI>, select the world. Hive3 fills in the maximum for you: <UI>Maximum participants</UI> is required for a world, up to 500 in a shared world and up to 100 in a Royal Hive world. For a virtual session it is optional and can stay unlimited.
+</Step>
+<Step title="Set the weekly schedule">
+Under <UI>Office hours schedule</UI>, choose a <UI>Timezone</UI>, select the days of the week (<UI>Sun</UI> to <UI>Sat</UI>), then set a <UI>Start time</UI> and an <UI>End time</UI>. The end must be later than the start.
+</Step>
+</Steps>
+
+Hive3 turns your schedule into sessions that learners can attend. Metaverse sessions in a shared world use your [metaverse time](/create/host-in-a-world) in the same way events do.
+
+<Figure
+  src="/media/create/create-a-course/office-hours.webp"
+  alt="The Office Hours step showing the three office hours options and the weekly schedule with day buttons, start time and end time."
+  caption="Office hours."
+/>
+
+## Lessons
+
+A course needs at least one lesson before you can continue.
+
+<Steps>
+<Step title="Start a lesson">
+Select <UI>New Lesson</UI>, or <UI>Create First Lesson</UI> if the list is empty. The form is titled <UI>Create New Lesson</UI>.
+</Step>
+<Step title="Name it and add an overview">
+Enter the <UI>Lesson Title</UI> (required). The <UI>Lesson Overview</UI> is optional. It uses the same editor as the course description, and you can upload a PDF or Markdown file instead.
+</Step>
+<Step title="Add sections">
+Select <UI>New Section</UI> and give it a title. A lesson is made of one or more sections.
+</Step>
+<Step title="Choose the section type">
+<UI>Text / PDF</UI> lets you write the section in the editor or upload a document. <UI>Video</UI> asks for a <UI>Video URL</UI> (a YouTube or Vimeo link) or an uploaded file with <UI>Upload Video</UI>. A video section needs one or the other. You can add <UI>Notes / Transcript</UI> beneath the video.
+</Step>
+<Step title="Save the lesson">
+Select <UI>Add Lesson</UI>. When you edit an existing lesson the button reads <UI>Update Lesson</UI>. You cannot save a lesson without a title.
+</Step>
+</Steps>
+
+Back in the lesson list, each lesson shows its sections. Use the arrows to move a lesson up or down, edit it, or delete it. To remove one section, use the trash icon on its row and confirm.
+
+<Figure
+  src="/media/create/create-a-course/lesson-editor.webp"
+  alt="The Create New Lesson form with Lesson Title, Lesson Overview and a list of lesson sections with Text or Video types."
+  caption="Building a lesson."
+/>
+
+## Course Access
+
+<Steps>
+<Step title="Choose the Enrollment Type">
+<UI>Auto-enroll participants</UI> lets learners enroll directly. <UI>Apply for enrollment</UI> makes them apply and wait for your approval.
+</Step>
+<Step title="Choose who can see and enroll">
+<UI>Open enrollment</UI> is for anyone. <UI>Members only</UI> limits the course to members or collaborators. <UI>Subscription / ticket</UI> requires a subscription or lets people buy a one-time ticket. Worker Bee accounts see only the open option.
+</Step>
+<Step title="Set up payment, for paid courses">
+Connect Stripe for subscriptions and PayPal for one-time tickets in <UI>Monetize</UI>. Then select a plan under <UI>Select subscription</UI>, or turn on <UI>Enable one-time ticket pricing</UI> in the <UI>One-Time Course Ticket</UI> section and enter a <UI>Price</UI> and <UI>Currency</UI> (USD, EUR or GBP). Owners and admins set prices. See [Get paid](/community/get-paid).
+</Step>
+</Steps>
+
+<Figure
+  src="/media/create/create-a-course/course-access.webp"
+  alt="The Course Access step with Subscription / ticket selected, showing the Connect Stripe to enable paid access notice and an Open Payments button."
+  caption="Course Access. Paid access needs a connected payment provider."
+/>
+
+## Publish
+
+Select <UI>Create Course</UI> in the panel. Hive3 asks <UI>Ready to publish?</UI>. Choose <UI>Create Course</UI> to publish and open the course page, or <UI>Keep editing</UI> to go back.
+
+## After you publish
+
+Find the course on the <UI>Courses</UI> tab of your [dashboard](/create/your-dashboard). Open <UI>More actions</UI> on its row.
+
+### Approve enrollments
+
+<UI>Manage Enrollment</UI> lists learners with tabs for <UI>All</UI>, <UI>Pending</UI>, <UI>Approved</UI> and <UI>Denied</UI>. With <UI>Apply for enrollment</UI>, select <UI>Approve</UI> or <UI>Deny</UI> on each request.
+
+### See how learners are doing
+
+<UI>View Analytics</UI> opens <UI>Course Analytics</UI>. It shows <UI>Total Enrolled</UI>, <UI>Completed</UI> with the completion rate, <UI>Avg Progress</UI> and <UI>In Progress</UI>. Below, every learner is listed with their progress percentage, the lessons they have completed out of the total, when they enrolled, when they were last active and whether they have finished. Filter the list with <UI>All</UI>, <UI>In Progress</UI> and <UI>Completed</UI>.
+
+<Figure
+  src="/media/create/create-a-course/analytics.webp"
+  alt="The Course Analytics page with four summary cards (Total Enrolled, Completed, Avg Progress, In Progress) and a learner row with a progress bar and a Completed badge."
+  caption="Course analytics. Learners and their progress appear here once people enroll."
+/>
+
+### Edit, hide or delete
+
+<UI>Edit</UI> reopens the form as <UI>Edit Course</UI> and the last button reads <UI>Update Course</UI>. <UI>Hide from profile</UI> keeps the course but removes it from your public lists; a course with an end date can be hidden once that date has passed.
+
+## Tips
+
+- Write the short description for someone deciding whether to enroll. The full description can then go into detail.
+- Break long topics into several lessons with short sections, so learners can see their progress.
+- Use <UI>Apply for enrollment</UI> if you want to teach a small group.
+- A video section is not complete without a link or an upload, so add that before you save the lesson.
+
+## Related guides
+
+- [Take courses](/explore/take-courses)
+- [Host in a 3D world](/create/host-in-a-world)
+- [Get paid: subscriptions and tickets](/community/get-paid)
+- [Create and award credentials](/community/issue-credentials)

@@ -1,0 +1,194 @@
+---
+title: Data export, deletion and key revocation
+description: Download a copy of an account's data, schedule or cancel account deletion, and revoke the API key you are calling with.
+accent: developer
+---
+
+Use these endpoints to build a data-download button, an account-closure flow with a grace period, or a sign-out step that revokes the key a tool was using. All of them act on the key owner's own account and do not accept `?account=`.
+
+<Callout type="warning">
+Exports, deletion and key revocation are high-impact. An export contains personal data about the account, so store the file as carefully as a password. A deletion request cancels the account's billing, hides the account and locks every key for seven days before the account is permanently deleted. A revoked key cannot be restored. Confirm with a person before calling these routes from an automation.
+</Callout>
+
+API access needs a Honey Bee plan or above; see the [developer overview](/developers). The cancel-deletion route is the one exception: it skips the plan check only while a deletion is actually pending. Errors and rate limits follow [Requests, errors and limits](/developers/api-conventions#errors). Timestamps in these responses are Unix milliseconds.
+
+Each endpoint shows curl. Endpoints with a request body also show JavaScript and Python; the others follow the same pattern with the same headers.
+
+## Export account data
+
+<Endpoint method="POST" path="/api/v1/account/export" scopes={["account:write"]}>
+
+Builds a ZIP archive of CSV files with the account's profile, sign-in methods, linked wallets, memberships, follows, notifications, billing records, feedback and owned resources, and returns a download link. Exports are kept for 7 days. A repeat request while an unexpired export exists returns that file instead of building another. Any key with `account:write`, including an app Full Access key, can export everything.
+
+Limited to 2 requests per hour, and to 2 newly built exports per day. There is no request body.
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/account/export \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/account/export", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}` },
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/account/export",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201`. Download the file with a plain `GET` on `downloadUrl` and no `Authorization` header. Treat the link as a secret.
+
+```json
+{
+  "data": {
+    "exportId": "export_123",
+    "fileName": "hive3-account-export-account_123-2026-10-27.zip",
+    "downloadUrl": "https://example.com/download/export_123",
+    "message": "Your account export is ready."
+  }
+}
+```
+
+- `400 invalid_request`: `An account export is already being prepared`, or `Account export limit reached. Try again tomorrow.`
+- `403 insufficient_scope`: the key is read-only; `requiredScopes` is `["account:write"]`.
+- `429 rate_limited`: more than 2 requests in an hour; wait for `Retry-After`.
+
+</Endpoint>
+
+## Delete an account
+
+Deleting an account is a two-step flow: request it, then either cancel within seven days or let it complete.
+
+- **Requesting deletion** schedules deletion 7 days out, cancels the account's billing, turns off membership auto-renew, and hides the account from search.
+- **While deletion is pending**, every key for the account returns `401 invalid_api_key` on every route except `DELETE /api/v1/account/deletion`. That route stays reachable with the same key and skips the plan check while the deletion is pending.
+- **After the scheduled time** the account and its data are permanently deleted.
+
+### Request deletion
+
+<Endpoint method="POST" path="/api/v1/account/deletion" scopes={["account:destroy"]}>
+
+Needs the `account:destroy` scope. The Full Access preset in the app never includes it, and the `hive` command-line tool never receives it. The key also needs `account:write` if you want to be able to cancel with the same key. Limited to 10 requests per minute.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `confirmation` | body | string | Yes | Must be `DELETE`. Surrounding spaces and letter case are ignored. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/account/deletion \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"confirmation":"DELETE"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/account/deletion", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ confirmation: "DELETE" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/account/deletion",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"confirmation": "DELETE"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`. `accountDeletionScheduledAt` is when permanent deletion starts.
+
+```json
+{ "data": { "accountDeletionScheduledAt": 1793604800000, "success": true } }
+```
+
+- `400 invalid_request`: `Type DELETE to confirm account deletion`.
+- `403 insufficient_scope`: the key lacks `account:destroy`; `requiredScopes` is `["account:destroy"]`.
+
+The request cancels billing before it returns. If it fails with an error other than the ones above, the deletion may already be scheduled; the key then returns `401 invalid_api_key` on every route except the cancel route below.
+
+</Endpoint>
+
+### Cancel deletion
+
+<Endpoint method="DELETE" path="/api/v1/account/deletion" scopes={["account:write"]}>
+
+Cancels a pending deletion, makes the account active again, and makes it searchable again, as cancelling in the app does. This route works while deletion is pending, with the account's own key, and skips the plan check only then. On an account that is not pending deletion it is plan-gated like every other route (`403 plan_required` below Honey Bee) and succeeds without changes. Billing cancelled by the deletion request is not recreated, so check the account's plans and subscriptions afterwards. Limited to 30 requests per minute.
+
+```bash
+curl -X DELETE https://app.hive3.tech/api/v1/account/deletion \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": { "success": true } }
+```
+
+- `403 insufficient_scope`: the key lacks `account:write`. A key with only `account:destroy` cannot cancel.
+- `409 conflict`: `Team Tools initiated this deletion. Contact Hive3 support.`, or `This account is already scheduled for final deletion`.
+
+</Endpoint>
+
+## Revoke the current key
+
+<Endpoint method="DELETE" path="/api/v1/account/keys/current" scopes={[]}>
+
+Revokes the key that signs the request. Any valid key can revoke itself, including a read-only key, so a leaked key can always be disabled from the outside. The `hive` command-line tool calls this route when you sign out. Revoked keys return `401 invalid_api_key`. Limited to 10 requests per minute.
+
+```bash
+curl -X DELETE https://app.hive3.tech/api/v1/account/keys/current \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": { "revoked": true } }
+```
+
+- `401 invalid_api_key`: the key is already revoked, expired or unknown.
+- `403 plan_required`: the account is below Honey Bee. Revoke the key from <Path items={["Settings", "Help & feedback", "Developer API keys", "Manage API keys"]} /> instead.
+
+</Endpoint>

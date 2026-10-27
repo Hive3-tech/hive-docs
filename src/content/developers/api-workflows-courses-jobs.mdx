@@ -1,0 +1,390 @@
+---
+title: Course and job workflows
+description: Enroll accounts in courses, track lesson progress, accept job applications and manage applicants with the API.
+accent: developer
+---
+
+Use these endpoints to build course enrollment and progress tracking, and to let accounts apply for jobs while hiring managers review applicants. The access decision, manager, declined-participant, capacity and attachment rules are on [Participation workflows](/developers/api-workflows#shared-rules); they apply here unchanged. Events are on the same page, quests on [Quest workflows](/developers/api-workflows-quests).
+
+Requests use `https://app.hive3.tech/api/v1` and an API key from [Authentication](/developers/api-authentication#create-a-key). API access needs Honey Bee or above (see the [developer overview](/developers)). Field names such as `personId` identify accounts. Endpoints without a body show only curl; for JavaScript and Python use the pattern of the [event participants example](/developers/api-workflows#events).
+
+## Courses
+
+An enrollment links an account to a course. Learners complete lessons one by one, and organizers can approve or decline enrollments.
+
+<Endpoint method="POST" path="/api/v1/workflows/courses/{courseId}/enrollment" scopes={["resources:write"]}>
+
+Enrolls or unenrolls the key owner. Repeating the request keeps the existing enrollment.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `courseId` | path | string | Yes | Course ID. |
+| `enroll` | body | boolean | No | `true` (default) enrolls, `false` unenrolls. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/workflows/courses/course_123/enrollment \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"enroll": true}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/workflows/courses/course_123/enrollment", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ enroll: true }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/workflows/courses/course_123/enrollment",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"enroll": True},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201` for a new enrollment, `200` otherwise. Unenrolling returns `{ "courseId": "course_123", "enrolled": false }`. The enrollment needs approval before lessons can be completed when the course turns off automatic enrollment.
+
+```json
+{ "data": { "courseId": "course_123", "enrollmentId": "enrollment_456", "enrolled": true } }
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | The course is at full capacity. |
+| 403 | `forbidden` | `You cannot enroll in this course`. |
+| 404 | `not_found` | The course does not exist or is archived. |
+| 409 | `conflict` | The organizer declined this participant. |
+
+</Endpoint>
+
+<Endpoint method="GET" path="/api/v1/workflows/courses/{courseId}/enrollments" scopes={["resources:read"]}>
+
+Lists enrollments with progress for course managers (owner, admin or moderator of the course's account), up to 200 rows and no `page` object.
+
+```bash
+curl https://app.hive3.tech/api/v1/workflows/courses/course_123/enrollments \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `accepted` is `true`, `false` or `null`; `completedAt` appears once the course is finished.
+
+```json
+{
+  "data": [
+    {
+      "personId": "account_789",
+      "name": "Grace Hopper",
+      "email": "grace@example.com",
+      "username": "grace",
+      "accepted": true,
+      "enrollmentId": "enrollment_456",
+      "enrolledAt": "2026-10-20T09:30:00.000Z",
+      "completed": false,
+      "completedLessonIds": ["lesson_1"],
+      "completedLessons": 1,
+      "totalLessons": 4,
+      "progressPercent": 25
+    }
+  ]
+}
+```
+
+Errors: `403 forbidden` when the key owner cannot manage the course, `403 insufficient_scope` for another account's course without `communities:read`.
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/workflows/courses/{courseId}/enrollments/{personId}" scopes={["resources:write"]}>
+
+Approves or declines a course enrollment. `personId` is the student's account ID. Approving re-checks the student's current course access.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `courseId` | path | string | Yes | Course ID. |
+| `personId` | path | string | Yes | Student account ID from the list. |
+| `accepted` | body | boolean | One of the two | `true` approves, `false` declines. |
+| `decision` | body | string | One of the two | `approve` or `accepted`, `deny` or `rejected`. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/workflows/courses/course_123/enrollments/account_789 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"accepted": true}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/workflows/courses/course_123/enrollments/account_789", {
+  method: "PATCH",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ accepted: true }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/workflows/courses/course_123/enrollments/account_789",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"accepted": True},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{ "data": { "enrollmentId": "enrollment_456", "accepted": true } }
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | Neither `accepted` nor `decision` is valid. |
+| 403 | `forbidden` | The key owner cannot manage the course, or `Participant does not have access to this course`. |
+| 404 | `not_found` | The student has no enrollment. |
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/workflows/courses/{courseId}/lessons/{lessonId}/complete" scopes={["resources:write"]}>
+
+Marks a lesson complete for the key owner, who needs an approved enrollment. Completing the same lesson twice changes nothing. The course finishes when every lesson is complete.
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/workflows/courses/course_123/lessons/lesson_2/complete \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with the learner's progress.
+
+```json
+{
+  "data": {
+    "courseId": "course_123",
+    "lessonId": "lesson_2",
+    "completed": false,
+    "completedLessonIds": ["lesson_1", "lesson_2"],
+    "completedLessons": 2,
+    "totalLessons": 4,
+    "progressPercent": 50
+  }
+}
+```
+
+Errors: `403 forbidden` (`Course enrollment required` or `Course enrollment approval required`), `404 not_found` (`Lesson not found`).
+
+</Endpoint>
+
+## Jobs
+
+A job application carries a resume, an optional cover letter and a status that hiring managers update. An account can apply again only after its previous application was rejected.
+
+<Endpoint method="POST" path="/api/v1/workflows/jobs/{jobId}/applications" scopes={["resources:write"]}>
+
+Applies to a job as the key owner. Both files use the [attachment object](/developers/api-workflows#attachment-objects) shape.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `jobId` | path | string | Yes | Job ID. |
+| `resume` | body | object | Yes | Attachment object. |
+| `coverLetter` | body | object | No | Attachment object. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/workflows/jobs/job_123/applications \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"resume": {"storageId": "upload_abc123", "fileName": "resume.pdf", "contentType": "application/pdf", "byteSize": 182044}}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const resume = { storageId: "upload_abc123", fileName: "resume.pdf", contentType: "application/pdf", byteSize: 182044 };
+const res = await fetch("https://app.hive3.tech/api/v1/workflows/jobs/job_123/applications", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ resume }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+resume = {"storageId": "upload_abc123", "fileName": "resume.pdf", "contentType": "application/pdf", "byteSize": 182044}
+res = requests.post(
+    "https://app.hive3.tech/api/v1/workflows/jobs/job_123/applications",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"resume": resume},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201`.
+
+```json
+{ "data": { "applicationId": "application_123", "status": "pending" } }
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | `resume is required`, or an attachment is missing a field, has a disallowed type, is too large, or has a `url` that is not `http` or `https`. |
+| 403 | `forbidden` | `You cannot apply for this job`. |
+| 404 | `not_found` | The job is missing or archived, or a `storageId` is unknown or belongs to another account. |
+| 409 | `conflict` | `You have already applied for this job` and the earlier application was not rejected. |
+
+</Endpoint>
+
+<Endpoint method="GET" path="/api/v1/workflows/jobs/{jobId}/applications" scopes={["resources:read"]}>
+
+Lists applications for a job. Only owners, admins and moderators of the job's account can call it. Returns up to 200 rows and no `page` object. Resume and cover letter appear as upload IDs.
+
+```bash
+curl https://app.hive3.tech/api/v1/workflows/jobs/job_123/applications \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `coverLetterStorageId` is omitted when none was uploaded.
+
+```json
+{
+  "data": [
+    {
+      "personId": "account_456",
+      "name": "Ada Lovelace",
+      "email": "ada@example.com",
+      "applicationId": "application_123",
+      "jobId": "job_123",
+      "appliedAt": "2026-10-26T12:00:00.000Z",
+      "resumeStorageId": "upload_abc123",
+      "status": "pending"
+    }
+  ]
+}
+```
+
+Errors: `403 forbidden` (`You cannot manage this job`), `403 insufficient_scope` for another account's job without `communities:read`.
+
+</Endpoint>
+
+<Endpoint method="GET" path="/api/v1/workflows/jobs/applications" scopes={["resources:read"]}>
+
+Lists the key owner's own applications, up to 100. A key limited to selected accounts only sees applications to jobs owned by the key owner or by those accounts.
+
+```bash
+curl https://app.hive3.tech/api/v1/workflows/jobs/applications \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`.
+
+```json
+{ "data": [{ "applicationId": "application_123", "jobId": "job_123", "status": "reviewed" }] }
+```
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/workflows/job-applications/{applicationId}" scopes={["resources:write"]}>
+
+Sets the status of an application. Only owners, admins and moderators of the job's account can call it.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `applicationId` | path | string | Yes | `applicationId` from the list. |
+| `status` | body | string | Yes | `pending`, `reviewed`, `accepted` or `rejected`. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/workflows/job-applications/application_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "reviewed"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/workflows/job-applications/application_123", {
+  method: "PATCH",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ status: "reviewed" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/workflows/job-applications/application_123",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"status": "reviewed"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{ "data": { "applicationId": "application_123", "status": "reviewed" } }
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | `status` is not one of the four values. |
+| 403 | `forbidden` | The key owner cannot manage the job. |
+| 404 | `not_found` | The application does not exist. |
+
+</Endpoint>

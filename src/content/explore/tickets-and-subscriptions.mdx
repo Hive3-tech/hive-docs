@@ -1,0 +1,135 @@
+---
+title: Tickets and subscriptions
+description: Pay for a ticket or a creator subscription, manage what you have bought, and ask for a ticket refund.
+accent: addons
+---
+
+Communities can charge for access in two ways. A **ticket** is a one-time payment that unlocks one event, course or quest. A **subscription** is a recurring payment that unlocks what a community has marked as paid. You do not need a paid Hive3 plan to buy either.
+
+This page covers what you buy from other people. Your own Hive3 plan (Worker Bee, Honey Bee, Swarm or Royal Hive) is separate; see [Plans and pricing](/start/plans).
+
+## Spot paid access
+
+When an event, course, quest or piece of content needs payment, you see an **Access Required** panel instead of the usual button. It reads one of:
+
+- "Subscribe to (name) or buy a one-time ticket to RSVP to this event" when both are offered.
+- "Subscribe to (name) to enroll in this course" when only a subscription is offered.
+- "Buy a one-time ticket to apply for entry to this event" when only a ticket is offered.
+
+Once you have paid, a **You have access** badge appears and the normal button returns: RSVP, enroll or begin.
+
+## Buy a ticket
+
+<Steps>
+<Step title="Open the event, course or quest">
+The panel shows **Ticket price** with the amount and currency.
+</Step>
+<Step title="Select Buy Ticket">
+A **Buy Ticket** window opens: "Purchase ticket access for this event."
+</Step>
+<Step title="Choose how to pay">
+If the seller accepts both, you see <UI>Pay with Stripe</UI> and a PayPal button separated by "or". Stripe opens a secure Stripe checkout page. For PayPal, approve the payment in the PayPal window. You see the option the seller has set up; some sellers offer only one.
+</Step>
+<Step title="Return to Hive3">
+After a Stripe payment you land on a **Payment successful** page: "Your purchase is active and available now." Select <UI>Go to your account</UI> or <UI>Back to Home</UI>, then open the event, course or quest again. If you paid with PayPal you stay on the page and a toast confirms **Ticket purchased. Access granted.**
+</Step>
+</Steps>
+
+If the page says **Activation is still processing**, select <UI>Retry activation</UI>. Access can take up to a minute to appear. If you cancel on the Stripe page, you land on **Subscription Cancelled** with "No charges have been made to your account." Go back to the item and try again.
+
+<Callout type="note">
+A ticket unlocks access, not a reserved place. For an event, you still select <UI>RSVP to Event</UI> or <UI>Apply to Event</UI> afterwards.
+</Callout>
+
+If a seller has not finished setting up payments, the panel says **Ticket is not purchasable yet: the seller has not connected Stripe or PayPal.** Tell the organizer, or come back later.
+
+## Subscribe to a community
+
+There are three places to subscribe:
+
+- The <UI>Subscribe</UI> button on a paid community's page.
+- A plan under the <UI>Offerings</UI> tab, on the card's <UI>Subscribe</UI> button.
+- The **Subscribe to (name)** button in an Access Required panel.
+
+<Steps>
+<Step title="Pick a plan">
+Each plan shows its name, price and whether it bills monthly or yearly.
+</Step>
+<Step title="Review the Subscribe window">
+The **Subscribe** window repeats the plan and price: "Complete your Stripe subscription to access exclusive content."
+</Step>
+<Step title="Select Subscribe with Stripe">
+Pay on the Stripe page. Stripe bills the subscription automatically each period.
+</Step>
+</Steps>
+
+On a private community, you apply and get approved first, then subscribe. See [Discover and join communities](/explore/discover-and-join#join-apply-or-subscribe).
+
+If you already hold the plan, the window says **You already subscribe to this plan.** If you hold a different plan from the same creator, it asks you to manage that subscription from your settings first. A creator who has not enabled Stripe shows **This creator has not enabled Stripe subscriptions.**
+
+## Manage what you have bought
+
+<Path items={["Settings", "Subscriptions"]} />
+
+The page has two cards.
+
+**Hive3 Membership** shows your plan and its status. <UI>Change plan</UI> opens the plans page and <UI>Manage billing in Stripe</UI> opens Stripe for a plan billed through Stripe. <UI>Start membership</UI> appears when there is no such plan to manage, for example on Worker Bee.
+
+**Community & People Subscriptions** lists each subscription you hold, with the creator, the plan, the price and a status:
+
+| Status | What it means |
+|---|---|
+| **Active · renews (date)** | Billing continues. |
+| **Pending cancellation · ends (date)** | You cancelled. Access continues until that date. |
+| **Canceled** or **Expired** | The subscription has ended. |
+
+Use <UI>Manage billing in Stripe</UI> to update your payment method or cancel. Cancellations made in Stripe show up here within a minute. For an expired subscription, <UI>Subscribe again</UI> takes you back to the creator.
+
+Subscriptions bought earlier with PayPal show **PayPal recurring billing has been discontinued. Access remains until (date).** Select <UI>Switch to Stripe</UI> to continue with Stripe.
+
+<Figure
+  src="/media/explore/tickets-and-subscriptions/subscriptions-settings.webp"
+  alt="Settings Subscriptions showing the Hive3 Membership card and a Community and People Subscriptions card with a subscription's status and a Manage billing in Stripe button."
+  caption="Settings, Subscriptions: your plan and every creator subscription in one place."
+/>
+
+## Review your tickets
+
+<Path items={["Notifications", "My Tickets"]} />
+
+The list shows every ticket you bought, with the item it unlocks, the date, the price paid and any refund status. Select a ticket to open the event, course or quest.
+
+## Refunds
+
+Hive3 lets you ask for a refund on a ticket. The community that sold it decides.
+
+<Steps>
+<Step title="Open My Tickets">
+Go to <Path items={["Notifications", "My Tickets"]} />.
+</Step>
+<Step title="Request the refund">
+On an active ticket, select <UI>Ticket actions</UI> (three dots), then <UI>Request refund</UI>. A toast confirms **Refund request submitted to the community.**
+</Step>
+<Step title="Wait for the decision">
+The ticket shows <UI>Refund pending</UI>. You can have one pending request per ticket.
+</Step>
+</Steps>
+
+You are notified when the community decides, even if you have turned notifications off:
+
+- **Approved:** the payment is refunded to the way you paid (Stripe or PayPal), the ticket shows <UI>Refunded</UI>, and the access it gave you ends.
+- **Rejected:** the ticket shows <UI>Refund rejected</UI> and keeps working. The notification can include a note from the community.
+
+Hive3 does not set a refund window or amount. Each community decides on its own requests.
+
+<Callout type="warning">
+Subscriptions have no refund request in Hive3. To stop being charged, cancel under <Path items={["Settings", "Subscriptions"]} />. Access continues until the end of the period you paid for.
+</Callout>
+
+## Related pages
+
+<CardGrid>
+<LinkCard href="/explore/attend-events" title="Attend events" icon="calendar" accent="events">RSVP once you have access.</LinkCard>
+<LinkCard href="/explore/notifications" title="Notifications" icon="bell" accent="credentials">Find My Tickets and refund updates.</LinkCard>
+<LinkCard href="/community/get-paid" title="Get paid: subscriptions and tickets" icon="credit-card" accent="community">Sell tickets and subscriptions from your community.</LinkCard>
+</CardGrid>

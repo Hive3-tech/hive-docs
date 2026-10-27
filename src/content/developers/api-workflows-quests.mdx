@@ -1,0 +1,378 @@
+---
+title: Quest workflows
+description: Enroll accounts in quests, collect objective evidence and review submissions with the API.
+accent: developer
+---
+
+Use these endpoints to build quest enrollment, evidence submission and review flows: participants enroll and submit evidence for each objective, and quest managers approve or decline enrollments and evidence. The access decision, manager, declined-participant and attachment rules are on [Participation workflows](/developers/api-workflows#shared-rules) and apply here unchanged.
+
+Requests use `https://app.hive3.tech/api/v1` and an API key from [Authentication](/developers/api-authentication#create-a-key). API access needs Honey Bee or above (see the [developer overview](/developers)). Field names such as `personId` and `participantId` identify accounts. Endpoints without a body show only curl; for JavaScript and Python use the pattern of the [event participants example](/developers/api-workflows#events).
+
+## Enrollments
+
+<Endpoint method="POST" path="/api/v1/workflows/quests/{questId}/enrollment" scopes={["resources:write"]}>
+
+Enrolls or unenrolls the key owner. Repeating the request returns the existing enrollment. Quests that have ended are closed to new enrollments.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `questId` | path | string | Yes | Quest ID. |
+| `enroll` | body | boolean | No | `true` (default) enrolls, `false` unenrolls. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/workflows/quests/quest_123/enrollment \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"enroll": true}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/workflows/quests/quest_123/enrollment", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ enroll: true }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/workflows/quests/quest_123/enrollment",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"enroll": True},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201` for a new enrollment and `200` otherwise. `accepted` is `null` while the organizer must still decide. Unenrolling returns the same object with `isEnrolled: false`, `accepted: null` and `progressPercent: 0`.
+
+```json
+{
+  "data": {
+    "id": "enrollment_456",
+    "questId": "quest_123",
+    "personId": "account_456",
+    "isEnrolled": true,
+    "isActive": true,
+    "accepted": true,
+    "enrolledAt": "2026-10-20T09:30:00.000Z",
+    "acceptedAt": "2026-10-20T09:30:00.000Z",
+    "progressPercent": 0
+  }
+}
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 403 | `forbidden` | `You cannot enroll in this quest`. |
+| 404 | `not_found` | The quest does not exist or is archived. |
+| 409 | `conflict` | The quest has ended (`Ended quests are closed`) or the organizer declined this participant. |
+
+</Endpoint>
+
+<Endpoint method="GET" path="/api/v1/workflows/quests/{questId}/enrollments" scopes={["resources:read"]}>
+
+Lists enrollments with objective progress for quest managers (owner, admin or moderator of the quest's account), up to 200 rows and no `page` object.
+
+```bash
+curl https://app.hive3.tech/api/v1/workflows/quests/quest_123/enrollments \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. Use `enrollmentId` to approve or decline.
+
+```json
+{
+  "data": [
+    {
+      "personId": "account_456",
+      "name": "Ada Lovelace",
+      "email": "ada@example.com",
+      "enrollmentId": "enrollment_456",
+      "enrolledAt": "2026-10-20T09:30:00.000Z",
+      "accepted": true,
+      "questId": "quest_123",
+      "participantId": "account_456",
+      "progressPercent": 0,
+      "isComplete": false,
+      "objectives": [
+        {
+          "objectiveId": "quest_123:objective:1",
+          "type": "custom",
+          "scope": "none",
+          "targetCount": 1,
+          "currentCount": 0,
+          "progressPercent": 0,
+          "isComplete": false
+        }
+      ]
+    }
+  ]
+}
+```
+
+Errors: `403 forbidden` when the key owner cannot manage the quest, `403 insufficient_scope` for another account's quest without `communities:read`.
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/workflows/quests/{questId}/enrollments/{enrollmentId}" scopes={["resources:write"]}>
+
+Approves or declines a quest enrollment. Approving re-checks the participant's current access (matching plan or purchased ticket); on failure the enrollment is unchanged.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `questId` | path | string | Yes | Quest ID. |
+| `enrollmentId` | path | string | Yes | `enrollmentId` from the list. |
+| `accepted` | body | boolean | One of the two | `true` approves, `false` declines. |
+| `decision` | body | string | One of the two | `approve` or `accepted`, `deny` or `rejected`. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/workflows/quests/quest_123/enrollments/enrollment_456 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"decision": "approve"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/workflows/quests/quest_123/enrollments/enrollment_456", {
+  method: "PATCH",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ decision: "approve" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/workflows/quests/quest_123/enrollments/enrollment_456",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"decision": "approve"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200` with the enrollment object shown for the enrollment endpoint above (`id`, `questId`, `personId`, `isEnrolled`, `isActive`, `accepted`, `enrolledAt`, `acceptedAt`, `progressPercent`).
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | `accepted or decision is required`. |
+| 403 | `forbidden` | The key owner cannot manage the quest, or `Participant does not have access to this quest`. |
+| 404 | `not_found` | The enrollment does not belong to the quest. |
+
+</Endpoint>
+
+## Evidence
+
+Evidence proves that a participant completed an objective. A new submission is `pending` until a manager approves or denies it. Approving marks the objective complete for the participant; denying previously approved evidence removes that completion unless other approved evidence covers the objective.
+
+<Endpoint method="POST" path="/api/v1/workflows/quests/{questId}/evidence" scopes={["resources:write"]}>
+
+Submits evidence for one objective as the key owner, who needs an approved enrollment and current quest access. If a pending submission for the same objective already exists, it is returned unchanged and nothing new is stored.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `questId` | path | string | Yes | Quest ID. |
+| `objectiveId` | body | string | Yes | `objectiveId` from the enrollment progress (for example `quest_123:objective:1`). |
+| `content` | body | string | One of `content` or `attachments` | Text, at most 16,000 characters. When the objective's `evidenceType` is `link`, it must be an `http` or `https` URL. |
+| `attachments` | body | array or object | One of `content` or `attachments` | One to five [attachment objects](/developers/api-workflows#attachment-objects), a single attachment object, or `{ "images": [url], "links": [url] }` with at most five URLs in total. Other fields are rejected. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/workflows/quests/quest_123/evidence \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"objectiveId": "quest_123:objective:1", "content": "Demo is live", "attachments": {"links": ["https://example.com/demo"]}}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/workflows/quests/quest_123/evidence", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({
+    objectiveId: "quest_123:objective:1",
+    content: "Demo is live",
+    attachments: { links: ["https://example.com/demo"] },
+  }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.post(
+    "https://app.hive3.tech/api/v1/workflows/quests/quest_123/evidence",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={
+        "objectiveId": "quest_123:objective:1",
+        "content": "Demo is live",
+        "attachments": {"links": ["https://example.com/demo"]},
+    },
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `201` for a new submission and `200` when a pending one already exists. Each account can submit 15 pieces of evidence per minute and 50 per day; a platform-wide cap also applies. Over the limit returns `429 rate_limited` with `Retry-After`.
+
+```json
+{
+  "data": {
+    "evidenceId": "evidence_123",
+    "objectiveId": "quest_123:objective:1",
+    "status": "pending"
+  }
+}
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | `objectiveId is required`, no `content` or `attachments`, too long, an unsupported attachment field, type or size, or an invalid URL. |
+| 403 | `forbidden` | `Quest enrollment required`, `Quest enrollment is not approved` or `Quest access required`. |
+| 404 | `not_found` | Unknown or archived quest, unknown objective, or an attachment `storageId` that is unknown or belongs to another account. |
+| 429 | `rate_limited` | `Too many quest evidence submissions. Try again later.` |
+
+</Endpoint>
+
+<Endpoint method="GET" path="/api/v1/workflows/quests/{questId}/evidence" scopes={["resources:read"]}>
+
+Lists evidence. Quest managers see every submission (up to 200); any other account sees only its own. Optional `status` filters to `pending`, `approved` or `denied`. There is no `page` object.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `questId` | path | string | Yes | Quest ID. |
+| `status` | query | string | No | `pending`, `approved` or `denied`. |
+
+```bash
+curl "https://app.hive3.tech/api/v1/workflows/quests/quest_123/evidence?status=pending" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `attachments` echoes what was submitted, as an array of attachment objects or as `{ "images", "links" }`.
+
+```json
+{
+  "data": [
+    {
+      "personId": "account_456",
+      "name": "Ada Lovelace",
+      "email": "ada@example.com",
+      "evidenceId": "evidence_123",
+      "objectiveId": "quest_123:objective:1",
+      "content": "Demo is live",
+      "attachments": { "links": ["https://example.com/demo"] },
+      "status": "pending",
+      "submittedAt": "2026-10-26T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+A manager of another account's quest also needs `communities:read` (`403 insufficient_scope` otherwise).
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/workflows/quests/{questId}/evidence/{evidenceId}" scopes={["resources:write"]}>
+
+Approves or denies a submission. Only quest managers can call it.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `questId` | path | string | Yes | Quest ID. |
+| `evidenceId` | path | string | Yes | `evidenceId` from the list. |
+| `status` | body | string | Yes | `approved` or `denied`. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/workflows/quests/quest_123/evidence/evidence_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "approved"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/workflows/quests/quest_123/evidence/evidence_123", {
+  method: "PATCH",
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ status: "approved" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os
+import requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/workflows/quests/quest_123/evidence/evidence_123",
+    headers={"Authorization": f"Bearer {os.environ['HIVE_API_KEY']}"},
+    json={"status": "approved"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{ "data": { "evidenceId": "evidence_123", "status": "approved" } }
+```
+
+| Status | `code` | When |
+| --- | --- | --- |
+| 400 | `invalid_request` | `status must be approved or denied`. |
+| 403 | `forbidden` | `You cannot review this evidence`. |
+| 404 | `not_found` | The evidence does not belong to the quest. |
+
+</Endpoint>

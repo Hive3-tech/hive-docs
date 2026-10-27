@@ -1,0 +1,118 @@
+---
+title: Sign in and security
+description: Manage how you sign in, add passkeys, turn on 2-step verification with an authenticator app, and verify your email.
+accent: default
+---
+
+Hive3 gives you several ways to sign in and two extra layers of protection: passkeys and 2-step verification. All of them live in one place, so you can set up the sign-in methods that suit you and keep a safe way back in if you lose a device.
+
+<Path items={["Settings", "Account"]} />
+
+## Ways to sign in
+
+On the sign-in page you can use any of these:
+
+- **Email.** Enter your address and Hive3 emails you a magic link. Select the link to sign in.
+- **A social account.** Google, GitHub, X or Discord.
+- **A wallet.** Select <UI>Connect Wallet</UI> and sign a message with a wallet you own.
+- **A passkey.** Select <UI>Sign in with passkey</UI> and approve on your device.
+
+Under <UI>Sign-in methods</UI> in <UI>Account</UI> settings you can link more social accounts. Select <UI>Connect</UI> next to a provider and complete its sign-in. Linked methods show a <UI>Linked</UI> badge, and any other methods on your account are listed under <UI>Also linked</UI>.
+
+<Callout type="note">
+You cannot remove your only sign-in method. Add another way in first, such as an email or a second wallet.
+</Callout>
+
+## Verify your email
+
+A verified email is how Hive3 sends you account notices and lets communities send you newsletters you have opted in to.
+
+<Steps>
+<Step title="Open the verification window">
+Under <UI>Email</UI> in <UI>Account</UI> settings, select <UI>Verify email</UI>. If you have no email yet, a banner at the top of the page offers <UI>Add email</UI>.
+</Step>
+<Step title="Request a code">
+Enter your <UI>Email address</UI> and select <UI>Send verification code</UI>. Hive3 emails you a 6-digit code.
+</Step>
+<Step title="Enter the code">
+Type the <UI>Verification code</UI> and select <UI>Verify</UI>. If the code does not arrive, select <UI>Resend code</UI> once the countdown ends.
+</Step>
+</Steps>
+
+After too many wrong attempts you need to request a new code.
+
+## Add a passkey
+
+A passkey lets you sign in with your fingerprint, face or device PIN instead of a password. It stays on your device or in your device's password manager.
+
+<Steps>
+<Step title="Open Security">
+In <UI>Account</UI> settings, scroll to the <UI>Security</UI> card and find <UI>Passkeys</UI>.
+</Step>
+<Step title="Add one">
+Select <UI>Add a passkey</UI> and follow your browser or device prompt. If 2-step verification is on, Hive3 first asks for a code from your authenticator app or a recovery code.
+</Step>
+<Step title="Confirm">
+A message says <UI>Passkey added</UI>. It appears in the list as Passkey 1, Passkey 2 and so on, with the date you created it and when it was last used.
+</Step>
+</Steps>
+
+Use <UI>Rename</UI> to give a passkey a name you recognize, such as "Work laptop". Use <UI>Remove</UI> to delete one you no longer use.
+
+<Callout type="note">
+Your Hive3 wallet is protected by a passkey too, but that passkey is separate and cannot be used to sign in. See [Wallets](/account/wallets).
+</Callout>
+
+## Turn on 2-step verification
+
+2-step verification asks for a 6-digit code from an authenticator app each time you sign in, so a stolen link or device alone is not enough to get into your account.
+
+<Steps>
+<Step title="Start setup">
+In the <UI>Security</UI> card, under <UI>2-step verification</UI>, select <UI>Turn on</UI>.
+</Step>
+<Step title="Add Hive3 to your authenticator app">
+Scan the QR code with an authenticator app such as Google Authenticator, 1Password or Authy. If you cannot scan it, select <UI>Copy</UI> to copy the secret key and enter it in the app. Then select <UI>Next</UI>.
+</Step>
+<Step title="Confirm a code">
+Type the current 6-digit code from the app into the box and select <UI>Verify</UI>.
+</Step>
+<Step title="Save your recovery codes">
+Hive3 shows a set of recovery codes. Select <UI>Copy all</UI> or <UI>Download .txt</UI> and keep them somewhere safe. Each code works once. Check <UI>I saved these codes</UI>, then select <UI>Done</UI>.
+</Step>
+</Steps>
+
+<Figure
+  src="/media/account/security/two-step-setup.webp"
+  alt="The Turn on 2-step verification window with the QR code and secret key blurred, and Copy and Next buttons."
+  caption="Adding Hive3 to an authenticator app."
+/>
+
+<Callout type="warning">
+Recovery codes are your way back in if you lose your phone. You cannot close the recovery codes window until you confirm you saved them, so store them before you continue.
+</Callout>
+
+### Signing in with 2-step on
+
+After you sign in, Hive3 shows a <UI>Confirm it's you</UI> screen. Use your passkey, enter your <UI>Authenticator code</UI>, or select <UI>Use a recovery code</UI> and type one of your `XXXXX-XXXXX` codes. Select <UI>Sign out</UI> if you want to leave without confirming.
+
+### Manage 2-step verification
+
+When it is on, the card shows how many recovery codes you have left.
+
+| Button | What it does |
+|---|---|
+| <UI>Turn off</UI> | Switches 2-step verification off. You confirm with an authenticator code or a recovery code. |
+| <UI>New recovery codes</UI> | Replaces your codes with a fresh set. You confirm with an authenticator code. Old codes stop working. |
+
+## Keep your account safe
+
+- Add at least two ways to sign in, such as email plus a passkey.
+- Turn on 2-step verification and store your recovery codes in a password manager.
+- Never share a magic link, authenticator code or recovery code with anyone.
+
+## Related
+
+- [Settings overview](/account/settings)
+- [Wallets](/account/wallets)
+- [Privacy, export and deletion](/account/privacy-and-data)

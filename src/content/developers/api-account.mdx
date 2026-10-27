@@ -1,0 +1,366 @@
+---
+title: Account and profile
+description: Read the account behind an API key, then read and update its profile, handle and access settings.
+accent: developer
+---
+
+Use these endpoints to show who a key acts as, which communities it can manage, and to keep an account profile in sync with another system. You can read and edit your own profile, or the profile of a community you manage.
+
+Some field names still say `person` and `community`. In the API both identify accounts: a "community" is an account that other accounts join. IDs of either kind are account IDs.
+
+API access needs a Honey Bee plan or above; see the [developer overview](/developers). Errors, scope failures and rate limits follow [Requests, errors and limits](/developers/api-conventions#errors). Account routes share the 600 requests per minute budget listed under [rate limits](/developers/api-conventions#rate-limits), and JSON bodies are limited to 128 KiB (`413 invalid_request` when larger).
+
+The rest of the account family is split over these pages:
+
+- [Account settings and profile builders](/developers/api-account-settings): account state, preferences, linked communities, overview, widgets and welcome page.
+- [Wallets and NFT exposure](/developers/api-wallets).
+- [Data export, deletion and key revocation](/developers/api-account-data).
+- [Uploads](/developers/api-uploads): get upload IDs for profile images.
+
+Each endpoint shows curl. Endpoints with a request body, and the identity and profile reads, also show JavaScript and Python; the other endpoints follow the same pattern with the same headers.
+
+## Identity
+
+### Who is the key acting as
+
+<Endpoint method="GET" path="/api/v1/me" scopes={["account:read"]}>
+
+Returns the account behind the key, the key's scopes, and the accounts you can manage with it. `credential.communityIds` is present only when the key is limited to specific accounts. `person.handle` is omitted when the account has no handle.
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl https://app.hive3.tech/api/v1/me \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/me", {
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}` },
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.get(
+    "https://app.hive3.tech/api/v1/me",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{
+  "data": {
+    "person": { "id": "account_123", "displayName": "Ada Lovelace", "handle": "ada" },
+    "credential": {
+      "id": "key_123",
+      "scopes": ["account:read", "communities:read"],
+      "communityIds": ["account_456"]
+    },
+    "communities": [
+      {
+        "communityId": "account_456",
+        "name": "Design Guild",
+        "role": "admin",
+        "capabilities": { "canRead": true, "canWrite": true, "canModerate": true }
+      }
+    ]
+  }
+}
+```
+
+</Endpoint>
+
+### List managed accounts and capabilities
+
+<Endpoint method="GET" path="/api/v1/capabilities" scopes={["communities:read"]}>
+
+Returns the same body as `GET /api/v1/me`. Use it from tools that only hold community scopes. `role` is `owner`, `admin`, `moderator` or `member`, and the capabilities reflect the key owner's current role, not the role at the time the key was created.
+
+```bash
+curl https://app.hive3.tech/api/v1/capabilities \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+</Endpoint>
+
+## Profile
+
+Profile reads and writes act on the key owner's account. Add `?account=` to act on a managed account; see [Managed accounts](#managed-accounts).
+
+### Get a profile
+
+<Endpoint method="GET" path="/api/v1/profile" scopes={["account:read"]}>
+
+Returns the profile, including access type, plan and deletion state. `primaryEmail` is returned only for your own account; for a managed account it is `null`. The deletion timestamps and `updatedAt` are Unix milliseconds. Image and attachment URLs are resolved from the uploads attached to the profile.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `account` | query | string | No | Account ID or handle of a managed account. Defaults to your own account. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl https://app.hive3.tech/api/v1/profile \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/profile", {
+  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}` },
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.get(
+    "https://app.hive3.tech/api/v1/profile",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`. `name` and `displayName` are the same value, as are `handle` and `username`.
+
+```json
+{
+  "data": {
+    "id": "account_123",
+    "handle": "ada",
+    "username": "ada",
+    "name": "Ada Lovelace",
+    "displayName": "Ada Lovelace",
+    "primaryEmail": "ada@example.com",
+    "title": "Engineer",
+    "experience": "",
+    "shortDescription": "Notes on analytical engines.",
+    "description": "",
+    "location": "London",
+    "badges": [],
+    "socials": [{ "socialType": "x", "address": "https://x.com/ada" }],
+    "image": "https://example.com/avatar.png",
+    "imageStorageId": "upload_123",
+    "heroImage": "",
+    "heroImageStorageId": null,
+    "attachmentUrl": "",
+    "attachmentStorageId": null,
+    "showCollaboratorCount": true,
+    "customCollaboratorCount": null,
+    "accessType": "open",
+    "membershipTier": "honey",
+    "accountStatus": "active",
+    "accountDeletionRequestedAt": null,
+    "accountDeletionScheduledAt": null,
+    "accountDeletionCancelledAt": null,
+    "publicNftExposure": false,
+    "updatedAt": 1793000000000
+  }
+}
+```
+
+- `404 not_found`: the `account` value matches no account.
+
+</Endpoint>
+
+### Update a profile
+
+<Endpoint method="PATCH" path="/api/v1/profile" scopes={["account:write"]}>
+
+Updates only the fields you send and returns the full profile in the same shape as the read above. A field with the wrong type is ignored, not rejected. For string fields, `null` clears the value. Limited to 60 requests per minute.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `account` | query | string | No | Managed account ID or handle. |
+| `name` | body | string or null | No | Display name. Alias `displayName`. `null` resets it to the handle. |
+| `username` | body | string | No | Handle. Alias `handle`. Lowercased, a leading `@` is removed, 3 to 30 characters of `a-z`, `0-9`, `_` and `-`, starting with a letter or number. Reserved or taken handles return `409 conflict`. `null` leaves it unchanged. |
+| `title`, `experience`, `shortDescription`, `description`, `location` | body | string or null | No | Plain text. |
+| `badges` | body | string[] or null | No | Replaces the list. |
+| `socials` | body | object[] or null | No | Replaces the list. Each item is `{ "socialType": "x", "address": "https://x.com/ada" }`; items missing either field are dropped. |
+| `showCollaboratorCount` | body | boolean | No | Show the member count on the profile. |
+| `customCollaboratorCount` | body | number or null | No | Overrides the displayed member count; `null` removes the override. |
+| `image` | body | string or null | No | Profile image URL. Alias `profileImage`. |
+| `imageStorageId` | body | string or null | No | Upload ID of an image from [Uploads](/developers/api-uploads). Alias `profileImageStorageId`. Wins over `image`. An empty string or `null` clears it. |
+| `heroImage`, `heroImageStorageId` | body | string or null | No | Banner image URL or upload ID. Aliases `bannerImage`, `bannerImageStorageId`. |
+| `attachmentUrl`, `attachmentStorageId` | body | string or null | No | Attached file: URL or upload ID of an image or document. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/profile \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Engineer","location":"London","imageStorageId":"upload_123"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/profile", {
+  method: "PATCH",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ title: "Engineer", location: "London", imageStorageId: "upload_123" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/profile",
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"title": "Engineer", "location": "London", "imageStorageId": "upload_123"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200` with the updated profile. Notable errors:
+
+- `400 invalid_request`: malformed JSON, or an upload ID that is not a valid ID or whose stored file is not allowed for that field (images only for `imageStorageId` and `heroImageStorageId`).
+- `404 not_found`: an upload ID that does not exist or was uploaded by another account.
+- `409 conflict`: the handle is reserved or already taken (`Handle is not available`, `Handle is reserved`).
+
+</Endpoint>
+
+### Check a handle
+
+<Endpoint method="GET" path="/api/v1/profile/handle" scopes={["account:read"]}>
+
+Checks whether a handle can be assigned to the account, using the same rules as `PATCH /api/v1/profile`. The handle the account already has counts as available.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `handle` | query | string | Yes | Handle to check. Normalized before checking; the normalized value is returned. |
+| `account` | query | string | No | Managed account ID or handle. |
+
+```bash
+curl "https://app.hive3.tech/api/v1/profile/handle?handle=ada" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. When the handle is unavailable, `message` says why.
+
+```json
+{ "data": { "available": false, "handle": "ada", "message": "Handle is not available" } }
+```
+
+- `400 invalid_request`: `handle` is missing.
+
+</Endpoint>
+
+### Change profile access
+
+<Endpoint method="PATCH" path="/api/v1/profile/access" scopes={["account:write"]}>
+
+Sets who can join the account. Anything other than `open` needs the target account to be on Honey Bee or above. Switching `private` to `open` accepts every pending application; switching `private` to `open-subscription` discards them. Limited to 30 requests per minute.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `account` | query | string | No | Managed account ID or handle. |
+| `accessType` | body | string | Yes | `open`, `private`, `open-subscription` or `private-subscription`. The older names `public`, `protected`, `open_paywall` and `private_paywall` are accepted. |
+| `subscriptionId` | body | string | For subscription types | One of the account's own subscription plans. Moderators can only choose a plan the account owns. |
+
+<Tabs labels={["curl","JavaScript","Python"]}>
+<Tab>
+
+```bash
+curl -X PATCH "https://app.hive3.tech/api/v1/profile/access?account=account_456" \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"accessType":"private"}'
+```
+
+</Tab>
+<Tab>
+
+```js
+const res = await fetch("https://app.hive3.tech/api/v1/profile/access?account=account_456", {
+  method: "PATCH",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ accessType: "private" }),
+});
+const { data } = await res.json();
+```
+
+</Tab>
+<Tab>
+
+```python
+import os, requests
+
+res = requests.patch(
+    "https://app.hive3.tech/api/v1/profile/access",
+    params={"account": "account_456"},
+    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
+    json={"accessType": "private"},
+)
+data = res.json()["data"]
+```
+
+</Tab>
+</Tabs>
+
+Returns `200`.
+
+```json
+{ "data": { "id": "account_456", "accessType": "private" } }
+```
+
+- `400 invalid_request`: unknown `accessType`, or `subscriptionId` missing for a subscription type.
+- `403 forbidden`: the target account is below Honey Bee (`Honey Bee membership is required for non-open account access`), or the plan is not one of the account's own.
+
+</Endpoint>
+
+## Managed accounts
+
+The profile routes on this page (`/profile`, `/profile/handle`, `/profile/access`) and the builder routes in [Account settings and profile builders](/developers/api-account-settings#profile-builders) accept an optional `account` query parameter holding an account ID or handle.
+
+- Omit it, or pass your own account, and the route behaves as described above.
+- For another account, reads also need the `communities:read` scope and writes need `communities:write`. A missing scope returns `403 insufficient_scope` with `requiredScopes`.
+- If the key is limited to specific accounts, the account must be on its list: `403 forbidden`, `API key does not include this managed account`.
+- You must currently be an owner, admin or moderator of the account: `403 forbidden`, `Only account owners, admins and moderators can manage this account`.
+- An unknown account returns `404 not_found`.
+- Uploads always belong to the key owner. You can attach your own uploads to a managed profile; an upload ID from another account returns `404 not_found`.
+
+See [Authentication and API keys](/developers/api-authentication#managed-accounts) for how keys and managed accounts relate.
