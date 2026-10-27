@@ -1,68 +1,86 @@
 ---
 title: Use Hive3 with AI agents
-description: Install the hive agent skill, give an AI agent a least-privilege key, and keep a human in charge of risky actions.
+description: Install the hive3 agent skill, give an AI agent a least-privilege key, and keep a human in charge of risky actions.
 accent: developer
 ---
 
-An AI agent that can run shell commands can use the `hive` CLI to manage your Hive3 account: draft posts, review applications, send broadcasts. This page explains what the Hive3 agent skill is and what it contains, how to install it, and how to give an agent only the access it needs so that you stay in control of anything hard to undo.
+<AgentSetup />
+
+An AI agent that can run shell commands can use the `hive3` CLI to manage your Hive3 account: draft posts, review applications, send broadcasts. This page explains what the Hive3 agent skill is and what it contains, how to install it with one command, and how to give an agent only the access it needs so that you stay in control of anything hard to undo.
 
 An agent acts with your key and your live roles. Everything it can do, you could do with the same command. Plan the access first, then install the skill.
 
+<Callout type="tip">
+The banner above does the whole setup for you. Paste the prompt into your agent and it installs the CLI, installs the skill, and asks you to approve a read-only sign-in. The same prompt is available as plain text at [docs.hive3.tech/agent-setup.md](https://docs.hive3.tech/agent-setup.md). The rest of this page explains each step.
+</Callout>
+
 ## What the agent skill is
 
-An agent skill is a folder of plain-text instructions that an AI agent loads when a task matches it. The Hive3 skill, named `hive`, teaches an agent to use the CLI safely. It is not a program, holds no credentials, and does not include the CLI. The agent still runs `hive` on your machine, with your stored key.
+An agent skill is a folder of plain-text instructions that an AI agent loads when a task matches it. The Hive3 skill, named `hive3`, teaches an agent to use the CLI safely. It is not a program and holds no credentials. The agent still runs `hive3` on your machine, with your stored key.
 
-The skill ships in a package called `@hive/agent-skill` (version 0.1.0). It contains four files:
+The skill ships inside the CLI package (version 0.4.0 and later), so there is nothing else to download. `hive3 skill install` copies it into your agent's skills directory. It contains two files:
 
 | File | Purpose |
 |---|---|
-| `skills/hive/SKILL.md` | The skill. Frontmatter names it `hive` and describes when to use it; the body holds the rules and command examples. |
-| `skills/hive/agents/openai.yaml` | Display metadata for agents that read it: display name `Hive`, short description `Manage Hive through the CLI safely`, and the default prompt `Use $hive to check my Hive account capabilities and manage approved resources.` |
-| `scripts/validate-skill.mjs` | A maintainer check that fails if the safety rules are missing from `SKILL.md`. You do not need it to use the skill. |
-| `package.json` | Marks the package as `private` with one script, `validate`. |
+| `hive3/SKILL.md` | The skill. Frontmatter names it `hive3` and describes when to use it; the body holds the rules and command examples. |
+| `hive3/agents/openai.yaml` | Display metadata for agents that read it: display name `Hive3`, short description `Manage Hive3 through the CLI safely`, and the default prompt `Use $hive3 to check my Hive3 account capabilities and manage approved resources.` |
 
-`SKILL.md` contains these sections: Start Safely, Permission Rules, Identity And Capability Checks, Resource Commands, Account, Social, And Community Commands, Broadcasts, Tickets, Assistant, And Credentials, Workflow Commands, Uploads And JSON Files, Exclusions, and Reporting.
+`SKILL.md` contains these sections: Start Safely, Permission Rules, Identity And Capability Checks, Resource Commands, Account, Social, And Community Commands, Broadcasts, Tickets, Assistant, And Credentials, Workflow Commands, Uploads And JSON Files, Exclusions, and Reporting. Print it any time with `hive3 skill show`.
 
 ### What the skill tells the agent to do
 
-- Check the CLI with `hive --help`, and ask you to install it if it is missing. Run `hive whoami` before account or resource work.
-- If the CLI is not signed in, ask you to run `hive login`. The agent should run it only when you asked it to connect the CLI, and you approve in the browser.
-- Run `hive capabilities` before acting on any account other than yours. If only your own account is listed, report that no managed-account commands are available.
+- Check the CLI with `hive3 --help`, and ask you to install it if it is missing. Run `hive3 whoami` before account or resource work.
+- If the CLI is not signed in, ask you to run `hive3 login`. The agent should run it only when you asked it to connect the CLI, and you approve in the browser.
+- Run `hive3 capabilities` before acting on any account other than yours. If only your own account is listed, report that no managed-account commands are available.
 - Never ask you to paste a key into chat, never create or use community-owned keys, and never print stored keys, config file contents, bearer tokens or private upload URLs.
 - Ask for explicit confirmation before `archive`, member removal, role changes, application decisions, attendance recording, evidence review, wallet removal, disconnecting a linked community, sending a broadcast, awarding a credential, deleting an assistant document, or replacing builder JSON. Never add `--yes` or `--confirm` on its own initiative; show you the target ID and the effect first.
-- On `insufficient_scope`, explain which scope is missing and suggest `hive login --scope …`. On `forbidden`, explain that your live role no longer allows it. On `plan_required`, tell you the API needs Honey Bee or above and do not retry in a loop. On a 429, stop and report.
-- Stay inside the exclusions: no wallet custody or signing, payment capture, credential minting or claiming, private messages, team or admin tools, community-owned keys or hard deletion of accounts.
+- On `insufficient_scope`, explain which scope is missing and suggest `hive3 login --scope …`. On `forbidden`, explain that your live role no longer allows it. On `plan_required`, tell you the API needs Honey Bee or above and do not retry in a loop. On a 429, stop and report.
+- Stay inside the exclusions: no wallet custody or signing, payment capture, credential minting or claiming, private messages, internal administration tools, community-owned keys or hard deletion of accounts.
 - Finish by reporting which account was used, which managed account was targeted, what changed with the returned IDs, and any missing permission.
 
 ## Install the skill
 
 <Steps>
 <Step title="Install and sign in to the CLI first">
-Install the CLI and sign in yourself in your own terminal. See the [CLI quickstart](/developers/cli-quickstart). For a first agent session, use a Read only key (see [Create a key for one agent](#create-a-key-for-one-agent)).
+Install the CLI and sign in yourself in your own terminal, or let your agent do it with the banner above. See the [CLI quickstart](/developers/cli-quickstart). For a first agent session, use a Read only key (see [Create a key for one agent](#create-a-key-for-one-agent)).
 </Step>
-<Step title="Get the skill folder">
-The package is private and not published to npm, and there is no installer. Hive3 distributes the folder `skills/hive` separately from the CLI. Obtain it from the channel Hive3 gave you, and keep `SKILL.md` and `agents/openai.yaml` together.
-</Step>
-<Step title="Copy it into your agent's skills directory">
-Skills are loaded from a directory that your agent defines, in the layout `<skills-directory>/hive/SKILL.md`. For Claude Code, that is `.claude/skills/hive` inside a project, or `~/.claude/skills/hive` for all projects:
+<Step title="Install the skill for your agent">
+Run one command and name the agent you use:
 
-```bash title="Install for Claude Code (all projects)"
-mkdir -p ~/.claude/skills
-cp -R path/to/skills/hive ~/.claude/skills/hive
+```bash title="Install the Hive3 skill"
+hive3 skill install --agent claude
+hive3 skill install --agent codex
+hive3 skill install --agent cursor
 ```
 
-`agents/openai.yaml` carries the display name and default prompt for agents that read that file, such as Codex-style agents, where the default prompt refers to the skill as `$hive`. The skills directory is defined by your agent, not by Hive3; check its documentation for the current location.
+Without `--agent` the skill goes to Claude Code's directory. Add `--project` to install it for the current directory only instead of your whole user account. If an older, different `hive3` skill is already there, the command stops and asks you to re-run it with `--force`; if the same files are already installed it says so and changes nothing.
+
+| Agent | Where `hive3 skill install` puts it | With `--project` |
+|---|---|---|
+| Claude Code | `~/.claude/skills/hive3` | `./.claude/skills/hive3` |
+| Codex | `~/.agents/skills/hive3` | `./.agents/skills/hive3` |
+| Cursor | `~/.cursor/skills/hive3` | `./.cursor/skills/hive3` |
+</Step>
+<Step title="Using another agent">
+Any agent that loads skills from a directory works. Pass its skills directory with `--dir`; the skill is placed in a `hive3` folder inside it. `--dir` cannot be combined with `--agent` or `--project`.
+
+```bash title="Install into a skills directory you choose"
+hive3 skill install --dir ~/my-agent/skills
+hive3 skill path --dir ~/my-agent/skills
+```
+
+`hive3 skill path` takes the same options and prints where `install` would put the skill without writing anything. The skills directory is defined by your agent, not by Hive3; check its documentation for the current location.
 </Step>
 <Step title="Start a new session and check">
-Restart the agent so it reloads skills, then ask it to run `hive whoami`. It should follow the skill's start-up checks and report the account and scopes.
+Restart the agent if it was running, so it reloads skills. Invoke the skill as `/hive3` in Claude Code and Cursor or `$hive3` in Codex, or just ask the agent to use Hive3. Ask it to run `hive3 whoami`: it should follow the skill's start-up checks and report the account and scopes.
 </Step>
 </Steps>
 
 <Callout type="note">
-The skill describes the commands of CLI version 0.4, including `search`, `broadcasts`, `tickets`, `assistant` and `credentials`. With an older CLI the agent may try commands that do not exist yet. Run `hive update --check` and keep the CLI and the skill in step.
+The skill describes the commands of CLI version 0.4, including `search`, `broadcasts`, `tickets`, `assistant` and `credentials`, and it is bundled with that version. After you update the CLI with `hive3 update`, run `hive3 skill install --force` to refresh the installed copy so the two stay in step.
 </Callout>
 
-If you cannot get the folder, put the rules from [A minimal rules block](#a-minimal-rules-block) in the agent's project instructions instead. They carry the same safety behavior without the command examples.
+If you cannot install the skill, put the rules from [A minimal rules block](#a-minimal-rules-block) in the agent's project instructions instead. They carry the same safety behavior without the command examples.
 
 ## Create a key for one agent
 
@@ -70,22 +88,22 @@ Give every agent its own key. You can then see in the app which key did what, an
 
 <Steps>
 <Step title="Choose the least access that works">
-Start with <UI>Read only</UI>. Add write access only for the task at hand. For something narrower, ask for exact scopes. Include `account:read`, which `hive whoami` needs, and `communities:read` if the agent should run `hive capabilities`.
+Start with <UI>Read only</UI>. Add write access only for the task at hand. For something narrower, ask for exact scopes. Include `account:read`, which `hive3 whoami` needs, and `communities:read` if the agent should run `hive3 capabilities`.
 
 ```bash title="Sign in for an agent"
 export HIVE_CONFIG_HOME=~/.config/hive-agents/reporting
-hive login --access read --label "Reporting agent" --no-open
+hive3 login --access read --label "Reporting agent" --no-open
 ```
 
 ```bash title="Exact scopes instead of a bundle"
-hive login --scope account:read --scope communities:read --scope resources:read --label "Event checker" --no-open
+hive3 login --scope account:read --scope communities:read --scope resources:read --label "Event checker" --no-open
 ```
 </Step>
 <Step title="Approve the code yourself">
 Open the printed URL and type the code from your terminal on the approval page. Check the name and scopes in <UI>Granted scopes</UI>, then select <UI>Approve login</UI>. See [CLI sign-in and configuration](/developers/cli-authentication#sign-in-with-browser-approval).
 </Step>
 <Step title="Run the agent with the same directory">
-Start the agent with `HIVE_CONFIG_HOME` set to the directory you used, so its `hive` commands pick up that key and not your personal one. Confirm with `hive whoami` that the scopes are what you intended.
+Start the agent with `HIVE_CONFIG_HOME` set to the directory you used, so its `hive3` commands pick up that key and not your personal one. Confirm with `hive3 whoami` that the scopes are what you intended.
 </Step>
 </Steps>
 
@@ -97,19 +115,19 @@ Some commands have a built-in guard, and many do not. The guard is a speed bump 
 
 | Action | Command | Built-in guard |
 |---|---|---|
-| Archive anything | `hive <kind> archive <id>` | None |
-| Change a member's role | `hive communities role` | None |
-| Remove a member | `hive communities remove-member` | `--confirm <account-id>` |
-| Decide an application, enrollment, RSVP or job status | `hive communities approve`, `deny`; `events`, `courses`, `quests` `approve`, `deny`; `hive jobs status` | None |
-| Record attendance, review quest evidence | `hive events attendance`, `hive quests evidence approve`, `deny` | None |
-| Send or schedule a broadcast (0.4+) | `hive broadcasts send` | `--yes` |
-| Award a credential (0.4+) | `hive credentials award` | `--yes` |
-| Remove a wallet | `hive wallets remove` | `--confirm <address>` |
-| Disconnect a linked community, delete an assistant document (0.4+) | `hive account linked-communities disconnect`, `hive assistant documents delete` | `--confirm <id>` |
-| Replace a builder configuration | `hive profile overview save`, `widgets save`, `welcome-page save` | None |
-| Export all account data | `hive account export` | None; needs Full access |
+| Archive anything | `hive3 <kind> archive <id>` | None |
+| Change a member's role | `hive3 communities role` | None |
+| Remove a member | `hive3 communities remove-member` | `--confirm <account-id>` |
+| Decide an application, enrollment, RSVP or job status | `hive3 communities approve`, `deny`; `events`, `courses`, `quests` `approve`, `deny`; `hive3 jobs status` | None |
+| Record attendance, review quest evidence | `hive3 events attendance`, `hive3 quests evidence approve`, `deny` | None |
+| Send or schedule a broadcast (0.4+) | `hive3 broadcasts send` | `--yes` |
+| Award a credential (0.4+) | `hive3 credentials award` | `--yes` |
+| Remove a wallet | `hive3 wallets remove` | `--confirm <address>` |
+| Disconnect a linked community, delete an assistant document (0.4+) | `hive3 account linked-communities disconnect`, `hive3 assistant documents delete` | `--confirm <id>` |
+| Replace a builder configuration | `hive3 profile overview save`, `widgets save`, `welcome-page save` | None |
+| Export all account data | `hive3 account export` | None; needs Full access |
 
-Before any of these, require the agent to show you the target ID, the account it belongs to and the effect, and wait for your answer. For a broadcast, also have it run `hive broadcasts test <id>` and `hive broadcasts audience`, and show the subject, the audience and the schedule. See the full list of guards under [Confirmation flags](/developers/cli-commands#confirmation-flags).
+Before any of these, require the agent to show you the target ID, the account it belongs to and the effect, and wait for your answer. For a broadcast, also have it run `hive3 broadcasts test <id>` and `hive3 broadcasts audience`, and show the subject, the audience and the schedule. See the full list of guards under [Confirmation flags](/developers/cli-commands#confirmation-flags).
 
 ## Review payloads before they run
 
@@ -120,11 +138,11 @@ Before any of these, require the agent to show you the target ID, the account it
 ## Operating rules
 
 - **Never paste a key into a prompt, chat, issue or commit.** The CLI never prints the key; do not have the agent read `config.json`.
-- **Never run `hive login` unattended.** A login needs a person to open the approval page and type the code from their own terminal. Do not approve a code that an agent, a script or another person produced for you.
+- **Never run `hive3 login` unattended.** A login needs a person to open the approval page and type the code from their own terminal. Do not approve a code that an agent, a script or another person produced for you.
 - **No unattended CI with this key.** The CLI reads only its credential file; there is no environment variable for a key. For jobs without a person, call the [API](/developers/api-authentication#create-a-key) with a key created in the app.
-- **Check managed-account scope.** Run `hive capabilities` and tell the agent which accounts it may touch. Access follows your live role, and it disappears if your role changes. If only your own account is listed, managed-account commands will not work.
+- **Check managed-account scope.** Run `hive3 capabilities` and tell the agent which accounts it may touch. Access follows your live role, and it disappears if your role changes. If only your own account is listed, managed-account commands will not work.
 - **Respect rate limits.** Hive3 limits requests per account, and some actions have their own budgets, such as RSVPs (10 per minute, 100 per day) and broadcast sends (by plan). The CLI does not retry a `429`. Tell the agent to stop and report instead of looping. See [rate limits](/developers/api-conventions#rate-limits).
-- **Account deletion is not possible from the CLI.** `hive account deletion cancel` only cancels a pending deletion.
+- **Account deletion is not possible from the CLI.** `hive3 account deletion cancel` only cancels a pending deletion.
 
 ## Revoke an agent's key
 
@@ -135,7 +153,7 @@ Revoke immediately if a key may have leaked, an agent misbehaved, or a task is o
 Open <Path items={["Settings", "Help & feedback", "Developer API keys", "Manage API keys"]} />, find the key by the name you gave it under <UI>Active keys</UI>, and choose <UI>Revoke</UI>. The key stops working at once.
 </Step>
 <Step title="Clear the local file">
-Run `hive logout` with the same `HIVE_CONFIG_HOME`. It tries to revoke the key and removes the file. If the key is already revoked it prints a warning and still deletes the file.
+Run `hive3 logout` with the same `HIVE_CONFIG_HOME`. It tries to revoke the key and removes the file. If the key is already revoked it prints a warning and still deletes the file.
 </Step>
 </Steps>
 
@@ -143,11 +161,11 @@ Run `hive logout` with the same `HIVE_CONFIG_HOME`. It tries to revoke the key a
 
 If you cannot install the skill, add rules like these to your agent's project instructions. They mirror the skill's safety behavior.
 
-```text title="Instructions for an agent using hive"
-Use the hive CLI for Hive3 work. Run `hive whoami` before account work and
-`hive capabilities` before acting on any account other than the user's own.
-Run `hive <command> --help` for exact flags.
-Never ask for, print or store API keys. Never run `hive login` unless the user asked.
+```text title="Instructions for an agent using hive3"
+Use the hive3 CLI for Hive3 work. Run `hive3 whoami` before account work and
+`hive3 capabilities` before acting on any account other than the user's own.
+Run `hive3 <command> --help` for exact flags.
+Never ask for, print or store API keys. Never run `hive3 login` unless the user asked.
 Before archive, role changes, member removal, application/RSVP/evidence decisions,
 attendance, wallet removal, broadcasts, credential awards, or replacing builder JSON,
 show the target ID and effect and wait for the user's approval.

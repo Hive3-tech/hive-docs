@@ -88,7 +88,7 @@ Deleting an account is a two-step flow: request it, then either cancel within se
 
 <Endpoint method="POST" path="/api/v1/account/deletion" scopes={["account:destroy"]}>
 
-Needs the `account:destroy` scope. The Full Access preset in the app never includes it, and the `hive` command-line tool never receives it. The key also needs `account:write` if you want to be able to cancel with the same key. Limited to 10 requests per minute.
+Needs the `account:destroy` scope. The Full Access preset in the app never includes it, and the `hive3` command-line tool never receives it. The key also needs `account:write` if you want to be able to cancel with the same key. Limited to 10 requests per minute.
 
 | Name | In | Type | Required | Notes |
 |---|---|---|---|---|
@@ -167,7 +167,7 @@ Returns `200`.
 ```
 
 - `403 insufficient_scope`: the key lacks `account:write`. A key with only `account:destroy` cannot cancel.
-- `409 conflict`: `Team Tools initiated this deletion. Contact Hive3 support.`, or `This account is already scheduled for final deletion`.
+- `409 conflict`: `Hive3 support started this deletion. Contact Hive3 support.`, or `This account is already scheduled for final deletion`.
 
 </Endpoint>
 
@@ -175,7 +175,7 @@ Returns `200`.
 
 <Endpoint method="DELETE" path="/api/v1/account/keys/current" scopes={[]}>
 
-Revokes the key that signs the request. Any valid key can revoke itself, including a read-only key, so a leaked key can always be disabled from the outside. The `hive` command-line tool calls this route when you sign out. Revoked keys return `401 invalid_api_key`. Limited to 10 requests per minute.
+Revokes the key that signs the request. Any valid key can revoke itself, including a read-only key, so a leaked key can always be disabled from the outside. The `hive3` command-line tool calls this route when you sign out. Revoked keys return `401 invalid_api_key`. Limited to 10 requests per minute.
 
 ```bash
 curl -X DELETE https://app.hive3.tech/api/v1/account/keys/current \

@@ -1,4 +1,5 @@
 import type { MDXComponents } from "mdx/types";
+import { AgentSetup } from "./AgentSetup";
 import { Callout } from "./Callout";
 import { CardGrid, LinkCard } from "./Cards";
 import { CodeBlock } from "./CodeBlock";
@@ -20,6 +21,7 @@ export const mdxComponents: MDXComponents = {
   h4: H4,
   table: MdxTable,
   pre: CodeBlock,
+  AgentSetup,
   Callout,
   Steps,
   Step,

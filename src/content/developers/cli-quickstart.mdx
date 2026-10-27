@@ -1,11 +1,13 @@
 ---
 title: CLI quickstart
-description: Install the hive command-line tool, sign in through your browser, and create a post, search, and list events in a few minutes.
+description: Install the hive3 command-line tool, sign in through your browser, and create a post, search, and list events in a few minutes.
 plan: honey
 accent: developer
 ---
 
-The `hive` command-line tool lets you create and manage posts, events, courses, quests, jobs, broadcasts and more from a terminal or a script. This page takes you from installation to your first three commands: creating a post, searching, and listing events.
+<AgentSetup />
+
+The `hive3` command-line tool lets you create and manage posts, events, courses, quests, jobs, broadcasts and more from a terminal or a script. This page takes you from installation to your first three commands: creating a post, searching, and listing events.
 
 <Callout type="plan">
 Approving a command-line login needs a <PlanBadge tier="honey" /> account or above. On a lower plan the approval page shows **A Honey Bee subscription is required to create API keys.** and the approve button stays disabled. See [What Honey Bee and above means](#what-honey-bee-and-above-means).
@@ -25,19 +27,20 @@ Approving a command-line login needs a <PlanBadge tier="honey" /> account or abo
 npm install --global @hive3/cli
 ```
 
-The package adds two command names, `hive` and `hive3`. They run the same program, so every example on these pages works with either name.
+The package installs the `hive3` command. `hive` also works as a short alias for people who installed an earlier version, and runs the same program.
 </Step>
 <Step title="Check that it runs">
-```bash title="Show the command list"
-hive --help
+```bash title="Check the version and show the command list"
+hive3 --version
+hive3 --help
 ```
 
-Help never needs a login. Run `hive <command> --help` (for example `hive events --help`) to see the actions and flags of one command.
+`hive3 --version` (or `-v`) prints the installed version. Help never needs a login. Run `hive3 <command> --help` (for example `hive3 events --help`) to see the actions and flags of one command.
 </Step>
 </Steps>
 
 <Callout type="note">
-Commands and flags marked **(0.4+)** need CLI version 0.4 or later. `npm install --global @hive3/cli` installs the latest release published to npm; if that release is older than 0.4, marked commands, such as `hive search`, are not available yet. Run `hive update --check` to see your installed version.
+Commands and flags marked **(0.4+)** need CLI version 0.4 or later. `npm install --global @hive3/cli` installs the latest release published to npm; if that release is older than 0.4, marked commands, such as `hive3 search`, are not available yet. Run `hive3 update --check` to see your installed version.
 </Callout>
 
 ## Sign in
@@ -45,7 +48,7 @@ Commands and flags marked **(0.4+)** need CLI version 0.4 or later. `npm install
 <Steps>
 <Step title="Start the login">
 ```bash title="Start browser approval"
-hive login
+hive3 login
 ```
 
 The terminal prints an approval URL and a one-time code, then tries to open your browser:
@@ -55,7 +58,7 @@ Open this URL to approve Hive CLI access: https://app.hive3.tech/cli/authorize
 Code: ABCD-EF2G (type it on the approval page)
 ```
 
-On a machine without a browser, run `hive login --no-open` and open the URL anywhere you are signed in to Hive3.
+On a machine without a browser, run `hive3 login --no-open` and open the URL anywhere you are signed in to Hive3.
 </Step>
 <Step title="Enter the code">
 On the approval page, sign in if asked. Under <UI>Enter the code</UI>, type the code from your terminal into <UI>CLI code</UI>. The URL never contains the code, so the page cannot be approved without you typing it.
@@ -84,18 +87,18 @@ Approve only a code that your own terminal just printed. Anyone can start a logi
 To skip the choice on the page, for example in a script you supervise, preselect a bundle:
 
 ```bash title="Preselect Read only or Full access"
-hive login --access read
-hive login --access full
+hive3 login --access read
+hive3 login --access full
 ```
 
 ## Check who you are
 
 ```bash title="Identity and reachable accounts"
-hive whoami
-hive capabilities
+hive3 whoami
+hive3 capabilities
 ```
 
-`hive whoami` prints the account, the scopes of your key, and every account the key can act on:
+`hive3 whoami` prints the account, the scopes of your key, and every account the key can act on:
 
 ```text title="Example output"
 Account: Ada
@@ -106,9 +109,9 @@ Accounts this key can act on: 2
 - Design Guild (admin): read, write, moderate
 ```
 
-`hive capabilities` prints the same accounts, one per line, without the header. You can act on your own account and on any account where you are currently owner, admin or moderator. If only your own account is listed, commands for other accounts will fail. See [managed accounts](/developers/api-authentication#managed-accounts).
+`hive3 capabilities` prints the same accounts, one per line, without the header. You can act on your own account and on any account where you are currently owner, admin or moderator. If only your own account is listed, commands for other accounts will fail. See [managed accounts](/developers/api-authentication#managed-accounts).
 
-If a command prints `Not logged in. Run hive login first.`, no credential is stored yet. Run `hive login`.
+If a command prints `Not logged in. Run hive3 login first.`, no credential is stored yet. Run `hive3 login`.
 
 ## Run your first commands
 
@@ -117,17 +120,17 @@ If a command prints `Not logged in. Run hive login first.`, no credential is sto
 Creating content needs <UI>Full access</UI>. With a Read only key the command fails with `insufficient_scope` and tells you the missing scope.
 
 ```bash title="Create a post"
-hive posts create --body "Hello from the Hive CLI" --visibility public
+hive3 posts create --body "Hello from the Hive CLI" --visibility public
 ```
 
-The CLI prints the new post as JSON, wrapped in a `data` object, including its `id`. To switch to Full access, run `hive login --access full` and approve again. The new key replaces the stored one; the earlier key stays valid until it expires or you revoke it in the app. See [Sign out and revoke a key](/developers/cli-authentication#sign-out-and-revoke-a-key).
+The CLI prints the new post as JSON, wrapped in a `data` object, including its `id`. To switch to Full access, run `hive3 login --access full` and approve again. The new key replaces the stored one; the earlier key stays valid until it expires or you revoke it in the app. See [Sign out and revoke a key](/developers/cli-authentication#sign-out-and-revoke-a-key).
 
 ### Search (0.4+)
 
 Search works with a Read only key.
 
 ```bash title="Search accounts"
-hive search "design guild" --type accounts --limit 5
+hive3 search "design guild" --type accounts --limit 5
 ```
 
 `--type` is one of `all`, `accounts`, `events`, `courses`, `content`, `quests` or `jobs`. Results show only what your account can see.
@@ -135,13 +138,13 @@ hive search "design guild" --type accounts --limit 5
 ### List events
 
 ```bash title="List the newest events"
-hive events list --limit 5
+hive3 events list --limit 5
 ```
 
 Lists are newest first. The response includes a `page` object with `hasMore` and `nextCursor`. Pass the cursor back to read the next page:
 
 ```bash title="Read the next page"
-hive events list --limit 5 --cursor "<nextCursor>"
+hive3 events list --limit 5 --cursor "<nextCursor>"
 ```
 
 See [pagination](/developers/api-conventions#pagination) for the details.
@@ -151,16 +154,16 @@ See [pagination](/developers/api-conventions#pagination) for the details.
 The CLI checks npm for a newer release at most once a day while you use it interactively, and prints a short notice on stderr after a command finishes. You can also check yourself:
 
 ```bash title="Check for and install updates"
-hive update --check
-hive update
+hive3 update --check
+hive3 update
 ```
 
-`hive update` installs exactly the version it reports with `npm install --global @hive3/cli@<version>`. Set `HIVE_NO_UPDATE_CHECK=1` to turn off the daily check.
+`hive3 update` installs exactly the version it reports with `npm install --global @hive3/cli@<version>`. Set `HIVE_NO_UPDATE_CHECK=1` to turn off the daily check.
 
 To uninstall, sign out first so the key is revoked on the server, then remove the package:
 
 ```bash title="Sign out and uninstall"
-hive logout
+hive3 logout
 npm uninstall --global @hive3/cli
 ```
 

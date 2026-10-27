@@ -11,6 +11,7 @@
 - `npm run build` = tests, client build, SSR build, then `scripts/prerender.mjs` (writes `dist/<path>/index.html`, `sitemap.xml`, `robots.txt`).
 - `npx vite preview` serves `dist/` like Netlify (prerendered pages; any other route gets the `/index.html` SPA fallback with 200).
 - `npm run redirects` regenerates `public/_redirects` from `src/content/redirects.ts`.
+- `npm run agent-setup` regenerates `public/agent-setup.md` (served at `/agent-setup.md` for agents) from `src/content/agent-setup.ts`; `npm run build` runs it first and `npm run check` fails when the file is stale.
 
 ## Adding or changing a page
 1. Create `src/content/<section>/<slug>.mdx` (URL `/<section>/<slug>`; `src/content/index.mdx` is `/`; a section's `index.mdx` is `/<section>`).
@@ -21,7 +22,7 @@
 6. Moving or removing a published URL: add it to `src/content/redirects.ts`, run `npm run redirects`.
 
 ## MDX components (global, no import needed)
-`Callout` (`type` note|tip|warning|plan), `Steps`/`Step` (`title`), `Figure` (`src`, `alt`, `caption?`, `darkSrc?`; click to zoom), `Walkthrough` (`src`, `poster`, `title`, `chapters=[{at, label}]`; muted autoplay when 50% visible, honors reduced motion), `PlanBadge` (`tier`, `plus?`), `PlanMatrix` (`group?`; data in `src/content/plans.ts`), `CardGrid`/`LinkCard` (`href`, `title`, `icon` = lucide name in kebab-case, `accent`), `UI` (exact on-screen label), `Path` (`items`), `Endpoint` (`method`, `path`, `scopes`), `Tabs` (`labels`) + `Tab`, fenced code (` ```bash title="…" `, highlighted at build time, copy button). Implementations live in `src/components/mdx/`; register new ones in `src/components/mdx/index.ts` and in the lists in `scripts/check.mjs`.
+`AgentSetup` (no props; the "Set up with your AI agent" banner with a copy button, placed at the top of developer pages; the prompt lives in `src/content/agent-setup.ts`), `Callout` (`type` note|tip|warning|plan), `Steps`/`Step` (`title`), `Figure` (`src`, `alt`, `caption?`, `darkSrc?`; click to zoom), `Walkthrough` (`src`, `poster`, `title`, `chapters=[{at, label}]`; muted autoplay when 50% visible, honors reduced motion), `PlanBadge` (`tier`, `plus?`), `PlanMatrix` (`group?`; data in `src/content/plans.ts`), `CardGrid`/`LinkCard` (`href`, `title`, `icon` = lucide name in kebab-case, `accent`), `UI` (exact on-screen label), `Path` (`items`), `Endpoint` (`method`, `path`, `scopes`), `Tabs` (`labels`) + `Tab`, fenced code (` ```bash title="…" `, highlighted at build time, copy button). Implementations live in `src/components/mdx/`; register new ones in `src/components/mdx/index.ts` and in the lists in `scripts/check.mjs`.
 
 ## Media
 - Screenshots: `public/media/<section>/<slug>/<name>.webp`. `Figure` width/height are read from the image header at build time (`scripts/remark-media-size.mjs`) so layout never shifts; walkthrough videos are 16:10 boxes. The first screenshot or poster near the top of a page is preloaded with high priority by the prerenderer. Walkthroughs: `public/media/walkthroughs/<slug>.mp4` plus `<slug>.poster.webp`. Missing files only warn in `npm run check`.
@@ -49,4 +50,4 @@
 - Strict TypeScript, no `any`. Alias `@/` is `src/`.
 - Line budget per file (blank and comment lines ignored): soft 300, hard 350, enforced by `npm run check`. Split by responsibility instead of weakening it.
 - Surfaces use the app's classes: `surface-glass` (cards), `surface-blur` (floating bars only), `surface-solid` (popovers, dialogs), `surface-plate`. Cards are `rounded-2xl`, buttons `rounded-xl`, badges `rounded-full`.
-- Never write secrets or internal implementation names in docs. Product name is "Hive3".
+- Never write secrets or internal implementation names in docs. Product name is "Hive3". Never mention Team Tools, Team staff or staff permissions (`npm run check` enforces this). The CLI command is `hive3`; `hive` appears only in the one alias note on the CLI quickstart (also enforced).

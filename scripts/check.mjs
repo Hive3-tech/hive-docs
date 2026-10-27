@@ -7,6 +7,7 @@ import * as lucide from "lucide-react";
 import { contentDir, countCodeLines, loadPages, root, scanPages } from "./lib/content.mjs";
 import { toPascal } from "./vite-docs-plugin.mjs";
 import { redirectsFile } from "./gen-redirects.mjs";
+import { agentSetupFile } from "./gen-agent-setup.mjs";
 
 const strict = process.argv.includes("--strict");
 const errors = [];
@@ -120,6 +121,24 @@ for (const [from, to] of [...Object.entries(legacyRedirects), ...Object.entries(
 }
 const redirectsPath = join(root, "public/_redirects");
 if (!existsSync(redirectsPath) || readFileSync(redirectsPath, "utf8") !== redirectsFile()) err("public/_redirects", "is out of date; run `npm run redirects`");
+
+// ---- 6. Wording rules ----------------------------------------------------------------------
+// Internal staff tooling must not appear in public docs ("Staff Members" is a real UI label and stays allowed).
+const FORBIDDEN = /team tools|team staff|staff permission|\/team\//i;
+// The CLI's name is `hive3`. A bare `hive` command is allowed only in the one alias note ("`hive` also works ...").
+const BARE_HIVE = /(?<![\w/.@$-])hive(?![\w-])/;
+const ALIAS_NOTE = /`hive` also works/;
+for (const file of walk(contentDir)) {
+  if (!/\.(mdx|ts)$/.test(file)) continue;
+  const rel = relative(root, file).split(sep).join("/");
+  const developerPage = rel.startsWith("src/content/developers/");
+  readFileSync(file, "utf8").split("\n").forEach((text, i) => {
+    if (FORBIDDEN.test(text)) err(`${rel}:${i + 1}`, "mentions internal staff tooling; remove it from public docs");
+    if (developerPage && BARE_HIVE.test(text) && !ALIAS_NOTE.test(text)) err(`${rel}:${i + 1}`, "bare `hive` command; the CLI is called `hive3` (only the alias note may say `hive`)");
+  });
+}
+const agentSetupPath = join(root, "public/agent-setup.md");
+if (!existsSync(agentSetupPath) || readFileSync(agentSetupPath, "utf8") !== agentSetupFile()) err("public/agent-setup.md", "is out of date; run `npm run agent-setup`");
 
 // ---- report ---------------------------------------------------------------------------
 for (const line of warnings) console.log(`warn   ${line}`);

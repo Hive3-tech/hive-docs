@@ -1,11 +1,13 @@
 ---
 title: Developer overview
-description: Build on Hive3 with the public API, the hive command-line tool, and the agent skill.
+description: Build on Hive3 with the public API, the hive3 command-line tool, and the agent skill.
 plan: honey
 accent: developer
 ---
 
-Hive3 has a public API, a command-line tool called `hive`, and an agent skill that lets an AI assistant use the command-line tool for you. All three act as an account you control, with the same rules, limits and plan checks as the Hive3 app.
+<AgentSetup />
+
+Hive3 has a public API, a command-line tool called `hive3`, and an agent skill that lets an AI assistant use the command-line tool for you. All three act as an account you control, with the same rules, limits and plan checks as the Hive3 app.
 
 <Callout type="plan">
 Developer access needs a <PlanBadge tier="honey" /> account or above. If the account behind a key drops below Honey Bee, every request with that key returns `403` with the code `plan_required`. The key is not revoked: it works again as soon as the account is back on Honey Bee or above. Creating a key, or approving a command-line login, also needs Honey Bee or above.
@@ -22,10 +24,10 @@ Developer access needs a <PlanBadge tier="honey" /> account or above. If the acc
 
 ## API, CLI or agent skill
 
-| | Public API | `hive` command-line tool | Agent skill |
+| | Public API | `hive3` command-line tool | Agent skill |
 |---|---|---|---|
-| What it is | HTTP endpoints that return JSON | A Node.js program that calls the API for you | Instructions that teach an AI agent to use `hive` safely |
-| Sign in | API key you create in Settings | Browser approval; the key is stored for you | Uses the signed-in `hive` session |
+| What it is | HTTP endpoints that return JSON | A Node.js program that calls the API for you | Instructions that teach an AI agent to use `hive3` safely |
+| Sign in | API key you create in Settings | Browser approval; the key is stored for you | Uses the signed-in `hive3` session |
 | Best for | Servers, integrations, anything in code | Terminals, shell scripts, CI jobs, quick checks | Letting an assistant manage your account under your supervision |
 | Start here | [Authentication and API keys](/developers/api-authentication) | [CLI quickstart](/developers/cli-quickstart) | [Use Hive3 with AI agents](/developers/cli-agents) |
 
@@ -55,7 +57,7 @@ Every successful response wraps its payload in `data`. Errors use an `error` obj
 <LinkCard href="/developers/api-conventions" title="Requests, errors and limits" icon="book-open" accent="developer">Response format, error codes, pagination, idempotency and rate limits.</LinkCard>
 <LinkCard href="/developers/api-resources" title="Events, courses, content, quests, jobs" icon="calendar-days" accent="developer">Create and manage the things people join.</LinkCard>
 <LinkCard href="/developers/api-broadcasts" title="Broadcasts" icon="send" accent="developer">Draft, test and send email to your members.</LinkCard>
-<LinkCard href="/developers/cli-quickstart" title="CLI quickstart" icon="terminal" accent="developer">Install `hive`, sign in, and run your first commands.</LinkCard>
+<LinkCard href="/developers/cli-quickstart" title="CLI quickstart" icon="terminal" accent="developer">Install `hive3`, sign in, and run your first commands.</LinkCard>
 <LinkCard href="/developers/cli-agents" title="Use Hive3 with AI agents" icon="bot" accent="developer">Give an assistant least-privilege access to your account.</LinkCard>
 </CardGrid>
 

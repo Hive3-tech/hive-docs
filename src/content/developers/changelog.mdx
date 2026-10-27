@@ -1,6 +1,6 @@
 ---
 title: API and CLI changelog
-description: What changed in the Hive3 public API and the hive command-line tool, newest first, and what integrators need to do.
+description: What changed in the Hive3 public API and the hive3 command-line tool, newest first, and what integrators need to do.
 accent: developer
 ---
 
@@ -23,11 +23,10 @@ This update adds five endpoint families, makes plan and permission checks strict
 
 - **Honey Bee or above is required.** If the key owner's account is below Honey Bee, every request returns `403` with the code `plan_required`. The key is not revoked and works again after an upgrade. Creating keys and approving CLI logins need Honey Bee or above too.
 - **Accounts scheduled for deletion.** Their keys return `401 invalid_api_key` on every route except `DELETE /api/v1/account/deletion`, which still lets the account cancel the deletion. That route skips the plan check only while a deletion is pending. Cancelling now also makes the account searchable again.
-- **No staff shortcuts.** API keys never carry Hive3 Team staff permissions. A staff member's key needs a real owner, admin or moderator role on an account to act on it, and the app's Honey Bee checks apply.
 - **Moderation scopes.** Deleting someone else's comment, reviewing community applications, removing members and changing roles need `communities:moderate` or `communities:write`, plus a current owner, admin or moderator role. `communities:write` includes `communities:moderate`.
 - **Live roles on every call.** Access to another account depends on your role at the time of the request, and on the key's account allowlist if it has one. See [Managed accounts](/developers/api-authentication#managed-accounts).
 
-**What to do:** handle `403 plan_required` and `403 insufficient_scope` without retrying in a loop. If a key relied on staff permissions, give its owner a real role on the accounts it manages, or use a key owned by an account that has one.
+**What to do:** handle `403 plan_required` and `403 insufficient_scope` without retrying in a loop.
 
 ### Reading data
 
@@ -93,24 +92,27 @@ These behaviors were already in place; the documentation now matches them. If yo
 
 ## CLI 0.4.0
 
-CLI 0.4.0 is not published yet. Until it is, `npm install --global @hive3/cli` installs the previous release. Run `hive update --check` to see the latest published version. Items in the CLI pages marked "(0.4+)" need this version or later.
+CLI 0.4.0 is not published yet. Until it is, `npm install --global @hive3/cli` installs the previous release. Run `hive3 update --check` to see the latest published version. Items in the CLI pages marked "(0.4+)" need this version or later.
 
 ### New commands
 
-- `hive search`, `hive broadcasts`, `hive tickets`, `hive assistant` and `hive credentials`. See [CLI commands: search, broadcasts, tickets, assistant, credentials](/developers/cli-commands-areas).
-- `get <id>` for every resource family, `hive notifications unread-count`, and `hive account linked-communities` with `list` and `disconnect`.
+- **`hive3` is the command name.** The CLI is now called `hive3` everywhere, in the documentation and in its own messages. `hive` also works as a short alias for existing users and runs the same program. Update scripts and agent instructions when convenient; nothing breaks if you do not.
+- **`hive3 --version`** (or `-v`) prints the installed version.
+- **`hive3 skill`** (`install`, `path`, `show`) installs the Hive3 agent skill that now ships inside the CLI, for Claude Code, Codex, Cursor or any skills directory. The skill is named `hive3`. See [Use Hive3 with AI agents](/developers/cli-agents#install-the-skill).
+- `hive3 search`, `hive3 broadcasts`, `hive3 tickets`, `hive3 assistant` and `hive3 credentials`. See [CLI commands: search, broadcasts, tickets, assistant, credentials](/developers/cli-commands-areas).
+- `get <id>` for every resource family, `hive3 notifications unread-count`, and `hive3 account linked-communities` with `list` and `disconnect`.
 - `--account <id-or-handle>` on profile, builder, broadcast, ticket, assistant and credential commands, to act on an account you own, administer or moderate.
-- `hive broadcasts update --remove-hero-image`.
+- `hive3 broadcasts update --remove-hero-image`.
 
 ### Safer by default
 
-- **Confirmation flags.** `--confirm <exact id>` is required by `hive wallets remove`, `hive communities remove-member`, `hive account linked-communities disconnect` and `hive assistant documents delete`. `--yes` is required by `hive broadcasts send` and `hive credentials award`.
-- **Account deletion.** `hive account deletion request` is gone. Delete an account in the Hive3 app under Settings. `hive account deletion cancel` still cancels a pending deletion.
-- **Upload address check.** Before sending a file, `hive upload` and `hive assistant documents add` refuse an upload address that is not `https` (plain `http` only for a local development server), is not on the API host or a Hive3 storage host, or redirects. No key is sent with the file.
-- **Help never runs a command.** `--help` or `-h` after any command prints help, including `logout`, `whoami`, `capabilities`, `login` and `update`. In earlier versions `hive logout --help` signed you out.
+- **Confirmation flags.** `--confirm <exact id>` is required by `hive3 wallets remove`, `hive3 communities remove-member`, `hive3 account linked-communities disconnect` and `hive3 assistant documents delete`. `--yes` is required by `hive3 broadcasts send` and `hive3 credentials award`.
+- **Account deletion.** `hive3 account deletion request` is gone. Delete an account in the Hive3 app under Settings. `hive3 account deletion cancel` still cancels a pending deletion.
+- **Upload address check.** Before sending a file, `hive3 upload` and `hive3 assistant documents add` refuse an upload address that is not `https` (plain `http` only for a local development server), is not on the API host or a Hive3 storage host, or redirects. No key is sent with the file.
+- **Help never runs a command.** `--help` or `-h` after any command prints help, including `logout`, `whoami`, `capabilities`, `login` and `update`. In earlier versions `hive3 logout --help` signed you out.
 - **Private config files.** The config file and update cache are written through a private staging directory with mode `0600` and an atomic rename.
-- **`hive update`** installs exactly the version it reports.
+- **`hive3 update`** installs exactly the version it reports.
 - **`plan_required`.** The CLI now shows a clear message when the account is below Honey Bee.
-- **`hive logout`** revokes the key on the server through `DELETE /api/v1/account/keys/current` before removing the local file.
+- **`hive3 logout`** revokes the key on the server through `DELETE /api/v1/account/keys/current` before removing the local file.
 
-**What to do:** update scripts that used `hive account deletion request`, add `--yes` or `--confirm` where the commands above run unattended, and run `hive login` again if you need the new scopes. Keep using the same login if you only use existing commands.
+**What to do:** run `hive3 skill install --force` if you copied the skill folder by hand earlier, update scripts that used `hive3 account deletion request`, add `--yes` or `--confirm` where the commands above run unattended, and run `hive3 login` again if you need the new scopes. Keep using the same login if you only use existing commands.

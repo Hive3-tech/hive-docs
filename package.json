@@ -8,8 +8,9 @@
     "typecheck": "tsc --noEmit",
     "check": "node scripts/check.mjs",
     "redirects": "node scripts/gen-redirects.mjs",
+    "agent-setup": "node scripts/gen-agent-setup.mjs",
     "test": "node --test",
-    "build": "node --test && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
+    "build": "node --test && node scripts/gen-agent-setup.mjs && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -5,7 +5,7 @@ plan: honey
 accent: developer
 ---
 
-Every API request is authenticated with an API key that belongs to one Hive3 account. The key decides which parts of the API the request can reach (its scopes) and which other accounts it can act on. This page covers creating, scoping, using and retiring keys. The command-line tool creates its own key when you run `hive login`; see [CLI sign-in and configuration](/developers/cli-authentication).
+Every API request is authenticated with an API key that belongs to one Hive3 account. The key decides which parts of the API the request can reach (its scopes) and which other accounts it can act on. This page covers creating, scoping, using and retiring keys. The command-line tool creates its own key when you run `hive3 login`; see [CLI sign-in and configuration](/developers/cli-authentication).
 
 ## Who can use API keys
 
@@ -13,7 +13,6 @@ Creating and using API keys is a <PlanBadge tier="honey" /> feature.
 
 - **Below Honey Bee.** If the key owner's account is on Worker Bee, every request with that account's keys returns `403` with the code `plan_required` and the message `API access requires a Honey Bee plan or above. Upgrade the account to use this key again.` The keys are kept. They work again when the account returns to Honey Bee or above.
 - **Account scheduled for deletion.** While an account is waiting to be deleted, its keys return `401` with `invalid_api_key` on every route except the one that cancels the deletion ([Export and deletion](/developers/api-account-data)), which skips the plan check only while the deletion is pending.
-- **No staff shortcuts.** A key never carries Hive3 Team staff permissions. A staff member's key is treated like any other account's key: acting on another account needs a real owner, admin or moderator role there, and the app's Honey Bee checks apply.
 - **Community-owned keys do not exist.** A key always belongs to a person's account. To work on a community, use a key whose owner is an owner, admin or moderator of that community. See [Managed accounts](#managed-accounts).
 
 ## Create a key
@@ -143,7 +142,7 @@ curl "https://app.hive3.tech/api/v1/profile?account=design-guild" \
 For any account other than the key owner's, all three checks must pass:
 
 1. **Scope.** Reads need `communities:read` and writes need `communities:write`, in addition to the scope for the area (for example `broadcasts:write`). Moderation actions need `communities:moderate`, which `communities:write` includes. A missing scope returns `403 insufficient_scope`.
-2. **Allowlist.** A key created with selected communities can act only on those. Otherwise it returns `403 forbidden` with a message such as `API key does not include this managed account`. A key created with <UI>No access</UI> reaches only its owner's account. Keys created by `hive login` have no allowlist and reach every account the owner currently helps run.
+2. **Allowlist.** A key created with selected communities can act only on those. Otherwise it returns `403 forbidden` with a message such as `API key does not include this managed account`. A key created with <UI>No access</UI> reaches only its owner's account. Keys created by `hive3 login` have no allowlist and reach every account the owner currently helps run.
 3. **Live role.** The owner must hold the required role right now. Role changes take effect on the next request: a demoted admin loses access immediately, even though the key is unchanged. A missing role returns `403 forbidden`, for example `Your role on this account does not allow this action`.
 
 | Operation | Owner | Admin | Moderator |
@@ -182,7 +181,7 @@ On the <UI>API Keys</UI> page, **Active keys** lists each key's name, its recogn
 
 - <UI>Rotate</UI> creates a new key with the same name, scopes and community access, labelled `(rotated)`, and revokes the old key at the same moment. Copy the new key, then update your integration. Rotating counts against the 25-key limit before the old key is removed, so revoke an unused key first if you are at the limit.
 - <UI>Revoke</UI> disables a key immediately. A revoked key returns `401 invalid_api_key`.
-- A key can revoke itself with `DELETE /api/v1/account/keys/current`, which needs no scope ([details](/developers/api-account-data)). This is what `hive logout` does.
+- A key can revoke itself with `DELETE /api/v1/account/keys/current`, which needs no scope ([details](/developers/api-account-data)). This is what `hive3 logout` does.
 
 Revoke any key that may have been exposed, then create a replacement.
 

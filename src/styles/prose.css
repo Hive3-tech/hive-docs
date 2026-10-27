@@ -17,7 +17,8 @@
     line-height: 1.75;
   }
 
-  .docs-prose > p:first-child {
+  .docs-prose > p:first-child,
+  .docs-prose > [data-agent-setup]:first-child + p {
     font-size: 1.125rem;
     line-height: 1.7;
   }

@@ -1,18 +1,18 @@
 ---
 title: CLI commands for search, broadcasts, tickets, assistant and credentials
-description: Search Hive3, draft and send broadcasts, edit tickets, manage an AI assistant's documents, and award credentials from the hive CLI.
+description: Search Hive3, draft and send broadcasts, edit tickets, manage an AI assistant's documents, and award credentials from the hive3 CLI.
 accent: developer
 ---
 
-These five commands arrived in CLI version 0.4, so every command and flag on this page is **(0.4+)**. If `hive search` prints `Unknown command: search`, your installed CLI is older; run `hive update --check`. Shared conventions such as output, exit codes, `--file` and `--account` are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference).
+These five commands arrived in CLI version 0.4, so every command and flag on this page is **(0.4+)**. If `hive3 search` prints `Unknown command: search`, your installed CLI is older; run `hive3 update --check`. Shared conventions such as output, exit codes, `--file` and `--account` are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference).
 
-Keys created before the broadcast, ticket, AI and credential scopes existed do not include them. Sign in again with `hive login` to get a key that does. Search uses the existing `resources:read` scope. When you target another account with `--account`, each command also needs `communities:read` (reads) or `communities:write` (writes) and your current role. See [Act on another account](/developers/cli-commands#act-on-another-account).
+Keys created before the broadcast, ticket, AI and credential scopes existed do not include them. Sign in again with `hive3 login` to get a key that does. Search uses the existing `resources:read` scope. When you target another account with `--account`, each command also needs `communities:read` (reads) or `communities:write` (writes) and your current role. See [Act on another account](/developers/cli-commands#act-on-another-account).
 
 ## Search
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
-| `hive search <query>` | Searches accounts, events, courses, content, quests and jobs that your account can see. | `--type <type>`, `--limit <n>`, `--cursor <cursor>` | `resources:read` |
+| `hive3 search <query>` | Searches accounts, events, courses, content, quests and jobs that your account can see. | `--type <type>`, `--limit <n>`, `--cursor <cursor>` | `resources:read` |
 
 - `--type` is `all` (default), `accounts`, `events`, `courses`, `content`, `quests` or `jobs`.
 - `--limit` is a whole number from 1 to 50 (default 20).
@@ -20,8 +20,8 @@ Keys created before the broadcast, ticket, AI and credential scopes existed do n
 - Each result has a `type` (`account`, `event`, and so on) and an `id`. Use `--cursor` with the `nextCursor` of the previous response to read more.
 
 ```bash title="Search"
-hive search "design guild" --type accounts --limit 10
-hive search portfolio night --type events
+hive3 search "design guild" --type accounts --limit 10
+hive3 search portfolio night --type events
 ```
 
 ## Broadcasts
@@ -30,14 +30,14 @@ Broadcasts are emails to an account's opted-in members. You must be owner, admin
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
-| `hive broadcasts list` | Lists broadcasts, newest first. | `--account`, `--limit <n>`, `--cursor <cursor>` | `broadcasts:read` |
-| `hive broadcasts audience` | Shows the recipient count and when you may send next. | `--account` | `broadcasts:read` |
-| `hive broadcasts get <id>` | Reads one broadcast, including its text and HTML. | None | `broadcasts:read` |
-| `hive broadcasts create` | Creates a draft. | `--subject <text>`, `--body-text <text>` (both required, directly or in the file), `--body-html <html>`, `--body-mode <mode>`, `--hero-image-url <url>`, `--file <path>`, `--idempotency-key <key>`, `--account` | `broadcasts:write` |
-| `hive broadcasts update <id>` | Changes a draft. At least one field is required. | `--subject`, `--body-text`, `--body-html`, `--body-mode`, `--hero-image-url <url>`, `--remove-hero-image`, `--file <path>` | `broadcasts:write` |
-| `hive broadcasts test <id>` | Emails the draft to your own primary address only. | None | `broadcasts:write` |
-| `hive broadcasts send <id>` | Emails every opted-in member now, or schedules the send. | `--yes` (required), `--at <date-time>` | `broadcasts:write` |
-| `hive broadcasts cancel <id>` | Returns a scheduled broadcast to draft. | None | `broadcasts:write` |
+| `hive3 broadcasts list` | Lists broadcasts, newest first. | `--account`, `--limit <n>`, `--cursor <cursor>` | `broadcasts:read` |
+| `hive3 broadcasts audience` | Shows the recipient count and when you may send next. | `--account` | `broadcasts:read` |
+| `hive3 broadcasts get <id>` | Reads one broadcast, including its text and HTML. | None | `broadcasts:read` |
+| `hive3 broadcasts create` | Creates a draft. | `--subject <text>`, `--body-text <text>` (both required, directly or in the file), `--body-html <html>`, `--body-mode <mode>`, `--hero-image-url <url>`, `--file <path>`, `--idempotency-key <key>`, `--account` | `broadcasts:write` |
+| `hive3 broadcasts update <id>` | Changes a draft. At least one field is required. | `--subject`, `--body-text`, `--body-html`, `--body-mode`, `--hero-image-url <url>`, `--remove-hero-image`, `--file <path>` | `broadcasts:write` |
+| `hive3 broadcasts test <id>` | Emails the draft to your own primary address only. | None | `broadcasts:write` |
+| `hive3 broadcasts send <id>` | Emails every opted-in member now, or schedules the send. | `--yes` (required), `--at <date-time>` | `broadcasts:write` |
+| `hive3 broadcasts cancel <id>` | Returns a scheduled broadcast to draft. | None | `broadcasts:write` |
 
 - `--body-mode` is `editor` (default) or `html`. `--body-html` is cleaned the same way as in the app editor; without it, HTML is built from the paragraphs of `--body-text`.
 - `--subject` is 1 to 180 characters. `--hero-image-url` must be an `http` or `https` URL. `--remove-hero-image` clears the image and cannot be combined with `--hero-image-url`.
@@ -55,11 +55,11 @@ Broadcasts are emails to an account's opted-in members. You must be owner, admin
 ```
 
 ```bash title="Draft, test, then schedule"
-hive broadcasts audience --account design-guild
-hive broadcasts create --file broadcast.json --account design-guild --idempotency-key november-news
-hive broadcasts test "<broadcast-id>"
-hive broadcasts send "<broadcast-id>" --yes --at 2026-11-02T15:00:00Z
-hive broadcasts cancel "<broadcast-id>"
+hive3 broadcasts audience --account design-guild
+hive3 broadcasts create --file broadcast.json --account design-guild --idempotency-key november-news
+hive3 broadcasts test "<broadcast-id>"
+hive3 broadcasts send "<broadcast-id>" --yes --at 2026-11-02T15:00:00Z
+hive3 broadcasts cancel "<broadcast-id>"
 ```
 
 ## Tickets
@@ -68,19 +68,19 @@ Tickets are the paid entries set up on an account's events, courses and quests. 
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
-| `hive tickets list` | Lists tickets an account sells. Owners and admins only. | `--account`, `--limit <n>`, `--cursor <cursor>` | `tickets:read` |
-| `hive tickets get <id>` | Reads one ticket. | None | `tickets:read` |
-| `hive tickets update <id>` | Changes a ticket. At least one field is required. | `--name <text>`, `--description <text>`, `--amount <amount>`, `--currency <code>`, `--status <status>` | `tickets:write` |
-| `hive tickets mine` | Lists tickets you bought, with their status. | `--limit <n>`, `--cursor <cursor>` | `tickets:read` |
+| `hive3 tickets list` | Lists tickets an account sells. Owners and admins only. | `--account`, `--limit <n>`, `--cursor <cursor>` | `tickets:read` |
+| `hive3 tickets get <id>` | Reads one ticket. | None | `tickets:read` |
+| `hive3 tickets update <id>` | Changes a ticket. At least one field is required. | `--name <text>`, `--description <text>`, `--amount <amount>`, `--currency <code>`, `--status <status>` | `tickets:write` |
+| `hive3 tickets mine` | Lists tickets you bought, with their status. | `--limit <n>`, `--cursor <cursor>` | `tickets:read` |
 
 - `--amount` is a positive decimal with at most two decimals, such as `12.50`. `--currency` is a three-letter code, such as `USD`; it is converted to upper case.
 - `--status` is `active` or `inactive`. Turning a ticket back on needs a seller on Honey Bee or above.
 - Managing tickets is for owners and admins; moderators cannot.
 
 ```bash title="Change a ticket's price"
-hive tickets list --account design-guild
-hive tickets update "<ticket-id>" --amount 12.50 --currency USD
-hive tickets update "<ticket-id>" --status inactive
+hive3 tickets list --account design-guild
+hive3 tickets update "<ticket-id>" --amount 12.50 --currency USD
+hive3 tickets update "<ticket-id>" --status inactive
 ```
 
 ## AI assistant
@@ -89,21 +89,21 @@ Each account can have one assistant that answers questions from documents you pr
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
-| `hive assistant get` | Reads the assistant. Before the first save it returns defaults. | `--account` | `ai:read` |
-| `hive assistant update` | Changes the assistant. At least one field is required. | `--name <text>`, `--description <text>`, `--avatar-url <url>`, `--visibility <value>`, `--account` | `ai:write` |
-| `hive assistant documents` | Lists training documents. `documents list` is the same. | `--account` | `ai:read` |
-| `hive assistant documents add <file>` | Uploads a file and attaches it, in one step. | `--content-type <mime>`, `--idempotency-key <key>`, `--account` | `ai:write` |
-| `hive assistant documents delete <document-id>` | Removes a document and its stored file. | `--confirm <document-id>` (required) | `ai:write` |
+| `hive3 assistant get` | Reads the assistant. Before the first save it returns defaults. | `--account` | `ai:read` |
+| `hive3 assistant update` | Changes the assistant. At least one field is required. | `--name <text>`, `--description <text>`, `--avatar-url <url>`, `--visibility <value>`, `--account` | `ai:write` |
+| `hive3 assistant documents` | Lists training documents. `documents list` is the same. | `--account` | `ai:read` |
+| `hive3 assistant documents add <file>` | Uploads a file and attaches it, in one step. | `--content-type <mime>`, `--idempotency-key <key>`, `--account` | `ai:write` |
+| `hive3 assistant documents delete <document-id>` | Removes a document and its stored file. | `--confirm <document-id>` (required) | `ai:write` |
 
 - `--visibility` is `public`, `protected` or `private`. The name is 1 to 80 characters and the description up to 2,000.
-- Documents are PDF, DOCX or plain text up to 5 MB, and up to 50 per assistant. The CLI infers the type from `.pdf`, `.docx` and `.txt`; pass `--content-type` for other extensions. A file over the limit is refused before it is uploaded, and the upload address is checked the same way as in `hive upload`.
+- Documents are PDF, DOCX or plain text up to 5 MB, and up to 50 per assistant. The CLI infers the type from `.pdf`, `.docx` and `.txt`; pass `--content-type` for other extensions. A file over the limit is refused before it is uploaded, and the upload address is checked the same way as in `hive3 upload`.
 - The assistant is limited to 20 saves per minute.
 
 ```bash title="Set up the assistant"
-hive assistant update --name "Guild helper" --description "Answers member questions" --visibility private
-hive assistant documents add ./faq.pdf
-hive assistant documents
-hive assistant documents delete "<document-id>" --confirm "<document-id>"
+hive3 assistant update --name "Guild helper" --description "Answers member questions" --visibility private
+hive3 assistant documents add ./faq.pdf
+hive3 assistant documents
+hive3 assistant documents delete "<document-id>" --confirm "<document-id>"
 ```
 
 ## Credentials
@@ -112,11 +112,11 @@ You can read credentials and award custom ones. Creating, editing, minting, depl
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
-| `hive credentials list` | Lists credentials an account issues. | `--account`, `--limit <n>`, `--cursor <cursor>` | `credentials:read` |
-| `hive credentials get <id>` | Reads one credential you manage, or one whose owner's activity you can see. | None | `credentials:read` |
-| `hive credentials award <id>` | Awards a custom credential to people by handle. | `--handles <list>` (required), `--yes` (required) | `credentials:write` |
-| `hive credentials mine` | Lists credentials you have claimed, with status. | None | `credentials:read` |
-| `hive credentials claimable` | Lists credentials awarded to you and not yet claimed. | `--limit <n>`, `--cursor <cursor>` | `credentials:read` |
+| `hive3 credentials list` | Lists credentials an account issues. | `--account`, `--limit <n>`, `--cursor <cursor>` | `credentials:read` |
+| `hive3 credentials get <id>` | Reads one credential you manage, or one whose owner's activity you can see. | None | `credentials:read` |
+| `hive3 credentials award <id>` | Awards a custom credential to people by handle. | `--handles <list>` (required), `--yes` (required) | `credentials:write` |
+| `hive3 credentials mine` | Lists credentials you have claimed, with status. | None | `credentials:read` |
+| `hive3 credentials claimable` | Lists credentials awarded to you and not yet claimed. | `--limit <n>`, `--cursor <cursor>` | `credentials:read` |
 
 - `--handles` is a comma-separated list of 1 to 50 handles. A leading `@` is allowed: `@alice,bob`.
 - Only custom (general) credentials can be awarded. People who already hold the award are skipped and not notified again, so repeating the command is safe. The response has `awarded` and `notFound`.
@@ -124,7 +124,7 @@ You can read credentials and award custom ones. Creating, editing, minting, depl
 - Awarding needs owner, admin or moderator on the credential's account.
 
 ```bash title="Award a credential"
-hive credentials list --account design-guild
-hive credentials award "<credential-id>" --handles @alice,bob --yes
-hive credentials claimable
+hive3 credentials list --account design-guild
+hive3 credentials award "<credential-id>" --handles @alice,bob --yes
+hive3 credentials claimable
 ```

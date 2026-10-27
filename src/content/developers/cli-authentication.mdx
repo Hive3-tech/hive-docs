@@ -1,6 +1,6 @@
 ---
 title: CLI sign-in and configuration
-description: How hive login works, what Read only and Full access grant, where the CLI stores your key, and how to sign out, revoke and troubleshoot.
+description: How hive3 login works, what Read only and Full access grant, where the CLI stores your key, and how to sign out, revoke and troubleshoot.
 accent: developer
 ---
 
@@ -11,9 +11,9 @@ A CLI key is an ordinary API key owned by the account that approved it. It follo
 ## Sign in with browser approval
 
 <Steps>
-<Step title="Run hive login">
+<Step title="Run hive3 login">
 ```bash title="Start the login"
-hive login
+hive3 login
 ```
 
 The CLI asks Hive3 for a login request and prints an approval URL and a code. The URL never contains the code.
@@ -54,15 +54,15 @@ Approve only the code your own terminal printed. Anyone can start a login reques
 
 | What | Limit |
 |---|---|
-| Code lifetime | 10 minutes from the moment `hive login` starts. After that the page shows **CLI login expired** and the terminal prints `Hive CLI login expired. Run hive login again.` |
+| Code lifetime | 10 minutes from the moment `hive3 login` starts. After that the page shows **CLI login expired** and the terminal prints `Hive CLI login expired. Run hive3 login again.` |
 | CLI wait time | `--timeout-ms`, default 600000 (10 minutes). Then the terminal prints `Hive CLI login timed out.` |
-| Collecting the key | After you approve, the CLI has 2 minutes to collect the key. It polls every 2 seconds, so this only matters if you close the terminal; run `hive login` again if it expires. |
-| Key lifetime | 90 days from approval. Expired keys return `invalid_api_key`; run `hive login` again. |
+| Collecting the key | After you approve, the CLI has 2 minutes to collect the key. It polls every 2 seconds, so this only matters if you close the terminal; run `hive3 login` again if it expires. |
+| Key lifetime | 90 days from approval. Expired keys return `invalid_api_key`; run `hive3 login` again. |
 | Code lookups | 10 per minute per signed-in account on the approval page, and 10 login starts per minute per IP address. |
 
 ## Choose Read only or Full access
 
-When you run `hive login` without `--access` or `--scope`, the approval page shows two choices. <UI>Read only</UI> is selected by default. Your choice decides which scopes the key gets.
+When you run `hive3 login` without `--access` or `--scope`, the approval page shows two choices. <UI>Read only</UI> is selected by default. Your choice decides which scopes the key gets.
 
 <Callout type="warning">
 A <UI>Full access</UI> key can change your account and content, export all account data, and change or remove linked wallets. Treat it like a password. The page shows **This credential can modify your account and content.** whenever the granted scopes include any write scope.
@@ -76,7 +76,7 @@ A <UI>Full access</UI> key can change your account and content, export all accou
 | `posts:write` | No | Yes | Create, edit, archive and like posts and comments |
 | `resources:read` | Yes | Yes | Events, courses, content, quests, jobs, participants, search |
 | `resources:write` | No | Yes | Create, edit and archive resources, RSVP, enroll, review participants |
-| `communities:read` | Yes | Yes | `hive capabilities`, members, applications, reads on managed accounts |
+| `communities:read` | Yes | Yes | `hive3 capabilities`, members, applications, reads on managed accounts |
 | `communities:moderate` | No | Yes | Review applications, change roles, remove members |
 | `communities:write` | No | Yes | Writes on managed accounts, membership, access type |
 | `broadcasts:read` | Yes | Yes | Broadcast drafts, sends and audience |
@@ -111,8 +111,8 @@ Scopes are necessary but not sufficient. For anything on another account you als
 - `--api-url` and `--app-url` are for local and staging setups. The server uses an `--app-url` only when it has the same origin as its own site address. Plain `http` is accepted only for `localhost`, `127.0.0.1` and `::1`; otherwise the CLI refuses to send credentials over an insecure connection.
 
 ```bash title="Scripted logins"
-hive login --access read --label "Reporting script" --no-open
-hive login --scope posts:read --scope resources:read --label "Read-only sync"
+hive3 login --access read --label "Reporting script" --no-open
+hive3 login --scope posts:read --scope resources:read --label "Read-only sync"
 ```
 
 ## Where the CLI stores your key
@@ -142,14 +142,14 @@ The file holds five fields:
 - The CLI writes the file through a private staging directory and an atomic rename, so no predictable temporary file appears even when `HIVE_CONFIG_HOME` is a shared directory.
 - The key is never printed, logged or placed on a command line. Do not paste the file into chat, tickets or prompts.
 - The same directory holds `update-check.json`, which stores when the CLI last checked npm.
-- If the file is not valid JSON the CLI prints `Hive CLI config is malformed. Run hive login again.` If it lacks a key or API URL, it prints `Hive CLI config is missing credentials. Run hive login again.`
+- If the file is not valid JSON the CLI prints `Hive CLI config is malformed. Run hive3 login again.` If it lacks a key or API URL, it prints `Hive CLI config is missing credentials. Run hive3 login again.`
 
 ## Environment variables
 
 | Variable | Effect |
 |---|---|
-| `HIVE_API_URL` | API base URL for `hive login` only. Default `https://app.hive3.tech/api/v1`. |
-| `HIVE_APP_URL` | Approval site URL for `hive login` only. Default `https://app.hive3.tech`. |
+| `HIVE_API_URL` | API base URL for `hive3 login` only. Default `https://app.hive3.tech/api/v1`. |
+| `HIVE_APP_URL` | Approval site URL for `hive3 login` only. Default `https://app.hive3.tech`. |
 | `HIVE_CONFIG_HOME` | Directory that holds `config.json` and `update-check.json`. Use it to keep separate credentials, for example one per project. |
 | `HIVE_NO_UPDATE_CHECK` | Set to `1` or `true` to turn off the daily update check. |
 
@@ -158,10 +158,10 @@ The file holds five fields:
 ## Sign out and revoke a key
 
 ```bash title="Sign out"
-hive logout
+hive3 logout
 ```
 
-`hive logout` revokes the stored key on the server, prints `Revoked the server credential.`, deletes the local file and prints `Removed Hive CLI credential at <path>.` It takes no options.
+`hive3 logout` revokes the stored key on the server, prints `Revoked the server credential.`, deletes the local file and prints `Removed Hive CLI credential at <path>.` It takes no options.
 
 <Callout type="warning">
 If the server cannot be reached, or the key is already revoked or expired, the CLI prints `Warning: could not revoke the server credential. Revoke it at Settings → Developer credentials.` on stderr and still deletes the local file. The key can remain valid on the server, so revoke it yourself in the app. The Settings path in that message is out of date; use the path below.
@@ -181,11 +181,11 @@ Choose <UI>Revoke</UI> on that key. Requests with it return `401 invalid_api_key
 </Step>
 </Steps>
 
-Signing in again replaces the local file but does not revoke the previous key. After you switch from Read only to Full access, revoke the earlier key in the app or run `hive logout` before the new `hive login`.
+Signing in again replaces the local file but does not revoke the previous key. After you switch from Read only to Full access, revoke the earlier key in the app or run `hive3 logout` before the new `hive3 login`.
 
 ### Act as a different account
 
-A CLI key belongs to the account that approved it and reaches every account where that account is owner, admin or moderator. To act as a different signed-in user, run `hive logout`, then `hive login` and approve as that user. For accounts you help run, use `--account` or `--owner-type`/`--community-id` instead. See [CLI command reference](/developers/cli-commands#act-on-another-account).
+A CLI key belongs to the account that approved it and reaches every account where that account is owner, admin or moderator. To act as a different signed-in user, run `hive3 logout`, then `hive3 login` and approve as that user. For accounts you help run, use `--account` or `--owner-type`/`--community-id` instead. See [CLI command reference](/developers/cli-commands#act-on-another-account).
 
 ## Updates
 
@@ -193,11 +193,11 @@ The CLI checks npm for a newer release at most once every 24 hours, only when st
 
 ```text title="Update notice"
 Hive CLI update available: 0.4.0 → 0.4.1
-Run `hive update` to install it.
+Run `hive3 update` to install it.
 ```
 
-- `hive update --check` reports the latest version without installing it. If you are current it prints `Hive CLI <version> is already the latest version.`
-- `hive update` looks up the latest version, prints it, and installs exactly that version with `npm install --global @hive3/cli@<version>`. The version is validated before it reaches npm.
+- `hive3 update --check` reports the latest version without installing it. If you are current it prints `Hive CLI <version> is already the latest version.`
+- `hive3 update` looks up the latest version, prints it, and installs exactly that version with `npm install --global @hive3/cli@<version>`. The version is validated before it reaches npm.
 - The check only reads public package metadata from npm. It never sends your Hive credentials and adds no signature check beyond npm's own.
 
 ## Troubleshooting
@@ -205,18 +205,18 @@ Run `hive update` to install it.
 | Message or symptom | Cause and fix |
 |---|---|
 | `Your Hive plan doesn't include API access: the API and CLI need Honey Bee or above.` | The key owner's account is below Honey Bee (`plan_required`). Upgrade under Settings in the app. The same key works again afterwards. |
-| **A Honey Bee subscription is required to create API keys.** on the approval page | The approving account is below Honey Bee. Upgrade, then run `hive login` again. If the plan drops after you approve but before the CLI collects the key, the terminal prints `Hive CLI login was denied in the browser.` |
-| `Hive CLI login expired. Run hive login again.` | The code was older than 10 minutes, or approved more than 2 minutes before the CLI collected it. Start again. |
+| **A Honey Bee subscription is required to create API keys.** on the approval page | The approving account is below Honey Bee. Upgrade, then run `hive3 login` again. If the plan drops after you approve but before the CLI collects the key, the terminal prints `Hive CLI login was denied in the browser.` |
+| `Hive CLI login expired. Run hive3 login again.` | The code was older than 10 minutes, or approved more than 2 minutes before the CLI collected it. Start again. |
 | `Hive CLI login was denied in the browser.` | Someone selected <UI>Cancel</UI>, or the plan check above failed. |
 | `Hive CLI login timed out.` | You did not approve before `--timeout-ms` elapsed. Start again, or raise the timeout. |
-| `Hive CLI login was already completed. Run hive login again.` or `Hive CLI login request was not found.` | The request was already used, or was cleaned up. Start a new login. |
+| `Hive CLI login was already completed. Run hive3 login again.` or `Hive CLI login request was not found.` | The request was already used, or was cleaned up. Start a new login. |
 | **That code does not match an active CLI login.** | The code was mistyped, expired, or already used. Check it against the terminal or start again. |
 | `Too many attempts. Try again shortly.` | More than 10 code lookups in a minute on the approval page. Wait a minute. |
 | `Hive API error 429 (rate_limited): Too many CLI login requests.` | More than 10 login starts in a minute from one IP address. Wait a minute. While waiting for approval, the CLI honors `Retry-After` on a 429 and keeps polling, so shared networks usually recover without action. |
-| `Not logged in. Run hive login first.` | No credential file at the expected location. Check `HIVE_CONFIG_HOME`, or run `hive login`. Exit code 1. |
-| `Hive API error 401 (invalid_api_key): …` | The key is revoked, expired (90 days) or belongs to an account that is unavailable. Run `hive login` again. |
+| `Not logged in. Run hive3 login first.` | No credential file at the expected location. Check `HIVE_CONFIG_HOME`, or run `hive3 login`. Exit code 1. |
+| `Hive API error 401 (invalid_api_key): …` | The key is revoked, expired (90 days) or belongs to an account that is unavailable. Run `hive3 login` again. |
 | `Hive API error 403 (insufficient_scope): … Required scopes: …` | The key lacks a scope. Sign in again with `--access full` or `--scope`. |
-| `Hive API error 403 (forbidden): …` | The key has the scope but your account has no current role on that target. Check `hive capabilities`. |
+| `Hive API error 403 (forbidden): …` | The key has the scope but your account has no current role on that target. Check `hive3 capabilities`. |
 | The browser does not open | Common on servers and containers. Copy the URL from the terminal and open it on any machine, or use `--no-open`. |
 | `Refusing to send Hive credentials over an insecure connection.` | `--api-url` or the stored URL uses plain `http` for a host other than localhost. Use `https`. |
 
