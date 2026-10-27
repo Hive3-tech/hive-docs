@@ -2,7 +2,13 @@
   command = "npm run build"
   publish = "dist"
 
-# Redirects (including the 404 fallback) live in public/_redirects, generated from src/content/redirects.ts.
+# 301s for old URLs live in public/_redirects (generated from src/content/redirects.ts), which also ends with the SPA
+# fallback. The same fallback is declared here so both routing configs agree: prerendered files are served first,
+# every other route gets /index.html and the client router renders it (including the not-found page).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 [[headers]]
   for = "/assets/*"

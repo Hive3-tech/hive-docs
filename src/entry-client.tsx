@@ -25,9 +25,16 @@ async function main() {
     </StrictMode>
   );
   const root = document.getElementById("root")!;
-  // The dev server serves an empty shell; production pages are prerendered and hydrate.
-  if (root.firstElementChild) hydrateRoot(root, app);
-  else createRoot(root).render(app);
+  // Prerendered pages hydrate. The dev server's empty shell, and URLs served /index.html by the SPA fallback
+  // (whose markup belongs to "/"), render fresh instead so the client router can show the right page or not-found.
+  const prerenderedPath = document.querySelector<HTMLMetaElement>('meta[name="docs-prerendered-path"]')?.content;
+  const normalize = (p: string) => (p.length > 1 ? p.replace(/\/+$/, "") : p);
+  if (root.firstElementChild && prerenderedPath !== undefined && normalize(prerenderedPath) === normalize(window.location.pathname)) {
+    hydrateRoot(root, app);
+  } else {
+    root.replaceChildren();
+    createRoot(root).render(app);
+  }
 }
 
 void main();

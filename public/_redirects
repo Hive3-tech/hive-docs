@@ -80,5 +80,6 @@
 /api-subscription-management           /developers  301
 /api-keys-and-integrations             /developers/api-authentication  301
 
-# Unknown URLs get the prerendered 404 page with a 404 status.
-/*                                     /404.html  404
+# SPA fallback (required): every other route is served /index.html and the client router renders it,
+# including the not-found page. Prerendered files under dist/ are served directly before this rule applies.
+/*                                     /index.html  200

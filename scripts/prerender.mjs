@@ -1,5 +1,7 @@
 // Renders every route to static HTML after the client and SSR builds:
-//   dist/<path>/index.html, dist/404.html, dist/sitemap.xml, dist/robots.txt
+//   dist/<path>/index.html, dist/sitemap.xml, dist/robots.txt
+// Unknown URLs reach the client through the SPA fallback (/* -> /index.html 200), so each page records the path it was
+// rendered for; the client only hydrates when that matches the URL and renders fresh otherwise.
 // Run via `npm run build`; needs dist/ (client build) and dist-ssr/ (vite build --ssr).
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -49,7 +51,8 @@ function headTags({ title, description, path, noindex }, canonical) {
 
 async function renderPage(url) {
   const { html, head, canonical } = await render(url);
-  return template.replace("<!--app-head-->", headTags(head, canonical)).replace("<!--app-html-->", html);
+  const marker = `<meta name="docs-prerendered-path" content="${escapeHtml(url)}" />`;
+  return template.replace("<!--app-head-->", `${headTags(head, canonical)}\n    ${marker}`).replace("<!--app-html-->", html);
 }
 
 function write(file, contents) {
@@ -60,8 +63,6 @@ function write(file, contents) {
 for (const { path } of routeList) {
   write(path === "/" ? join(dist, "index.html") : join(dist, path.slice(1), "index.html"), await renderPage(path));
 }
-// Unknown URLs are served this page (with a 404 status) by public/_redirects.
-write(join(dist, "404.html"), await renderPage("/404"));
 
 const urls = routeList.filter((r) => !r.hidden).map((r) => `${SITE_URL}${r.path === "/" ? "" : r.path}`);
 write(
@@ -71,4 +72,4 @@ write(
 write(join(dist, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 
 rmSync(ssrDir, { recursive: true, force: true });
-console.log(`Prerendered ${routeList.length} pages, 404.html, sitemap.xml and robots.txt`);
+console.log(`Prerendered ${routeList.length} pages, sitemap.xml and robots.txt`);

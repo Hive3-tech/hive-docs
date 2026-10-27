@@ -32,7 +32,7 @@ const shikiOptions = {
   ],
 };
 
-/** `vite preview` only: serve dist/<path>/index.html and the prerendered 404 page, the way Netlify does. */
+/** `vite preview` only: serve dist/<path>/index.html, else the SPA fallback /index.html with 200, the way Netlify does. */
 function servePrerendered(): Plugin {
   return {
     name: "serve-prerendered",
@@ -43,9 +43,9 @@ function servePrerendered(): Plugin {
         if (path.extname(url)) return next();
         const file = path.join(dist, url, "index.html");
         const found = existsSync(file);
-        res.statusCode = found ? 200 : 404;
+        res.statusCode = 200;
         res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.end(readFileSync(found ? file : path.join(dist, "404.html")));
+        res.end(readFileSync(found ? file : path.join(dist, "index.html")));
       });
     },
   };
