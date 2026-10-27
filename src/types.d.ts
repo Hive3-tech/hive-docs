@@ -1,33 +1,21 @@
 declare module "virtual:docs-manifest" {
-  import type { Accent } from "@/content/nav";
+  import type { NavSectionData } from "@/app/types";
 
-  export type ManifestPage = {
-    path: string;
-    file: string;
-    sectionId: string | null;
-    navTitle: string;
-    title: string;
-    description: string;
-    plan?: "honey" | "swarm" | "royal";
-    accent: Accent;
-    headings: { text: string; id: string }[];
-    hidden: boolean;
-  };
-  export type ManifestSection = {
-    id: string;
-    label: string;
-    icon: string;
-    accent: Accent;
-    summary: string;
-    pages: { slug: string; title: string; path: string }[];
-  };
-  const manifest: { sections: ManifestSection[]; home: string | null; pages: ManifestPage[] };
+  const manifest: { sections: NavSectionData[]; home: { path: string; title: string } | null };
   export default manifest;
 }
 
+declare module "virtual:docs-pages" {
+  import type { PageModule } from "@/app/types";
+
+  const loaders: Record<string, () => Promise<PageModule>>;
+  export default loaders;
+}
+
 declare module "virtual:docs-search" {
-  const index: string;
-  export default index;
+  /** URL of the serialized search index (a separate JSON asset). */
+  const url: string;
+  export default url;
 }
 
 declare module "virtual:docs-icons" {

@@ -2,10 +2,11 @@ import { useState } from "react";
 import { X, ZoomIn } from "lucide-react";
 import { Modal } from "@/components/Modal";
 
-type FigureProps = { src: string; alt: string; caption?: string; darkSrc?: string };
+// width/height are injected at build time (scripts/remark-media-size.mjs) so the image box is reserved before load.
+type FigureProps = { src: string; alt: string; caption?: string; darkSrc?: string; width?: number | string; height?: number | string };
 
 /** Screenshot with a glass frame, lazy loading, and click-to-zoom. */
-export function Figure({ src, alt, caption, darkSrc }: FigureProps) {
+export function Figure({ src, alt, caption, darkSrc, width, height }: FigureProps) {
   const [zoomed, setZoomed] = useState(false);
 
   const image = (className: string, eager = false) => (
@@ -13,6 +14,8 @@ export function Figure({ src, alt, caption, darkSrc }: FigureProps) {
       <img
         src={src}
         alt={alt}
+        width={width}
+        height={height}
         loading={eager ? "eager" : "lazy"}
         decoding="async"
         className={`${className}${darkSrc ? " dark:hidden" : ""}`}
@@ -21,6 +24,8 @@ export function Figure({ src, alt, caption, darkSrc }: FigureProps) {
         <img
           src={darkSrc}
           alt={alt}
+          width={width}
+          height={height}
           loading={eager ? "eager" : "lazy"}
           decoding="async"
           className={`${className} hidden dark:block`}

@@ -4,7 +4,14 @@
 export const searchIndexOptions = {
   idField: "id",
   fields: ["title", "heading", "text"],
-  storeFields: ["title", "heading", "path", "anchor", "snippet"],
+  // p = index into `pages`, a = heading anchor, h = heading text, s = snippet
+  storeFields: ["p", "a", "h", "s"],
+};
+
+/** Shape of the search-index.json asset. */
+export type SearchIndexFile = {
+  pages: { path: string; title: string }[];
+  index: unknown;
 };
 
 export const searchQueryOptions = {

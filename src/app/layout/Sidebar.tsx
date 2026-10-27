@@ -4,11 +4,7 @@ import { APP_URL, sectionHref, sections } from "@/app/site";
 import { DocIcon } from "@/lib/icons";
 import { cn } from "@/lib/cn";
 import { Logo } from "./TopBar";
-
-const navItem =
-  "relative flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[0.9rem] font-medium leading-snug transition-all";
-const navActive = "bg-sidebar-primary text-sidebar-primary-foreground shadow-md";
-const navIdle = "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground";
+import { navActive, navIdle, navItem, SectionNav } from "./SectionNav";
 
 type SidebarProps = { pathname: string; currentSectionId: string | null; variant: "desktop" | "mobile"; onNavigate?: () => void; onClose?: () => void };
 
@@ -33,14 +29,14 @@ export function Sidebar({ pathname, currentSectionId, variant, onNavigate, onClo
       ) : null}
 
       <div className="border-b border-sidebar-border px-3 py-2.5">
-        <div className="flex items-center justify-between gap-1">
+        <div className="flex items-center justify-between gap-0.5">
           <Link
             to="/"
             onClick={onNavigate}
             aria-label="Docs home"
             title="Docs home"
             data-plain
-            className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl border border-sidebar-border/80 transition-all", isHome ? `${navActive} border-transparent` : "bg-sidebar-accent/35 hover:bg-sidebar-accent")}
+            className={cn("flex size-9 min-w-0 shrink-0 items-center justify-center rounded-xl border border-sidebar-border/80 transition-all", isHome ? `${navActive} border-transparent` : "bg-sidebar-accent/35 hover:bg-sidebar-accent")}
           >
             <Home className="size-[18px]" aria-hidden="true" />
           </Link>
@@ -53,7 +49,7 @@ export function Sidebar({ pathname, currentSectionId, variant, onNavigate, onClo
               title={s.label}
               data-plain
               className={cn(
-                "flex size-10 shrink-0 items-center justify-center rounded-xl border border-sidebar-border/80 transition-all",
+                "flex size-9 min-w-0 shrink-0 items-center justify-center rounded-xl border border-sidebar-border/80 transition-all",
                 s.id === currentSectionId ? `${navActive} border-transparent` : "bg-sidebar-accent/35 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
               )}
             >
@@ -67,14 +63,7 @@ export function Sidebar({ pathname, currentSectionId, variant, onNavigate, onClo
         {section ? (
           <>
             <p className="px-3.5 pb-1.5 pt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{section.label}</p>
-            {section.pages.map((page) => {
-              const active = page.path === pathname;
-              return (
-                <Link key={page.path} to={page.path} onClick={onNavigate} data-plain aria-current={active ? "page" : undefined} className={cn(navItem, active ? navActive : navIdle)}>
-                  {page.title}
-                </Link>
-              );
-            })}
+            <SectionNav pages={section.pages} pathname={pathname} onNavigate={onNavigate} />
           </>
         ) : (
           sections.map((s) => (

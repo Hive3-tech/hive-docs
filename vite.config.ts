@@ -11,6 +11,7 @@ import rehypeShiki from "@shikijs/rehype";
 import { existsSync, readFileSync } from "node:fs";
 import type { Plugin } from "vite";
 import { docsContent } from "./scripts/vite-docs-plugin.mjs";
+import remarkMediaSize from "./scripts/remark-media-size.mjs";
 
 // Code fences: highlighted at build time with a light and a dark theme (CSS variables,
 // switched by the `.dark` class). Language and ```title="..."``` meta become data attributes.
@@ -57,7 +58,7 @@ export default defineConfig({
     {
       enforce: "pre",
       ...mdx({
-        remarkPlugins: [remarkFrontmatter, [remarkMdxFrontmatter, { name: "frontmatter" }], remarkGfm],
+        remarkPlugins: [remarkFrontmatter, [remarkMdxFrontmatter, { name: "frontmatter" }], remarkGfm, remarkMediaSize],
         rehypePlugins: [rehypeSlug, [rehypeShiki, shikiOptions]],
       }),
     },

@@ -14,7 +14,12 @@ export type Accent =
   | "developer"
   | "default";
 
-export type NavPage = { slug: string; title: string };
+export type NavPage = {
+  slug: string;
+  title: string;
+  /** Optional sidebar group heading. Consecutive pages with the same group are shown as one collapsible group. */
+  group?: string;
+};
 
 export type NavSection = {
   /** URL prefix without slashes, e.g. "start" -> /start/<slug>. */
@@ -127,24 +132,35 @@ export const navSections: NavSection[] = [
     summary: "Build on Hive3 with the public API and the hive command-line tool.",
     pages: [
       { slug: "index", title: "Developer overview" },
-      { slug: "api-authentication", title: "Authentication and API keys" },
-      { slug: "api-conventions", title: "Requests, errors and limits" },
-      { slug: "api-account", title: "Account and profile" },
-      { slug: "api-uploads", title: "Uploads" },
-      { slug: "api-posts", title: "Posts and comments" },
-      { slug: "api-resources", title: "Events, courses, content, quests, jobs" },
-      { slug: "api-workflows", title: "Participation workflows" },
-      { slug: "api-communities", title: "Communities and members" },
-      { slug: "api-notifications", title: "Notifications" },
-      { slug: "api-search", title: "Search" },
-      { slug: "api-broadcasts", title: "Broadcasts" },
-      { slug: "api-tickets", title: "Tickets" },
-      { slug: "api-ai-assistant", title: "AI assistant" },
-      { slug: "api-credentials", title: "Credentials" },
-      { slug: "cli-quickstart", title: "CLI quickstart" },
-      { slug: "cli-authentication", title: "CLI sign-in and configuration" },
-      { slug: "cli-commands", title: "CLI command reference" },
-      { slug: "cli-agents", title: "Use Hive3 with AI agents" },
+      { slug: "api-authentication", title: "Authentication and API keys", group: "API basics" },
+      { slug: "api-conventions", title: "Requests, errors and limits", group: "API basics" },
+      { slug: "api-account", title: "Account and profile", group: "Account and uploads" },
+      { slug: "api-account-settings", title: "Account settings", group: "Account and uploads" },
+      { slug: "api-wallets", title: "Wallets", group: "Account and uploads" },
+      { slug: "api-account-data", title: "Export and deletion", group: "Account and uploads" },
+      { slug: "api-uploads", title: "Uploads", group: "Account and uploads" },
+      { slug: "api-posts", title: "Posts and comments", group: "Content and workflows" },
+      { slug: "api-resources", title: "Events, courses, content, quests, jobs", group: "Content and workflows" },
+      { slug: "api-resources-events", title: "Events", group: "Content and workflows" },
+      { slug: "api-resources-content", title: "Courses and content", group: "Content and workflows" },
+      { slug: "api-resources-quests", title: "Quests", group: "Content and workflows" },
+      { slug: "api-workflows", title: "Participation workflows", group: "Content and workflows" },
+      { slug: "api-workflows-courses-jobs", title: "Course and job workflows", group: "Content and workflows" },
+      { slug: "api-workflows-quests", title: "Quest workflows", group: "Content and workflows" },
+      { slug: "api-communities", title: "Communities and members", group: "Communities and more" },
+      { slug: "api-notifications", title: "Notifications", group: "Communities and more" },
+      { slug: "api-search", title: "Search", group: "Communities and more" },
+      { slug: "api-broadcasts", title: "Broadcasts", group: "Communities and more" },
+      { slug: "api-tickets", title: "Tickets", group: "Communities and more" },
+      { slug: "api-ai-assistant", title: "AI assistant", group: "Communities and more" },
+      { slug: "api-credentials", title: "Credentials", group: "Communities and more" },
+      { slug: "cli-quickstart", title: "CLI quickstart", group: "Command line" },
+      { slug: "cli-authentication", title: "CLI sign-in and configuration", group: "Command line" },
+      { slug: "cli-commands", title: "CLI command reference", group: "Command line" },
+      { slug: "cli-commands-resources", title: "CLI commands: resources and workflows", group: "Command line" },
+      { slug: "cli-commands-areas", title: "CLI commands: search, broadcasts, tickets, assistant, credentials", group: "Command line" },
+      { slug: "cli-agents", title: "Use Hive3 with AI agents", group: "Command line" },
+      { slug: "changelog", title: "API and CLI changelog" },
     ],
   },
 ];

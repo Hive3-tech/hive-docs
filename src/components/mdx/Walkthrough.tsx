@@ -18,7 +18,11 @@ export function Walkthrough({ src, poster, title, chapters = [] }: WalkthroughPr
 
   useEffect(() => {
     const el = video.current;
-    if (!el || typeof IntersectionObserver === "undefined") return;
+    if (!el) return;
+    // Prerendered HTML says preload="none" so the clip never competes with the poster, fonts and scripts for the
+    // first paint; once the page is interactive the browser may fetch the metadata.
+    el.preload = "metadata";
+    if (typeof IntersectionObserver === "undefined") return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.intersectionRatio >= 0.5) {
@@ -72,7 +76,7 @@ export function Walkthrough({ src, poster, title, chapters = [] }: WalkthroughPr
           playsInline
           loop
           controls
-          preload="metadata"
+          preload="none"
           aria-label={title}
           onTimeUpdate={onTimeUpdate}
           onError={() => setFailed(true)}

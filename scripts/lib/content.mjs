@@ -55,7 +55,9 @@ function expressionStrings(node) {
 
 /** Plain text of a mdast node, including labels carried in JSX attributes. */
 export function nodeText(node) {
-  if (node.type === "text" || node.type === "inlineCode" || node.type === "code") return node.value;
+  if (node.type === "text" || node.type === "inlineCode") return node.value;
+  // Code blocks are mostly repeated boilerplate: index only the opening lines (the command or request line).
+  if (node.type === "code") return node.value.split("\n").slice(0, 2).join(" ").slice(0, 160);
   const parts = [];
   if (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") {
     for (const attr of node.attributes ?? []) {
@@ -187,6 +189,7 @@ export function scanPages() {
     sectionLabel: section?.label ?? null,
     slug: page.slug,
     navTitle: page.title,
+    group: page.group,
     path: pagePath(section?.id ?? null, page.slug),
     accent: section?.accent ?? "default",
     exists: files.has(file),

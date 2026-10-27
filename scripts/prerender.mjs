@@ -4,7 +4,7 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { root, SITE_URL } from "./lib/content.mjs";
+import { loadPages, root, SITE_URL } from "./lib/content.mjs";
 
 const dist = join(root, "dist");
 const ssrDir = join(root, "dist-ssr");
@@ -13,6 +13,17 @@ const { render, routeList } = await import(pathToFileURL(join(ssrDir, "entry-ser
 
 const escapeHtml = (value) => String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const SITE_NAME = "Hive3 Docs";
+
+// The first screenshot or walkthrough poster near the top of a page is usually its LCP element: preload it with high priority
+// so it is not starved by scripts and fonts on slow connections.
+const MAX_LINE_FOR_PRELOAD = 40;
+const firstMedia = new Map();
+const { pages: contentPages, scratch } = loadPages();
+for (const page of [...contentPages, ...scratch]) {
+  const media = page.components.find((c) => (c.name === "Walkthrough" || c.name === "Figure") && c.line <= MAX_LINE_FOR_PRELOAD);
+  const url = media?.attrs.poster ?? media?.attrs.src;
+  if (url?.startsWith("/") && !url.endsWith(".mp4")) firstMedia.set(page.path, url);
+}
 
 function headTags({ title, description, path, noindex }, canonical) {
   const fullTitle = path === "/" ? title : `${title} | ${SITE_NAME}`;
@@ -32,6 +43,7 @@ function headTags({ title, description, path, noindex }, canonical) {
     `<meta name="twitter:title" content="${escapeHtml(fullTitle)}" />`,
     `<meta name="twitter:description" content="${escapeHtml(description)}" />`,
     `<meta name="twitter:image" content="${image}" />`,
+    ...(firstMedia.has(path) ? [`<link rel="preload" as="image" href="${firstMedia.get(path)}" fetchpriority="high" />`] : []),
   ].join("\n    ");
 }
 

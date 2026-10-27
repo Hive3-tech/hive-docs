@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Outlet, ScrollRestoration, useLocation } from "react-router";
-import { getPage } from "@/app/site";
+import { sectionIdForPath } from "@/app/site";
 import { Modal } from "@/components/Modal";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
@@ -11,7 +11,7 @@ export function DocLayout() {
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const currentSectionId = getPage(pathname)?.sectionId ?? null;
+  const currentSectionId = sectionIdForPath(pathname);
 
   useEffect(() => setMenuOpen(false), [pathname]);
 

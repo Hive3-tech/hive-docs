@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { ArrowUpRight, Menu, Search } from "lucide-react";
-import bannerDarkText from "@/assets/banner-dark-text.png";
-import bannerLightText from "@/assets/banner-light-text.png";
+import bannerDarkText from "@/assets/banner-dark-text.webp";
+import bannerLightText from "@/assets/banner-light-text.webp";
 import { APP_URL, sectionHref, sections } from "@/app/site";
 import { cn } from "@/lib/cn";
 import { ThemeToggle } from "./ThemeToggle";

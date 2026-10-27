@@ -2,9 +2,9 @@ import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from "
 import { useNavigate } from "react-router";
 import MiniSearch from "minisearch";
 import { CornerDownLeft, FileText, Hash, Search } from "lucide-react";
-import indexJson from "virtual:docs-search";
+import indexUrl from "virtual:docs-search";
 import { Modal } from "@/components/Modal";
-import { searchIndexOptions, searchQueryOptions } from "@/lib/search-options";
+import { searchIndexOptions, searchQueryOptions, type SearchIndexFile } from "@/lib/search-options";
 import { sections } from "@/app/site";
 import { cn } from "@/lib/cn";
 
@@ -27,20 +27,55 @@ function highlight(text: string, terms: string[]): ReactNode {
   );
 }
 
-/** Cmd+K palette. The serialized index lives in this lazily loaded chunk, so it is only fetched on first open. */
+type Engine = { search: MiniSearch; pages: SearchIndexFile["pages"] };
+let enginePromise: Promise<Engine> | undefined;
+
+/** The serialized index is a separate JSON asset, fetched once on first open and reused afterwards. */
+function loadEngine(): Promise<Engine> {
+  enginePromise ??= fetch(indexUrl)
+    .then((response) => {
+      if (!response.ok) throw new Error(`Search index request failed: ${response.status}`);
+      return response.json() as Promise<SearchIndexFile>;
+    })
+    .then((file) => ({ search: MiniSearch.loadJS(file.index as Parameters<typeof MiniSearch.loadJS>[0], searchIndexOptions), pages: file.pages }))
+    .catch((error: unknown) => {
+      enginePromise = undefined;
+      throw error;
+    });
+  return enginePromise;
+}
+
+/** Cmd+K palette. */
 export default function SearchDialog({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const list = useRef<HTMLUListElement>(null);
-  const engine = useMemo(() => MiniSearch.loadJSON(indexJson, searchIndexOptions), []);
+  const [engine, setEngine] = useState<Engine | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadEngine().then(
+      (loaded) => !cancelled && setEngine(loaded),
+      () => !cancelled && setFailed(true),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const hits = useMemo<Hit[]>(() => {
     const q = query.trim();
     if (q.length === 0) {
       return sections.flatMap((s) => s.pages.slice(0, 1).map((p) => ({ id: p.path, title: p.title, heading: "", path: p.path, anchor: "", snippet: s.label, terms: [] })));
     }
-    return engine.search(q, searchQueryOptions as Parameters<MiniSearch["search"]>[1]).slice(0, 20) as unknown as Hit[];
+    if (!engine) return [];
+    const results = engine.search.search(q, searchQueryOptions as Parameters<MiniSearch["search"]>[1]).slice(0, 20);
+    return results.map((r) => {
+      const page = engine.pages[r.p as number];
+      return { id: String(r.id), title: page.title, heading: r.h as string, path: page.path, anchor: r.a as string, snippet: r.s as string, terms: r.terms };
+    });
   }, [engine, query]);
 
   useEffect(() => setActive(0), [query]);
@@ -90,7 +125,9 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
         <kbd className="rounded-md border border-border px-1.5 py-px text-[11px] font-medium text-muted-foreground">Esc</kbd>
       </div>
       <ul ref={list} id="search-results" role="listbox" className="m-0 max-h-[calc(76dvh-4.5rem)] list-none overflow-y-auto p-2">
-        {query.trim() && hits.length === 0 ? <li className="px-4 py-10 text-center text-sm text-muted-foreground">No results for “{query.trim()}”.</li> : null}
+        {query.trim() && failed ? <li className="px-4 py-10 text-center text-sm text-muted-foreground">Search is unavailable right now. Check your connection and try again.</li> : null}
+        {query.trim() && !failed && !engine ? <li className="px-4 py-10 text-center text-sm text-muted-foreground">Loading search…</li> : null}
+        {query.trim() && engine && hits.length === 0 ? <li className="px-4 py-10 text-center text-sm text-muted-foreground">No results for “{query.trim()}”.</li> : null}
         {!query.trim() ? <li className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Start here</li> : null}
         {hits.map((hit, index) => (
           <li key={hit.id} id={`search-hit-${index}`} role="option" aria-selected={index === active} data-index={index} className="m-0 p-0">

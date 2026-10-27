@@ -1,8 +1,10 @@
 import { renderToString } from "react-dom/server";
 import { createStaticHandler, createStaticRouter, StaticRouterProvider } from "react-router";
 import { ThemeProvider } from "./app/theme";
+import pageLoaders from "virtual:docs-pages";
 import { routes } from "./app/routes";
-import { getPage, pages, SITE_URL } from "./app/site";
+import { SITE_URL } from "./app/site";
+import type { PageMeta } from "./app/types";
 import { type HeadMeta } from "./app/layout/useHead";
 
 const handler = createStaticHandler(routes);
@@ -19,7 +21,8 @@ export async function render(url: string): Promise<RenderResult> {
       <StaticRouterProvider router={router} context={context} hydrate={false} />
     </ThemeProvider>,
   );
-  const page = getPage(url);
+  const handle = context.matches[context.matches.length - 1]?.route.handle as { meta?: PageMeta } | undefined;
+  const page = handle?.meta;
   const head: HeadMeta = page
     ? { title: page.title, description: page.description, path: page.path, noindex: page.hidden }
     : { title: "Page not found", description: "This page does not exist in the Hive3 docs.", path: "/404", noindex: true };
@@ -27,4 +30,4 @@ export async function render(url: string): Promise<RenderResult> {
 }
 
 /** Every page the build script must prerender; `hidden` pages are rendered but kept out of the sitemap. */
-export const routeList: { path: string; hidden: boolean }[] = pages.map((page) => ({ path: page.path, hidden: page.hidden }));
+export const routeList: { path: string; hidden: boolean }[] = Object.keys(pageLoaders).map((path) => ({ path, hidden: path.startsWith("/_") }));
