@@ -4,6 +4,11 @@ import type { NavSectionData } from "./types";
 export const SITE_URL = "https://docs.hive3.tech";
 export const APP_URL = "https://app.hive3.tech";
 
+/** Netlify serves each prerendered `<path>/index.html` at `<path>/` (it 301s `<path>` there), so public URLs end in a slash. */
+export function canonicalUrl(path: string): string {
+  return path === "/" ? `${SITE_URL}/` : `${SITE_URL}${path.replace(/\/+$/, "")}/`;
+}
+
 export const sections: NavSectionData[] = manifest.sections;
 
 export type NavEntry = { path: string; title: string };

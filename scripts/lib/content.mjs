@@ -14,6 +14,8 @@ import GithubSlugger from "github-slugger";
 export const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 export const contentDir = join(root, "src/content");
 export const SITE_URL = "https://docs.hive3.tech";
+/** Same rule as `canonicalUrl` in src/app/site.ts: Netlify serves `<path>/index.html` at `<path>/`. */
+export const canonicalUrl = (path) => (path === "/" ? `${SITE_URL}/` : `${SITE_URL}${path.replace(/\/+$/, "")}/`);
 
 const nav = await import(pathToFileURL(join(contentDir, "nav.ts")).href);
 export const { navSections, homePage, pagePath } = nav;

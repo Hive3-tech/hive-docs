@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { SITE_URL } from "@/app/site";
+import { canonicalUrl } from "@/app/site";
 
 export type HeadMeta = { title: string; description: string; path: string; noindex?: boolean };
 
@@ -23,7 +23,7 @@ function setMeta(selector: string, attr: "name" | "property", key: string, conte
 export function useHead({ title, description, path, noindex }: HeadMeta): void {
   useEffect(() => {
     const full = documentTitle(title, path);
-    const url = `${SITE_URL}${path === "/" ? "" : path}`;
+    const url = canonicalUrl(path);
     document.title = full;
     setMeta('meta[name="description"]', "name", "description", description);
     setMeta('meta[property="og:title"]', "property", "og:title", full);

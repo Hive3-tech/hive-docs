@@ -3,7 +3,7 @@ import { createStaticHandler, createStaticRouter, StaticRouterProvider } from "r
 import { ThemeProvider } from "./app/theme";
 import pageLoaders from "virtual:docs-pages";
 import { routes } from "./app/routes";
-import { SITE_URL } from "./app/site";
+import { canonicalUrl } from "./app/site";
 import type { PageMeta } from "./app/types";
 import { type HeadMeta } from "./app/layout/useHead";
 
@@ -26,7 +26,7 @@ export async function render(url: string): Promise<RenderResult> {
   const head: HeadMeta = page
     ? { title: page.title, description: page.description, path: page.path, noindex: page.hidden }
     : { title: "Page not found", description: "This page does not exist in the Hive3 docs.", path: "/404", noindex: true };
-  return { html, head, canonical: `${SITE_URL}${head.path === "/" ? "" : head.path}` };
+  return { html, head, canonical: canonicalUrl(head.path) };
 }
 
 /** Every page the build script must prerender; `hidden` pages are rendered but kept out of the sitemap. */

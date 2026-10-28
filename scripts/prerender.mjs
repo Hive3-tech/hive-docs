@@ -6,7 +6,7 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { loadPages, root, SITE_URL } from "./lib/content.mjs";
+import { canonicalUrl, loadPages, root, SITE_URL } from "./lib/content.mjs";
 
 const dist = join(root, "dist");
 const ssrDir = join(root, "dist-ssr");
@@ -64,7 +64,7 @@ for (const { path } of routeList) {
   write(path === "/" ? join(dist, "index.html") : join(dist, path.slice(1), "index.html"), await renderPage(path));
 }
 
-const urls = routeList.filter((r) => !r.hidden).map((r) => `${SITE_URL}${r.path === "/" ? "" : r.path}`);
+const urls = routeList.filter((r) => !r.hidden).map((r) => canonicalUrl(r.path));
 write(
   join(dist, "sitemap.xml"),
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${u}</loc></url>`).join("\n")}\n</urlset>\n`,
