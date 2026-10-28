@@ -23,6 +23,7 @@ const enums = {
   PlanBadge: { tier: TIERS },
   LinkCard: { accent: ACCENTS },
   Endpoint: { method: ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+  AgentSetup: { variant: ["banner", "compact"] },
 };
 const required = {
   Figure: ["src", "alt"],

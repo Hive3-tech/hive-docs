@@ -35,8 +35,14 @@ async function copyText(text: string): Promise<boolean> {
 
 type CopyState = "idle" | "copied" | "failed";
 
-/** Banner for developer pages: one click copies a ready-made prompt that sets up the CLI and skill through a coding agent. */
-export function AgentSetup() {
+type AgentSetupProps = {
+  /** `compact`: a slim one-line strip for the home and Get started pages, linking to the full agent guide. */
+  variant?: "banner" | "compact";
+};
+
+/** One click copies a ready-made prompt that sets up the Hive3 CLI and skill through an AI agent. */
+export function AgentSetup({ variant = "banner" }: AgentSetupProps) {
+  const compact = variant === "compact";
   const panelId = useId();
   const timer = useRef<number>();
   const [state, setState] = useState<CopyState>("idle");
@@ -54,26 +60,51 @@ export function AgentSetup() {
     <section
       data-agent-setup=""
       aria-labelledby={`${panelId}-title`}
-      className="surface-glass not-prose relative my-6 first:mt-0 overflow-hidden rounded-2xl border border-violet-500/30 p-4 sm:p-5"
+      className={cn(
+        "surface-glass not-prose relative overflow-hidden rounded-2xl border border-violet-500/30",
+        compact ? "my-5 first:mt-0 px-3 py-2.5 sm:px-4" : "my-6 first:mt-0 p-4 sm:p-5",
+      )}
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-500/[0.12] to-amber-400/[0.12]" />
-      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-amber-500 text-white shadow-md">
-          <Bot className="size-5" aria-hidden="true" />
+      <div className={cn("relative flex flex-col sm:flex-row sm:items-center", compact ? "gap-3" : "gap-4")}>
+        <span
+          className={cn(
+            "flex shrink-0 items-center justify-center bg-gradient-to-br from-violet-500 to-amber-500 text-white shadow-md",
+            compact ? "hidden size-8 rounded-lg sm:flex" : "size-11 rounded-xl",
+          )}
+        >
+          <Bot className={compact ? "size-4" : "size-5"} aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 id={`${panelId}-title`} className="m-0 text-base font-semibold leading-snug text-foreground">
-            Set up with your AI agent
-          </h2>
-          <p className="mb-0 mt-1 text-sm leading-relaxed text-muted-foreground">
-            Copy this prompt into Claude Code, Codex, Cursor or ChatGPT. It installs the Hive3 CLI and skill and signs you in.
-          </p>
+          {compact ? (
+            <p id={`${panelId}-title`} className="m-0 text-sm leading-snug text-foreground">
+              <span className="font-semibold">Prefer an AI agent?</span>{" "}
+              <span className="text-muted-foreground">
+                Copy one prompt into Claude Code, Codex, Cursor or ChatGPT and it sets up Hive3 for you.{" "}
+                <a href="/developers/cli-agents" className="font-medium text-primary underline-offset-2 hover:underline">
+                  How it works
+                </a>
+              </span>
+            </p>
+          ) : (
+            <>
+              <h2 id={`${panelId}-title`} className="m-0 text-base font-semibold leading-snug text-foreground">
+                Set up with your AI agent
+              </h2>
+              <p className="mb-0 mt-1 text-sm leading-relaxed text-muted-foreground">
+                Copy this prompt into Claude Code, Codex, Cursor or ChatGPT. It installs the Hive3 CLI and skill and signs you in.
+              </p>
+            </>
+          )}
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={copy}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary-hover hover:shadow-md active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className={cn(
+              "inline-flex items-center justify-center gap-2 bg-primary font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary-hover hover:shadow-md active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+              compact ? "h-9 rounded-lg px-3 text-sm" : "h-10 rounded-xl px-4 text-sm",
+            )}
           >
             {state === "copied" ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
             {state === "copied" ? "Copied" : "Copy agent setup"}
@@ -83,7 +114,10 @@ export function AgentSetup() {
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
             aria-controls={panelId}
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className={cn(
+              "inline-flex items-center justify-center gap-1.5 px-3 text-sm font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+              compact ? "h-9 rounded-lg" : "h-10 rounded-xl",
+            )}
           >
             View prompt
             <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} aria-hidden="true" />
