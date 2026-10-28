@@ -129,7 +129,7 @@ export const navSections: NavSection[] = [
     label: "Developers",
     icon: "terminal",
     accent: "developer",
-    summary: "Build on Hive3 with the public API and the hive command-line tool.",
+    summary: "Build on Hive3 with the public API and the hive3 command-line tool.",
     pages: [
       { slug: "index", title: "Developer overview" },
       { slug: "api-authentication", title: "Authentication and API keys", group: "API basics" },
