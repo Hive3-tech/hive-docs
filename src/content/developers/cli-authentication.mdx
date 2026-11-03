@@ -19,7 +19,7 @@ hive3 login
 The CLI asks Hive3 for a login request and prints an approval URL and a code. The URL never contains the code.
 
 ```text title="Terminal output"
-Open this URL to approve Hive CLI access: https://app.hive3.tech/cli/authorize
+Open this URL to approve Hive3 CLI access: https://app.hive3.tech/cli/authorize
 Code: ABCD-EF2G (type it on the approval page)
 ```
 
@@ -39,10 +39,10 @@ When the login includes payment scopes, the card adds that payment access includ
 If your account is below Honey Bee, the card shows **A Honey Bee subscription is required to create API keys.** and the button stays disabled.
 </Step>
 <Step title="Return to the terminal">
-After approval the page says **Hive CLI approved**. The terminal stores the key and prints:
+After approval the page says **Hive3 CLI approved**. The terminal stores the key and prints:
 
 ```text title="Terminal output"
-Hive CLI authenticated as API key hive_sk_…
+Hive3 CLI authenticated as API key hive_sk_…
 Credential stored at /home/you/.config/hive/config.json.
 ```
 </Step>
@@ -56,8 +56,8 @@ Approve only the code your own terminal printed. Anyone can start a login reques
 
 | What | Limit |
 |---|---|
-| Code lifetime | 10 minutes from the moment `hive3 login` starts. After that the page shows **CLI login expired** and the terminal prints `Hive CLI login expired. Run hive3 login again.` |
-| CLI wait time | `--timeout-ms`, default 600000 (10 minutes). Then the terminal prints `Hive CLI login timed out.` |
+| Code lifetime | 10 minutes from the moment `hive3 login` starts. After that the page shows **CLI login expired** and the terminal prints `Hive3 CLI login expired. Run hive3 login again.` |
+| CLI wait time | `--timeout-ms`, default 600000 (10 minutes). Then the terminal prints `Hive3 CLI login timed out.` |
 | Collecting the key | After you approve, the CLI has 2 minutes to collect the key. It polls every 2 seconds, so this only matters if you close the terminal; run `hive3 login` again if it expires. |
 | Key lifetime | 90 days from approval. Expired keys return `invalid_api_key`; run `hive3 login` again. |
 | Code lookups | 10 per minute per signed-in account on the approval page, and 10 login starts per minute per IP address. |
@@ -116,7 +116,7 @@ hive3 login --access full --messages-access full
 | `--access <mode>` | Preselects the bundle: `read` or `full`. The page shows the granted scopes without the toggle. Omit it to choose in the browser. |
 | `--messages-access <mode>` | Also requests messaging: `read` or `full`. Needs the separate consent above. (0.5+) |
 | `--scope <scope>` | Advanced. Requests one exact scope; repeat the flag for several. The page shows exactly those scopes and no toggle. |
-| `--label <label>` | Name shown on the approval card and used as the key's name in the app. Default `Hive CLI`; at most 80 characters. |
+| `--label <label>` | Name shown on the approval card and used as the key's name in the app. Default `Hive3 CLI`; at most 80 characters. |
 | `--no-open` | Prints the URL and code without opening a browser. |
 | `--timeout-ms <ms>` | How long the CLI waits for approval. Default 600000. Must be a positive number. |
 | `--api-url <url>` | API base URL for this login. Default `$HIVE_API_URL`, then `https://app.hive3.tech/api/v1`. |
@@ -161,7 +161,7 @@ The file holds five fields:
 - The CLI writes the file through a private staging directory and an atomic rename, so no predictable temporary file appears even when `HIVE_CONFIG_HOME` is a shared directory.
 - The key is never printed, logged or placed on a command line. Do not paste the file into chat, tickets or prompts.
 - The same directory holds `update-check.json`, which stores when the CLI last checked npm.
-- If the file is not valid JSON the CLI prints `Hive CLI config is malformed. Run hive3 login again.` If it lacks a key or API URL, it prints `Hive CLI config is missing credentials. Run hive3 login again.`
+- If the file is not valid JSON the CLI prints `Hive3 CLI config is malformed. Run hive3 login again.` If it lacks a key or API URL, it prints `Hive3 CLI config is missing credentials. Run hive3 login again.`
 
 ## Environment variables
 
@@ -180,7 +180,7 @@ The file holds five fields:
 hive3 logout
 ```
 
-`hive3 logout` revokes the stored key on the server, prints `Revoked the server credential.`, deletes the local file and prints `Removed Hive CLI credential at <path>.` It takes no options.
+`hive3 logout` revokes the stored key on the server, prints `Revoked the server credential.`, deletes the local file and prints `Removed Hive3 CLI credential at <path>.` It takes no options.
 
 <Callout type="warning">
 If the server cannot be reached, or the key is already revoked or expired, the CLI prints `Warning: could not revoke the server credential. Revoke it at Settings → Developer credentials.` on stderr and still deletes the local file. The key can remain valid on the server, so revoke it yourself in the app. The Settings path in that message is out of date; use the path below.
@@ -193,7 +193,7 @@ To revoke a key in the app, for example one from a lost laptop:
 <Path items={["Settings", "Help & feedback", "Developer API keys", "Manage API keys"]} /> opens the page titled <UI>API Keys</UI>.
 </Step>
 <Step title="Find the key">
-Under <UI>Active keys</UI>, CLI keys appear under the name you chose with `--label` (default `Hive CLI`) with their prefix and when they were last used.
+Under <UI>Active keys</UI>, CLI keys appear under the name you chose with `--label` (default `Hive3 CLI`) with their prefix and when they were last used.
 </Step>
 <Step title="Revoke it">
 Choose <UI>Revoke</UI> on that key. Requests with it return `401 invalid_api_key` immediately.
@@ -211,24 +211,26 @@ A CLI key belongs to the account that approved it and reaches every account wher
 The CLI checks npm for a newer release at most once every 24 hours, only when stderr is a terminal, `CI` is not set and `HIVE_NO_UPDATE_CHECK` is not `1` or `true`. After a command succeeds it prints on stderr:
 
 ```text title="Update notice"
-Hive CLI update available: 0.4.0 → 0.4.1
+Hive3 CLI update available: 0.5.0 → 0.5.1
 Run `hive3 update` to install it.
 ```
 
-- `hive3 update --check` reports the latest version without installing it. If you are current it prints `Hive CLI <version> is already the latest version.`
+- `hive3 update --check` reports the latest version without installing it. If you are current it prints `Hive3 CLI <version> is already the latest version.`
 - `hive3 update` looks up the latest version, prints it, and installs exactly that version with `npm install --global @hive3/cli@<version>`. The version is validated before it reaches npm.
 - The check only reads public package metadata from npm. It never sends your Hive credentials and adds no signature check beyond npm's own.
+- After updating, run `hive3 skill install --force` if you use the [agent skill](/developers/cli-agents#install-the-skill), so the installed skill matches the new version.
+- CLI 0.5.0 and older print `Hive CLI` where 0.5.1 prints `Hive3 CLI`, for example `Hive CLI login timed out.` The messages on this page are from 0.5.1.
 
 ## Troubleshooting
 
 | Message or symptom | Cause and fix |
 |---|---|
 | `Your Hive plan doesn't include API access: the API and CLI need Honey Bee or above.` | The key owner's account is below Honey Bee (`plan_required`). Upgrade under Settings in the app. The same key works again afterwards. |
-| **A Honey Bee subscription is required to create API keys.** on the approval page | The approving account is below Honey Bee. Upgrade, then run `hive3 login` again. If the plan drops after you approve but before the CLI collects the key, the terminal prints `Hive CLI login was denied in the browser.` |
-| `Hive CLI login expired. Run hive3 login again.` | The code was older than 10 minutes, or approved more than 2 minutes before the CLI collected it. Start again. |
-| `Hive CLI login was denied in the browser.` | Someone selected <UI>Cancel</UI>, or the plan check above failed. |
-| `Hive CLI login timed out.` | You did not approve before `--timeout-ms` elapsed. Start again, or raise the timeout. |
-| `Hive CLI login was already completed. Run hive3 login again.` or `Hive CLI login request was not found.` | The request was already used, or was cleaned up. Start a new login. |
+| **A Honey Bee subscription is required to create API keys.** on the approval page | The approving account is below Honey Bee. Upgrade, then run `hive3 login` again. If the plan drops after you approve but before the CLI collects the key, the terminal prints `Hive3 CLI login was denied in the browser.` |
+| `Hive3 CLI login expired. Run hive3 login again.` | The code was older than 10 minutes, or approved more than 2 minutes before the CLI collected it. Start again. |
+| `Hive3 CLI login was denied in the browser.` | Someone selected <UI>Cancel</UI>, or the plan check above failed. |
+| `Hive3 CLI login timed out.` | You did not approve before `--timeout-ms` elapsed. Start again, or raise the timeout. |
+| `Hive3 CLI login was already completed. Run hive3 login again.` or `Hive3 CLI login request was not found.` | The request was already used, or was cleaned up. Start a new login. |
 | **That code does not match an active CLI login.** | The code was mistyped, expired, or already used. Check it against the terminal or start again. |
 | `Too many attempts. Try again shortly.` | More than 10 code lookups in a minute on the approval page. Wait a minute. |
 | `Hive API error 429 (rate_limited): Too many CLI login requests.` | More than 10 login starts in a minute from one IP address. Wait a minute. While waiting for approval, the CLI honors `Retry-After` on a 429 and keeps polling, so shared networks usually recover without action. |

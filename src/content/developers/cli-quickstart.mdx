@@ -54,7 +54,7 @@ hive3 login
 The terminal prints an approval URL and a one-time code, then tries to open your browser:
 
 ```text title="Terminal output"
-Open this URL to approve Hive CLI access: https://app.hive3.tech/cli/authorize
+Open this URL to approve Hive3 CLI access: https://app.hive3.tech/cli/authorize
 Code: ABCD-EF2G (type it on the approval page)
 ```
 
@@ -69,10 +69,10 @@ The page shows <UI>Approve login</UI> with the account you are approving as and 
 Start with <UI>Read only</UI> unless you plan to change things. [CLI sign-in and configuration](/developers/cli-authentication#choose-read-only-or-full-access) lists exactly what each choice grants.
 </Step>
 <Step title="Return to the terminal">
-When the page says **Hive CLI approved**, the terminal finishes:
+When the page says **Hive3 CLI approved**, the terminal finishes:
 
 ```text title="Terminal output"
-Hive CLI authenticated as API key hive_sk_…
+Hive3 CLI authenticated as API key hive_sk_…
 Credential stored at /home/you/.config/hive/config.json.
 ```
 
@@ -120,7 +120,7 @@ If a command prints `Not logged in. Run hive3 login first.`, no credential is st
 Creating content needs <UI>Full access</UI>. With a Read only key the command fails with `insufficient_scope` and tells you the missing scope.
 
 ```bash title="Create a post"
-hive3 posts create --body "Hello from the Hive CLI" --visibility public
+hive3 posts create --body "Hello from the Hive3 CLI" --visibility public
 ```
 
 The CLI prints the new post as JSON, wrapped in a `data` object, including its `id`. To switch to Full access, run `hive3 login --access full` and approve again. The new key replaces the stored one; the earlier key stays valid until it expires or you revoke it in the app. See [Sign out and revoke a key](/developers/cli-authentication#sign-out-and-revoke-a-key).
@@ -158,7 +158,7 @@ hive3 update --check
 hive3 update
 ```
 
-`hive3 update` installs exactly the version it reports with `npm install --global @hive3/cli@<version>`. Set `HIVE_NO_UPDATE_CHECK=1` to turn off the daily check.
+`hive3 update` installs exactly the version it reports with `npm install --global @hive3/cli@<version>`. If you installed the [agent skill](/developers/cli-agents), run `hive3 skill install --force` afterwards. Set `HIVE_NO_UPDATE_CHECK=1` to turn off the daily check.
 
 To uninstall, sign out first so the key is revoked on the server, then remove the package:
 
