@@ -67,6 +67,7 @@ A server-side `401` (for example `invalid_api_key`) exits with `2`, not `1`. Aft
 | `tickets list` (0.4+) | Owners and admins only. Other ticket actions use the ticket's account. |
 | `assistant get`, `update`, `documents`, `documents add` (0.4+) | `documents delete` uses the document's account. |
 | `credentials list` (0.4+) | Other credential actions use the credential's account. |
+| `worlds` (0.5+) | Needs `communities:read`. Use the same account as `--community-id` when booking its world. See [Worlds](/developers/cli-commands-resources#worlds). |
 
 Every other command acts as the signed-in account and rejects `--account` as an unknown option. To create or list resources for another account, use `--owner-type community --community-id <account-id>`. To work on members and applications, use the community commands. Moderators cannot change roles or anything involving payments. Run `hive3 capabilities` first to see which accounts the key can reach.
 

@@ -16,7 +16,7 @@ The examples read the key from `HIVE_API_KEY`. Some field names still say `commu
 | `description` | string | Event text. `shortDescription` defaults to it. |
 | `eventSlots` | array | One object per session. Empty is allowed; see [Time slots](#time-slots). |
 | `autoEnroll` | boolean | Default `false`: RSVPs wait for organizer approval. `true` accepts RSVPs automatically. |
-| `worldId` | string | The 3D world to book, or `default` for the owning account's default world. Leave it out for an event outside any world. See [Book a world](#book-a-world). |
+| `worldId` | string | The 3D world to book: a world ID from [`GET /api/v1/worlds`](#list-bookable-worlds), or `default` for the owning account's default world. Leave it out for an event outside any world. See [Book a world](#book-a-world). |
 | `maxCapacity` | integer | Attendee limit. For world events it must be a whole number from 1 up to the world's limit. |
 | `visibility`, `subscriptionId`, `badges` | | As in [Shared behavior](/developers/api-resources#shared-behavior). |
 | `imageUrl`, `heroImage`, `imageStorageId`, `heroImageStorageId` | string | Cover images (`image`, `thumbnailUrl` and `bannerImageUrl` also work). |
@@ -147,7 +147,7 @@ An event has started when its earliest valid slot start is at or before the curr
 
 ## Book a world
 
-Send `worldId` to book a 3D world for the event. Without `worldId` the event is not in a world and spends no metaverse time. The owning account's plan decides which worlds it can book:
+Send `worldId` to book a 3D world for the event. Without `worldId` the event is not in a world and spends no metaverse time. When the user names a venue (for example "the Dome" or "our own world"), look up its ID with [`GET /api/v1/worlds`](#list-bookable-worlds) and send that ID rather than `default`. The owning account's plan decides which worlds it can book:
 
 | Plan | Worlds |
 |---|---|
@@ -158,9 +158,44 @@ Send `worldId` to book a 3D world for the event. Without `worldId` the event is 
 
 Other combinations return `400` with the reason (`Booking a shared world needs a Honey Bee or Swarm plan.`, `Only this world's Royal Hive can book it.`, `This account books its own world.`, `That world isn't available.`).
 
+### List bookable worlds
+
+<Endpoint method="GET" path="/api/v1/worlds" scopes={["resources:read", "communities:read (another account)"]}>
+
+Lists the worlds the owning account's events may book, as the app's event form offers them: every shared world for Honey Bee, only the default shared world for Swarm, only its own world for Royal Hive, and none for Worker Bee. A world that is not listed can't be booked for that account, so tell the user instead of booking a different one.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `account` | query | string | No | Account ID or `@handle`. Defaults to the key owner. |
+
+For another account the key also needs `communities:read`, must include that account when the key is limited to selected accounts, and the key owner must currently be an owner, admin or moderator of it. See [managed accounts](/developers/api-authentication#managed-accounts).
+
+```bash
+curl "https://app.hive3.tech/api/v1/worlds?account=@design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `kind` is `shared` (a Hive3 venue) or `dedicated` (the account's own world). When worlds are listed, exactly one has `isDefault: true`: the one `"worldId": "default"` books. `needsDedicatedSetup: true`, with an empty list, means a Royal Hive account must choose its world's design on the dashboard first. The response has no admission settings, hosts or other accounts' data.
+
+```json
+{
+  "data": {
+    "worlds": [
+      { "id": "world_123", "name": "Hive3 Dome", "kind": "shared", "isDefault": true },
+      { "id": "world_456", "name": "Night Lounge", "kind": "shared", "isDefault": false }
+    ],
+    "needsDedicatedSetup": false
+  }
+}
+```
+
+Errors: `403 insufficient_scope` (missing `resources:read`, or `communities:read` for another account), `403 forbidden` (the key does not include the account, or your role does not allow it), `404 not_found` (account not found).
+
+</Endpoint>
+
 ### The default world
 
-Send `"worldId": "default"` to book the owning account's default world without looking up a world ID. It works on create and on `PATCH`, and with the [CLI](/developers/cli-commands-resources) as `--world default` (0.5+).
+Send `"worldId": "default"` to book the owning account's default world without looking up a world ID: the world [`GET /api/v1/worlds`](#list-bookable-worlds) lists with `isDefault: true`. Use it only when the user wants a world event but names no venue. It works on create and on `PATCH`, and with the [CLI](/developers/cli-commands-resources) as `--world default` (0.5+).
 
 - **Swarm:** the shared world chosen as the account's default on the dashboard, the same one the app's event form books.
 - **Honey Bee:** the account's default shared world, which is Hive3 Dome unless another shared world is stored as its default. (In the app, Honey Bee picks a world for each event.) For Swarm and Honey Bee alike, a default world that is no longer available falls back to the first shared world (Hive3 Dome).

@@ -6,7 +6,7 @@ accent: developer
 
 Use these commands to publish events, courses, content, quests and jobs, and to run what happens around them: RSVPs, enrollments, attendance, quest evidence and job applications. All of them print JSON. Conventions such as exit codes, `--file` merging and `--account` are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference).
 
-These commands also exist in CLI version 0.3, so nothing on this page carries the (0.4+) marker.
+These commands also exist in CLI version 0.3, so nothing on this page carries the (0.4+) marker. `hive3 worlds` and `--world` are new in 0.5 and marked (0.5+).
 
 ## Common actions
 
@@ -30,7 +30,7 @@ For an item owned by a community, add `communities:write` to the write scopes an
 | `--content-type <type>` | `contentType` (used by content) |
 | `--image-url <url>` | `imageUrl` |
 | `--visibility <value>` | `public`, `protected` or `private`. Anything other than public needs Honey Bee or above on the owning account. |
-| `--world <world>` | Events only (0.5+): `worldId`, the 3D world to book, as a world ID or `default` for the owning account's default world. See [the default world](/developers/api-resources-events#the-default-world). |
+| `--world <world>` | Events only (0.5+): `worldId`, the 3D world to book, as a world ID from [`hive3 worlds`](#worlds) or `default` for the owning account's default world. See [the default world](/developers/api-resources-events#the-default-world). |
 | `--file <path>` | A JSON object with any other fields. See [payload files](/developers/cli-commands#payload-files). |
 
 | Owner and list flag | What it does |
@@ -44,7 +44,7 @@ For an item owned by a community, add `communities:write` to the write scopes an
 Things to know before you create:
 
 - **Events** need RSVP approval by default. Put `"autoEnroll": true` in the file to accept attendees automatically. `eventSlots` entries need ISO 8601 `startsAt` and `endsAt` with a `Z` or offset, and each end must come after its start. You can create 50 events per day, counted against your own account and shared with the app.
-- **World events.** Without `--world` an event is not in a 3D world. `--world default` books the owning account's default world: Swarm's default shared world chosen on the dashboard, Honey Bee's default shared world (Hive3 Dome unless another is set), or a Royal Hive account's own world. Worker Bee accounts, and Royal Hive accounts whose world isn't set up yet, get `400` and nothing is created. A world event has exactly one slot, may spend metaverse time, and returns `409 conflict` when the slot is already booked. See [Book a world](/developers/api-resources-events#book-a-world).
+- **World events.** Without `--world` an event is not in a 3D world; never add it to an online or in-person event. When the user names a venue (for example "the Dome", "Night Lounge" or "our own world"), run [`hive3 worlds`](#worlds), match the name and pass that world's `id` with `--world <id>`. If the named world isn't listed, it can't be booked for that account: say so rather than booking another one. `--world default` books the owning account's default world (the one listed with `isDefault: true`): Swarm's default shared world chosen on the dashboard, Honey Bee's default shared world (Hive3 Dome unless another is set), or a Royal Hive account's own world. Use it only when no venue is named, and report which world it booked. Worker Bee accounts, and Royal Hive accounts whose world isn't set up yet, get `400` and nothing is created. A world event has exactly one slot, may spend metaverse time, and returns `409 conflict` when the slot is already booked. See [Book a world](/developers/api-resources-events#book-a-world).
 - **Quests** need `questCreditPlan` (`single` for quests up to 7 days, `bundle` for up to 30) and spend one quest credit of the owning account. A credited quest needs a valid `startsAt`.
 - Once an event or quest has started, `update` and `archive` return `409 conflict`.
 - Plan rules apply as in the app. A Worker Bee account publishes publicly only and cannot attach subscriptions.
@@ -68,7 +68,12 @@ hive3 events list --limit 5
 hive3 events archive "<event-id>"
 ```
 
-```bash title="Book the account's default world"
+```bash title="Book the world the user named"
+hive3 worlds
+hive3 events create --file event.json --world "<world-id>"
+```
+
+```bash title="Book the account's default world when no venue is named"
 hive3 events create --file event.json --world default
 hive3 events update "<event-id>" --world default
 ```
@@ -89,6 +94,19 @@ hive3 posts create --body "Moderator update" --owner-type community --community-
 | `hive3 events attendance <event-id> <enrollment-id>` | Records attendance. | `--attended <bool>`, `--file <path>` | `resources:write` |
 
 RSVPs share the app's limits of 10 per minute and 100 per day. Attendance needs an approved RSVP on an event that is not archived; the first recorded time is kept, the attendee is notified, and clearing attendance (`--attended false`) is refused with `409 conflict`. Treat approving, denying and recording attendance as decisions that need a human check.
+
+## Worlds
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive3 worlds` (0.5+) | Lists the 3D worlds the account's events may book, as `{ "worlds": [{ "id", "name", "kind", "isDefault" }], "needsDedicatedSetup" }`. | `--account <id-or-handle>` | `resources:read`; `communities:read` for another account |
+
+The list matches what the app's event form offers: every shared world for Honey Bee, only the default shared world for Swarm, only its own world (`kind: "dedicated"`) for Royal Hive, and none for Worker Bee. `isDefault` marks the world `--world default` books. `needsDedicatedSetup: true` means a Royal Hive account must choose its world's design on the dashboard first. With `--account`, use the same account you pass to `--community-id`; you need a current owner, admin or moderator role there, and the key must include that account. See [List bookable worlds](/developers/api-resources-events#list-bookable-worlds).
+
+```bash title="Find the Night Lounge ID for a community you manage"
+hive3 worlds --account "<account-id>"
+hive3 events create --file event.json --owner-type community --community-id "<account-id>" --world "<night-lounge-id>"
+```
 
 ## Courses
 
