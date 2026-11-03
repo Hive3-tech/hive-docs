@@ -151,7 +151,15 @@ curl https://app.hive3.tech/api/v1/events \
 - A repeat with the same key, method, path and body returns the first response again, with the same status, and creates nothing new.
 - A repeat with the same key but a different body or path returns `409 conflict` with `Idempotency key was already used with a different request`.
 - Only successful creates are remembered. If the first attempt failed, retrying with the same key runs it again.
-- Other write routes ignore the header. Where an action is naturally repeatable, such as awarding a credential to someone who already has it, the reference says so.
+- Other write routes ignore the header, except the confirmed writes below. Where an action is naturally repeatable, such as awarding a credential to someone who already has it, the reference says so.
+
+### Confirmed writes
+
+Since API and CLI 0.5.0, writes that involve money, messages or support tickets require `"confirmed": true` in the body and a request ID of 1 to 128 characters (longer values are rejected, not cut). Repeating such a request with the same ID returns the first result; reusing the ID with different fields is rejected.
+
+- [Products and plans](/developers/api-selling#confirmation-and-retries) and [tickets](/developers/api-tickets#confirmation-and-retries): `requestId` in the body or the `Idempotency-Key` header.
+- [Conversations](/developers/api-conversations#rules) and [feedback](/developers/api-feedback#rules): the `Idempotency-Key` header.
+- [Payments](/developers/api-payments#preview-then-confirm): `requestId` in the body, plus the exact `confirm` text from a preview.
 
 ## Rate limits
 
@@ -178,7 +186,10 @@ Limits protect the service and use fixed windows that start on the clock minute,
 | Notifications | mark read 240, delete 120, mutes 60, mark all read 30 per minute |
 | Search | 60 per minute |
 | Broadcasts | writes 30 per minute; test 10 per hour; send 10 per hour |
-| Tickets | updates 60 per minute |
+| Tickets | create 30 per minute; change and stop selling 60 per minute |
+| Products and subscription plans | create product 20 per minute; other writes 30 per minute per route |
+| Payments | preview 60, operate 20 per minute |
+| Feedback | 5 reports per hour, shared with the app |
 | AI assistant | saving the assistant, upload URLs and attaching documents 30 per minute; deleting a document 60 |
 | Credential awards | 30 requests per minute and 500 people per day, shared with the app |
 

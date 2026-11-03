@@ -1,10 +1,10 @@
 ---
 title: Tickets
-description: Read and adjust the tickets an account sells, and list the tickets the key owner has bought.
+description: Create, attach, edit and stop selling the tickets an account offers, and list the tickets the key owner has bought.
 accent: developer
 ---
 
-Use the ticket endpoints to keep ticket prices and availability in sync with another system, to pause sales from a script, or to show a member the tickets they hold. The API manages the configuration of tickets that already exist on your events, courses, quests and bookings. Creating tickets, checkout, payment capture and refunds stay in the Hive3 app.
+Tickets are one-time purchases that give access to an event, a course, a quest or a booking. With these endpoints you can create a ticket, attach it to the item it sells, keep its price and availability in sync with another system, stop selling it, and show a member the tickets they hold. Buying a ticket and refunds go through [Payments](/developers/api-payments); the product a ticket belongs to is managed on [Products, subscription plans and Stripe](/developers/api-selling).
 
 JavaScript and Python follow the same request pattern as the tabbed examples; the cards that show only curl are trivial to translate.
 
@@ -12,14 +12,24 @@ JavaScript and Python follow the same request pattern as the tabbed examples; th
 
 | Scope | Allows |
 | --- | --- |
-| `tickets:read` | Read the tickets an account sells, and the tickets the key owner bought. |
-| `tickets:write` | Change a ticket's name, description, price, currency and status. |
+| `tickets:read` | Read the tickets an account sells, the items they can be attached to, and the tickets the key owner bought. |
+| `tickets:write` | Create tickets, change their name, description, price, currency, status and item, and stop selling them. |
 
 No other scope implies these; keys created before they existed need to be replaced ([scopes](/developers/api-authentication#scopes)). API access needs Honey Bee or above ([overview](/developers)).
 
-Ticket routes act on the key owner's own account unless you add `?account=<account ID or @handle>` to the list route. The API calls an account that others join a community, so for another account the key also needs `communities:read` (reads) or `communities:write` (writes), must include that account when the key is limited to selected accounts, and the key owner must currently be an **owner or admin** of it. Moderators cannot manage tickets, because tickets are payment settings. Routes that take a ticket ID use the account that sells the ticket and ignore `?account=`. See [managed accounts](/developers/api-authentication#managed-accounts).
+Ticket routes act on the key owner's own account unless you add `?account=<account ID or @handle>` to the list or attachment-choices route. For another account the key also needs `communities:read` (reads) or `communities:write` (writes), must include that account when the key is limited to selected accounts, and the key owner must currently be an **owner or admin** of it. Moderators cannot manage tickets, because tickets are payment settings. Routes that take a ticket ID use the account that sells the ticket. See [managed accounts](/developers/api-authentication#managed-accounts).
 
-`PATCH /api/v1/tickets/{ticketId}` is limited to 60 requests per minute, on top of the account-wide budget ([rate limits](/developers/api-conventions#rate-limits)).
+Creating a ticket, turning one back on and moving one to another item start sales, so they need a claimed seller account on Honey Bee or above with a ready payment provider, as in the app. Stopping sales always works.
+
+## Confirmation and retries
+
+Since API and CLI 0.5.0 every ticket write must be confirmed and carry a request ID. Requests without them that worked before now fail with `400`.
+
+- Send `"confirmed": true` in the JSON body.
+- Send a request ID of 1 to 128 characters as `"requestId"` in the body or as an `Idempotency-Key` header (when you send both they must match).
+- Repeating the same request with the same ID returns the first result and changes nothing; reusing an ID with different fields is rejected.
+
+`POST /api/v1/tickets` is limited to 30 requests per minute, and `PATCH` and `DELETE` to 60 per minute, on top of the account-wide budget ([rate limits](/developers/api-conventions#rate-limits)). Bodies are limited to 8 KiB.
 
 ## The ticket object
 
@@ -28,10 +38,11 @@ Ticket routes act on the key owner's own account unless you add `?account=<accou
 | `id` | string | Ticket ID. |
 | `name`, `description` | string | Shown to buyers. |
 | `amount` | string | Decimal price with two decimals, for example `"25.00"`. |
-| `currency` | string | Three-letter ISO 4217 code, upper case. |
+| `currency` | string | `USD`, `EUR` or `GBP`. Older tickets may show another three-letter code. |
 | `status` | string | `active` (on sale) or `inactive`. |
 | `entityType`, `entityId` | string | What the ticket grants access to: `event`, `course`, `quest` or `coordination` (a booking), and its ID. |
-| `productId`, `productTitle` | string, string or null | The paid product behind the ticket; `productTitle` is `null` if the product was removed. |
+| `productId`, `productTitle` | string, string or null | The product behind the ticket; `productTitle` is `null` if the product was removed. |
+| `stripeCheckoutReady` | boolean | Whether buyers can pay for it with Stripe right now. |
 | `createdAt`, `updatedAt` | string | ISO 8601 timestamps ([timestamps](/developers/api-conventions#timestamps)). |
 
 ## Read tickets you sell
@@ -51,68 +62,83 @@ curl "https://app.hive3.tech/api/v1/tickets?account=@design-guild&limit=25" \
   -H "Authorization: Bearer $HIVE_API_KEY"
 ```
 
-Returns `200`.
-
-```json
-{
-  "data": [{
-    "id": "ticket_123", "name": "Entry ticket", "description": "General admission", "amount": "25.00", "currency": "USD", "status": "active",
-    "entityType": "event", "entityId": "event_123", "productId": "product_123", "productTitle": "Event tickets",
-    "createdAt": "2026-10-27T18:00:00.000Z", "updatedAt": "2026-10-27T18:00:00.000Z"
-  }],
-  "page": { "nextCursor": null, "hasMore": false }
-}
-```
-
-Errors: `403 insufficient_scope` (missing `tickets:read`, or `communities:read` for another account), `403 forbidden` (not in the key's allowlist, or you are not an owner or admin), `404 not_found` (account not found).
+Returns `200` with `data` (tickets in the shape above) and `page`. Errors: `403 insufficient_scope` (missing `tickets:read`, or `communities:read` for another account), `403 forbidden` (not in the key's allowlist, or you are not an owner or admin), `404 not_found` (account not found).
 
 </Endpoint>
 
 <Endpoint method="GET" path="/api/v1/tickets/{ticketId}" scopes={["tickets:read"]}>
 
-Returns one ticket in the shape above. You need to be an owner or admin of the account that sells it.
-
-```bash
-curl https://app.hive3.tech/api/v1/tickets/ticket_123 \
-  -H "Authorization: Bearer $HIVE_API_KEY"
-```
-
-Returns `200`. Errors: `404 not_found` (`Ticket not found`), `403 forbidden`, `403 insufficient_scope`.
+Returns one ticket. You need to be an owner or admin of the account that sells it. Errors: `404 not_found` (`Ticket not found`), `403 forbidden`, `403 insufficient_scope`.
 
 </Endpoint>
 
-## Change a ticket
+<Endpoint method="GET" path="/api/v1/tickets/entities" scopes={["tickets:read"]}>
 
-<Endpoint method="PATCH" path="/api/v1/tickets/{ticketId}" scopes={["tickets:write"]}>
+Lists the items a ticket can be attached to: the account's events, courses, quests and bookings that are not archived, newest first.
 
-Updates any of the fields below; send only the ones you change. Turning an inactive ticket back to `active` starts selling again, so it also needs the selling account to be on Honey Bee or above; pausing a ticket (`inactive`) has no plan requirement.
+```bash
+curl "https://app.hive3.tech/api/v1/tickets/entities?account=@design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+```json
+{
+  "data": {
+    "event": [{ "id": "event_123", "title": "Portfolio night" }],
+    "course": [],
+    "quest": [],
+    "coordination": []
+  }
+}
+```
+
+</Endpoint>
+
+## Create a ticket
+
+<Endpoint method="POST" path="/api/v1/tickets" scopes={["tickets:write"]}>
+
+Creates a ticket on one of the seller's products and attaches it to an item. The product and the item must belong to the same account. Returns `201` with the ticket.
 
 | Name | In | Type | Required | Notes |
 | --- | --- | --- | --- | --- |
-| `name` | body | string | No | 1 to 120 characters after trimming. |
+| `productId` | body | string | Yes | A product of the selling account ([products](/developers/api-selling#products)). |
+| `name` | body | string | Yes | 1 to 120 characters. |
+| `amount` | body | string | Yes | Positive decimal with at most two decimals, up to `1000000`. A JSON number is rejected. |
+| `entityType` | body | string | Yes | `event`, `course`, `quest` or `coordination`. |
+| `entityId` | body | string | Yes | The item's ID, from `GET /api/v1/tickets/entities`. |
+| `currency` | body | string | No | `USD` (default), `EUR` or `GBP`. |
 | `description` | body | string | No | Up to 2,000 characters. |
-| `amount` | body | string | No | Positive decimal string with up to 7 digits before the point and at most 2 after, up to `1000000`. `"25"` is stored as `"25.00"`. A JSON number is rejected. |
-| `currency` | body | string | No | Three letters (`usd` is stored as `USD`). |
 | `status` | body | string | No | `active` or `inactive`. |
+| `confirmed` | body | boolean | Yes | Must be `true`. |
+| `requestId` | body | string | Yes, or `Idempotency-Key` | 1 to 128 characters. |
 
 <Tabs labels={["curl","JavaScript","Python"]}>
 <Tab>
 
 ```bash
-curl -X PATCH https://app.hive3.tech/api/v1/tickets/ticket_123 \
+curl -X POST https://app.hive3.tech/api/v1/tickets \
   -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Idempotency-Key: portfolio-night-entry" \
   -H "Content-Type: application/json" \
-  -d '{"amount":"30","status":"inactive"}'
+  -d '{"productId":"product_123","name":"Entry ticket","amount":"25.00","currency":"USD","entityType":"event","entityId":"event_123","confirmed":true}'
 ```
 
 </Tab>
 <Tab>
 
 ```js
-const res = await fetch("https://app.hive3.tech/api/v1/tickets/ticket_123", {
-  method: "PATCH",
-  headers: { Authorization: `Bearer ${process.env.HIVE_API_KEY}`, "Content-Type": "application/json" },
-  body: JSON.stringify({ amount: "30", status: "inactive" }),
+const res = await fetch("https://app.hive3.tech/api/v1/tickets", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.HIVE_API_KEY}`,
+    "Idempotency-Key": "portfolio-night-entry",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    productId: "product_123", name: "Entry ticket", amount: "25.00", currency: "USD",
+    entityType: "event", entityId: "event_123", confirmed: true,
+  }),
 });
 const { data } = await res.json();
 ```
@@ -123,10 +149,14 @@ const { data } = await res.json();
 ```python
 import os, requests
 
-res = requests.patch(
-    "https://app.hive3.tech/api/v1/tickets/ticket_123",
-    headers={"Authorization": "Bearer " + os.environ["HIVE_API_KEY"]},
-    json={"amount": "30", "status": "inactive"},
+res = requests.post(
+    "https://app.hive3.tech/api/v1/tickets",
+    headers={
+        "Authorization": "Bearer " + os.environ["HIVE_API_KEY"],
+        "Idempotency-Key": "portfolio-night-entry",
+    },
+    json={"productId": "product_123", "name": "Entry ticket", "amount": "25.00", "currency": "USD",
+          "entityType": "event", "entityId": "event_123", "confirmed": True},
 )
 data = res.json()["data"]
 ```
@@ -134,25 +164,57 @@ data = res.json()["data"]
 </Tab>
 </Tabs>
 
-Returns `200` with the updated ticket.
+</Endpoint>
 
-```json
-{
-  "data": {
-    "id": "ticket_123", "name": "Entry ticket", "description": "General admission", "amount": "30.00", "currency": "USD", "status": "inactive",
-    "entityType": "event", "entityId": "event_123", "productId": "product_123", "productTitle": "Event tickets",
-    "createdAt": "2026-10-27T18:00:00.000Z", "updatedAt": "2026-10-27T18:20:00.000Z"
-  }
-}
+## Change or attach a ticket
+
+<Endpoint method="PATCH" path="/api/v1/tickets/{ticketId}" scopes={["tickets:write"]}>
+
+Updates any of the fields below; send only the ones you change, plus `confirmed` and a request ID. To attach the ticket to a different item, send `entityType` and `entityId` together. Once anyone has checked out with a ticket, it cannot be moved to another item. Turning an inactive ticket back to `active` starts selling again, so it needs a ready seller; pausing a ticket (`inactive`) has no requirement.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `name` | body | string | No | 1 to 120 characters after trimming. |
+| `description` | body | string | No | Up to 2,000 characters. |
+| `amount` | body | string | No | Positive decimal with at most two decimals, up to `1000000`. `"25"` is stored as `"25.00"`. |
+| `currency` | body | string | No | `USD`, `EUR` or `GBP`. |
+| `status` | body | string | No | `active` or `inactive`. |
+| `entityType`, `entityId` | body | string | No | Move the ticket to another item of the same account. |
+| `confirmed`, `requestId` | body | | Yes | See [Confirmation and retries](#confirmation-and-retries). |
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/tickets/ticket_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Idempotency-Key: ticket-123-price-30" \
+  -H "Content-Type: application/json" \
+  -d '{"amount":"30","confirmed":true}'
 ```
+
+Returns `200` with the updated ticket.
 
 | Status | `code` | When |
 | --- | --- | --- |
-| 400 | `invalid_request` | A field has the wrong type, `status` is not `active` or `inactive`, or a value breaks its limit. The message names the field, for example `amount must be a positive decimal string up to 1000000 with at most 2 decimals` or `currency must be a 3-letter ISO 4217 code`. |
-| 403 | `forbidden` | You are not an owner or admin of the selling account, the account is not in the key's allowlist, or you reactivate a ticket while the account is below Honey Bee (`A Honey Bee subscription is required to sell subscriptions, tickets or paid access`). |
+| 400 | `invalid_request` | `confirmed` or the request ID is missing, a field has the wrong type or breaks its limit, or the ID was already used with different fields. |
+| 403 | `forbidden` | You are not an owner or admin of the selling account, the account is not in the key's allowlist, or the seller is not ready to sell (for example below Honey Bee). |
 | 403 | `insufficient_scope` | The key lacks `tickets:write` (or `communities:write` for another account). |
 | 404 | `not_found` | `Ticket not found`. |
-| 429 | `rate_limited` | More than 60 updates in a minute. |
+| 429 | `rate_limited` | More than 60 changes in a minute. |
+
+</Endpoint>
+
+## Stop selling a ticket
+
+<Endpoint method="DELETE" path="/api/v1/tickets/{ticketId}" scopes={["tickets:write"]}>
+
+Sets the ticket to `inactive` so nobody can buy it. Nothing is deleted: people who bought it keep their access, and refunds still work. Send `{"confirmed": true}` and a request ID. Returns `200` with `"data": null`.
+
+```bash
+curl -X DELETE https://app.hive3.tech/api/v1/tickets/ticket_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Idempotency-Key: ticket-123-stop" \
+  -H "Content-Type: application/json" \
+  -d '{"confirmed":true}'
+```
 
 </Endpoint>
 
@@ -160,9 +222,9 @@ Returns `200` with the updated ticket.
 
 <Endpoint method="GET" path="/api/v1/tickets/mine" scopes={["tickets:read"]}>
 
-Lists the tickets the key owner has bought, newest first: the same list as My tickets in the app. It always shows the key owner's own purchases and ignores `?account=`. `mine` is reserved and never a ticket ID.
+Lists the tickets the key owner has bought, newest first: the same list as My tickets in the app. It always shows the key owner's own purchases and ignores `?account=`. `mine` and `entities` are reserved and never ticket IDs.
 
-`status` is the state of the purchase: `active`, `refunded` or `cancelled`. `refundRequestStatus` is the status of the latest refund request, `pending`, `approved` or `rejected`, or `null` when none exists. `id` is the purchase, and `ticketId` is the ticket that was bought.
+`status` is the state of the purchase: `active`, `refunded` or `cancelled`. `refundRequestStatus` is the status of the latest refund request, `pending`, `approved` or `rejected`, or `null` when none exists. `id` is the purchase, and `ticketId` is the ticket that was bought. To request a refund, see [Payments](/developers/api-payments#operations).
 
 | Name | In | Type | Required | Notes |
 | --- | --- | --- | --- | --- |

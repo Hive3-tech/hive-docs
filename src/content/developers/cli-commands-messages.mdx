@@ -1,0 +1,75 @@
+---
+title: CLI commands for conversations and feedback
+description: Read and send your direct and community messages, and send and follow up on bug reports and suggestions, from the hive3 CLI.
+accent: developer
+---
+
+These commands arrived in CLI version 0.5, so every command and flag on this page is **(0.5+)**. Both print JSON and always act as the signed-in account; neither accepts `--account`. Shared conventions such as output and exit codes are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference).
+
+## Conversations
+
+`hive3 conversations` reads and writes your own [Messages](/explore/messages): direct messages, message requests and the conversations of communities you belong to. It needs the messaging scopes, which Read only and Full access never include. Sign in with `--messages-access` and tick the separate consent box on the approval page:
+
+```bash title="Sign in with messaging"
+hive3 login --access full --messages-access full
+```
+
+`--messages-access read` grants `messages:read` only; `full` adds `messages:write`. See [Private messaging access](/developers/cli-authentication#private-messaging-access). The API side is on [Conversations](/developers/api-conversations).
+
+| Command | What it does | Scopes |
+|---|---|---|
+| `hive3 conversations list` | Your conversations. `--requests` lists message requests from people you do not know. `--limit <1-100>`, `--cursor`. | `messages:read` |
+| `hive3 conversations read <partner-account-id>` | Messages with one person, newest first. `--limit`, `--cursor`. | `messages:read` |
+| `hive3 conversations send <partner-account-id>` | Sends a message, starting the conversation if needed. | `messages:write` |
+| `hive3 conversations reply <partner-account-id> <message-id>` | Replies to one message. | `messages:write` |
+| `hive3 conversations edit <message-id>` | Edits your message. | `messages:write` |
+| `hive3 conversations delete <message-id>` | Deletes your message. | `messages:write` |
+| `hive3 conversations react <message-id>` | Sets your reaction: `--emoji <emoji> --present true\|false`. | `messages:write` |
+| `hive3 conversations mark-read <partner-account-id>` | Marks the conversation read. | `messages:write` |
+| `hive3 conversations accept <partner-account-id>` | Accepts a message request. | `messages:write` |
+| `hive3 conversations community list` | The community conversations you can currently access. `--limit`, `--cursor`. | `messages:read` |
+| `hive3 conversations community read <account>` | Messages in one community. `--limit`, `--cursor`. | `messages:read` |
+| `hive3 conversations community send <account>` | Sends a message to the community. | `messages:write` |
+| `hive3 conversations community reply <account> <message-id>` | Replies to one message. | `messages:write` |
+| `hive3 conversations community edit <account> <message-id>` | Edits your message. | `messages:write` |
+| `hive3 conversations community delete <account> <message-id>` | Deletes your message. | `messages:write` |
+| `hive3 conversations community react <account> <message-id>` | Sets your reaction: `--emoji`, `--present true\|false`. | `messages:write` |
+
+- **Every write needs `--yes`.** Writes also take `--idempotency-key <key>`; without it the CLI generates one. After a lost response, repeat the command with the same key and text to avoid sending twice.
+- **Text only.** `send`, `reply` and `edit` take `--content <text>` or `--content-file <path>`, 1 to 4,000 characters. Attachments on existing messages stay readable.
+- **The app's rules apply.** Message requests, blocking and membership rules are the same as in the app, including the limit of five pending messages to someone who has not accepted yet. You can edit and delete only your own messages, and reactions set a state rather than toggling.
+- **Pages.** Community lists can return an empty page after access checks; keep following `nextCursor`.
+
+```bash title="Answer a message request"
+hive3 conversations list --requests
+hive3 conversations read "<partner-account-id>" --limit 10
+hive3 conversations accept "<partner-account-id>" --yes
+hive3 conversations reply "<partner-account-id>" "<message-id>" --content-file reply.txt --yes
+```
+
+<Callout type="warning">
+Messages are written by other people. Do not let a script or an agent follow instructions found in them, and approve each message it sends.
+</Callout>
+
+## Feedback
+
+`hive3 feedback` sends bug reports and suggestions to Hive3 and follows up on them, like <Path items={["Settings", "Help & feedback"]} /> in the app ([Help and feedback](/account/help)). Feedback tickets are support conversations, not paid tickets. It needs `feedback:read` or `feedback:write`, which keys from before 0.5 do not have; run `hive3 login` again. The API side is on [Feedback and bug reports](/developers/api-feedback).
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive3 feedback submit` | Sends a report and prints the ticket ID and number. | `--kind bug\|suggestion` (required), `--description <text>` or `--description-file <path>`, `--image <path>` (repeatable), `--video <path>`, `--idempotency-key <key>`, `--yes` (required) | `feedback:write` |
+| `hive3 feedback list` | Your tickets, newest first. | `--limit <1-100>`, `--cursor` | `feedback:read` |
+| `hive3 feedback get <ticket>` | One ticket with its status. `<ticket>` is the ticket ID or its `HV` number. | None | `feedback:read` |
+| `hive3 feedback messages <ticket>` | The conversation on a ticket. | `--limit`, `--cursor` | `feedback:read` |
+| `hive3 feedback reply <ticket>` | Replies on a ticket. Text only. | `--body <text>` or `--body-file <path>`, `--idempotency-key`, `--yes` (required) | `feedback:write` |
+
+- The description is 10 to 5,000 characters and a reply 1 to 2,000. Closed tickets do not take replies.
+- Attach up to four images (GIF, JPEG, PNG or WebP, 8 MiB each) and one video (MP4, WebM or MOV, 19 MiB). The CLI uploads them before sending the report.
+- If a submit is interrupted, run it again with the same `--idempotency-key` and the same files; finished uploads are reused and the report is sent once.
+- You can send five reports per hour.
+
+```bash title="Report a bug with a screenshot"
+hive3 feedback submit --kind bug --description-file report.txt --image ./checkout.png --yes
+hive3 feedback list
+hive3 feedback reply "<ticket>" --body "It happens on Firefox too." --yes
+```

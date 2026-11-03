@@ -11,8 +11,8 @@ Every API request is authenticated with an API key that belongs to one Hive3 acc
 
 Creating and using API keys is a <PlanBadge tier="honey" /> feature.
 
-- **Below Honey Bee.** If the key owner's account is on Worker Bee, every request with that account's keys returns `403` with the code `plan_required` and the message `API access requires a Honey Bee plan or above. Upgrade the account to use this key again.` The keys are kept. They work again when the account returns to Honey Bee or above.
-- **Account scheduled for deletion.** While an account is waiting to be deleted, its keys return `401` with `invalid_api_key` on every route except the one that cancels the deletion ([Export and deletion](/developers/api-account-data)), which skips the plan check only while the deletion is pending.
+- **Below Honey Bee.** If the key owner's account is on Worker Bee, every request with that account's keys returns `403` with the code `plan_required` and the message `API access requires a Honey Bee plan or above. Upgrade the account to use this key again.` The keys are kept. They work again when the account returns to Honey Bee or above. One exception: keys with `payments:read` or `payments:write` keep managing existing payments, subscriptions and the Stripe connection, so a downgrade never locks you out of billing.
+- **Account scheduled for deletion.** While an account is waiting to be deleted, its keys return `401` with `invalid_api_key` on every route. Deleting an account, and cancelling a deletion, happen only in the app ([Delete your account](/account/privacy-and-data#delete-your-account)).
 - **Community-owned keys do not exist.** A key always belongs to a person's account. To work on a community, use a key whose owner is an owner, admin or moderator of that community. See [Managed accounts](#managed-accounts).
 
 ## Create a key
@@ -25,7 +25,10 @@ Go to <Path items={["Settings", "Help & feedback", "Developer API keys", "Manage
 Select <UI>Create API key</UI> and enter a <UI>Name</UI> of up to 80 characters, for example the name of the integration that will use it.
 </Step>
 <Step title="Choose account access">
-Under <UI>Account access</UI> pick <UI>Read access</UI> or <UI>Full access</UI>. Read access lets the key view your account, posts, resources, broadcasts, tickets, AI assistant and credentials. Full access also lets it change them. The exact scopes are listed under [Scopes](#scopes).
+Under <UI>Account access</UI> pick <UI>Read access</UI> or <UI>Full access</UI>. Read access lets the key view your account, content, assistant, credentials, selling and payment history, and feedback tickets. Full access also lets it change them, including selling, payments and refunds. The exact scopes are listed under [Scopes](#scopes).
+</Step>
+<Step title="Choose private messaging access (optional)">
+Under <UI>Private messaging access</UI>, keep <UI>No messaging access</UI> unless the key should reach your messages. <UI>Read my conversations</UI> adds `messages:read`; <UI>Read and send messages as me</UI> adds `messages:read` and `messages:write`. This choice is separate from account access and only ever covers your own inbox and the community conversations you can access, never another account's. See [Conversations](/developers/api-conversations).
 </Step>
 <Step title="Choose community access (optional)">
 Expand <UI>Community access</UI> if the key should work on communities you help run. Pick <UI>No access</UI>, <UI>Read access</UI> or <UI>Full access</UI>, then tick the communities the key may reach. The list shows your own account and each community where you are an owner, admin or moderator, with your role. You must select at least one community when you choose Read or Full access.
@@ -38,7 +41,7 @@ Select <UI>Create API key</UI>. The new key appears once, starting with `hive_sk
 Keys created on this page do not expire. Account limits: at most **25 active keys** per account, 10 new keys per minute, and 50 new keys per day.
 
 <Callout type="warning">
-Treat a Full access key like a password. With `account:write` it can export all of your account data and change or remove linked wallets, and API keys do not need a two-step sign-in session. Create one key per integration so you can revoke a single key without breaking the others.
+Treat a Full access key like a password. It can change your account and content, start checkouts, change subscriptions and decide refunds, export all of your account data, and change or remove linked wallets, and API keys do not need a two-step sign-in session. Payments still need the buyer's approval in the browser. Create one key per integration so you can revoke a single key without breaking the others.
 </Callout>
 
 ## Send the key
@@ -95,8 +98,7 @@ A scope grants access to one area of the API. Each endpoint card in the referenc
 | Scope | Lets the key |
 |---|---|
 | `account:read` | Read the account, profile, wallets, notifications, profile builders and credential context. |
-| `account:write` | Update profile and settings, builders, notifications, wallet and NFT visibility, create upload URLs, export data, and cancel a pending account deletion. |
-| `account:destroy` | Request account deletion. The request still needs an explicit confirmation. Neither the key page nor the CLI grants this scope. |
+| `account:write` | Update profile and settings, builders, notifications, wallet and NFT visibility, and create upload URLs. A data export needs this plus every area's read scope ([export](/developers/api-account-data)). |
 | `posts:read` | Read posts and comments the account can see. |
 | `posts:write` | Create, update, archive, like and comment on posts where the account has write access. |
 | `resources:read` | Read events, courses, content, quests and jobs, plus participants, enrollments, evidence, progress and applications. Also used for search. |
@@ -106,14 +108,20 @@ A scope grants access to one area of the API. Each endpoint card in the referenc
 | `communities:write` | Write to communities you manage: their resources, posts, participant workflows, access settings, profile and builders. Includes `communities:moderate`. |
 | `broadcasts:read` | Read broadcast drafts and sends, and the audience summary. |
 | `broadcasts:write` | Create and edit drafts, send a test, send or schedule, and cancel a scheduled send. |
-| `tickets:read` | Read ticket setup on accounts you run, and your own purchased tickets. |
-| `tickets:write` | Change a ticket's name, description, price, currency or status. |
+| `tickets:read` | Read ticket setup on accounts you run, the items a ticket can be attached to, and your own purchased tickets. |
+| `tickets:write` | Create tickets, attach them, change their name, description, price, currency or status, and stop selling them. |
 | `ai:read` | Read the AI assistant settings and training documents. |
 | `ai:write` | Change the AI assistant, and upload, attach and remove training documents. |
 | `credentials:read` | Read credentials, your claimed credentials, and credentials awarded to you. |
 | `credentials:write` | Award custom credentials to people. |
+| `payments:read` | Read products and subscription plans, the Stripe connection status, and payment, subscription, ticket, refund and sales histories. |
+| `payments:write` | Manage products and plans and the Stripe connection, and preview and confirm checkouts, subscription changes and refund actions. |
+| `feedback:read` | Read your own bug reports, suggestions and their conversations. |
+| `feedback:write` | Send bug reports and suggestions with attachments, and reply on your tickets. |
+| `messages:read` | Read your own conversations, message requests and the community conversations you can access. Approved separately. |
+| `messages:write` | Send, edit, delete and react to messages as you. Approved separately. |
 
-No older scope implies the eight newest ones (`broadcasts`, `tickets`, `ai` and `credentials`, read and write). A key created before they existed cannot reach those areas; create a new key.
+No older scope implies a newer one. Keys created before the broadcast, ticket, AI and credential scopes (October 2026), or before the payment and feedback scopes (API and CLI 0.5.0), cannot reach those areas; create a new key. The messaging scopes are never part of a preset: you choose them on their own.
 
 Scopes are necessary but not sufficient. Operations on communities also check your current role, and some checks depend on the owning account's plan.
 
@@ -123,12 +131,14 @@ The key page and the command-line login bundle scopes into presets.
 
 | Preset | Scopes |
 |---|---|
-| Key page, <UI>Account access</UI> → <UI>Read access</UI> | `account:read`, `posts:read`, `resources:read`, `broadcasts:read`, `tickets:read`, `ai:read`, `credentials:read` |
-| Key page, <UI>Account access</UI> → <UI>Full access</UI> | The read scopes above plus `account:write`, `posts:write`, `resources:write`, `broadcasts:write`, `tickets:write`, `ai:write`, `credentials:write` |
+| Key page, <UI>Account access</UI> → <UI>Read access</UI> | `account:read`, `posts:read`, `resources:read`, `broadcasts:read`, `tickets:read`, `ai:read`, `credentials:read`, `payments:read`, `feedback:read` |
+| Key page, <UI>Account access</UI> → <UI>Full access</UI> | The read scopes above plus `account:write`, `posts:write`, `resources:write`, `broadcasts:write`, `tickets:write`, `ai:write`, `credentials:write`, `payments:write`, `feedback:write` |
 | Key page, <UI>Community access</UI> → <UI>Read access</UI> | `communities:read` |
 | Key page, <UI>Community access</UI> → <UI>Full access</UI> | `communities:read`, `communities:moderate`, `communities:write` |
-| CLI login, <UI>Read only</UI> | The seven account read scopes above plus `communities:read` |
-| CLI login, <UI>Full access</UI> | Every scope above except `account:destroy` |
+| Key page, <UI>Private messaging access</UI> | `messages:read`, or `messages:read` and `messages:write` |
+| CLI login, <UI>Read only</UI> | The nine account read scopes above plus `communities:read` |
+| CLI login, <UI>Full access</UI> | Every scope above except the messaging scopes |
+| CLI login with `--messages-access read` or `full` | Adds `messages:read`, or both messaging scopes, after a separate consent on the approval page |
 
 ## Managed accounts
 

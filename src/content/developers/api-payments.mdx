@@ -1,0 +1,116 @@
+---
+title: Payments
+description: Read payment histories and run previewed, confirmed checkouts, subscription changes and refunds from the API.
+accent: developer
+---
+
+The payments endpoints let a script or an agent read what an account bought and sold, start a checkout, cancel or resume a subscription, open a billing portal, and request or decide ticket refunds. They do the same things as the app's payment screens, with one rule on top: every action is **previewed first and then confirmed** with the exact text the preview returned. The payment itself always happens in the buyer's browser.
+
+New in API and CLI 0.5.0. Products, plans and the Stripe connection are on [Products, subscription plans and Stripe](/developers/api-selling); ticket setup is on [Tickets](/developers/api-tickets). For what buyers see in the app, read [Tickets and subscriptions](/explore/tickets-and-subscriptions).
+
+## Scopes and access
+
+| Scope | Allows |
+| --- | --- |
+| `payments:read` | Read payment, subscription, ticket, refund, sales, quest-credit and metaverse-time histories. |
+| `payments:write` | Preview and run checkouts, subscription and membership changes, billing portals and refund actions. |
+
+- **Buyer actions are yours.** Purchases, subscriptions and refund requests always belong to the key owner. No key can act on another person's purchases or payment methods.
+- **Seller actions.** Sales history and refund decisions for an account you run need `?account=` (histories) or a target that belongs to it, plus `communities:read` or `communities:write`, the key's account allowlist, and a current **owner or admin** role there.
+- **After a downgrade.** Keys with these scopes keep managing existing payments and subscriptions when the account drops below Honey Bee.
+- **What is not possible.** Payouts, wallet transfers, choosing prices or recipients, passing payment-provider IDs, and approving a payment without the buyer's browser. Nothing is retried automatically.
+
+## Histories
+
+<Endpoint method="GET" path="/api/v1/payments/{history}" scopes={["payments:read"]}>
+
+`{history}` is one of the lists below. Lists are paginated with `limit` (1 to 100, default 25) and `cursor`, except `subscriptions`, which returns one short list ([pagination](/developers/api-conventions#pagination)). Only `account`, `limit` and `cursor` are accepted as query parameters.
+
+| `{history}` | Contents | `?account=` |
+| --- | --- | --- |
+| `history` | Your payments. | No: always yours. |
+| `subscriptions` | Your subscriptions, with the IDs used by subscription actions. | No: always yours. |
+| `tickets` | Ticket purchases. | Yes, for a seller you run. |
+| `refunds` | Ticket refund requests. | Yes, for a seller you run. |
+| `sales` | An account's sales. | Yes, for a seller you run. |
+| `quest-credits` | Quest credit purchases. | Yes, for an account you run. |
+| `metaverse-time` | Metaverse time purchases. | Yes, for an account you run. |
+
+Ticket history leaves out the amount paid when Hive3 did not keep the original price; it never shows today's price as what was paid.
+
+```bash
+curl "https://app.hive3.tech/api/v1/payments/sales?account=@design-guild&limit=50" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+</Endpoint>
+
+## Preview, then confirm
+
+Every action is two requests to the same body shape.
+
+<Steps>
+<Step title="Preview">
+`POST /api/v1/payments/preview` with the `operation`, its `target` and the fields the operation needs. Nothing changes. The response names the account, the provider and a `confirm` text that describes exactly what will happen, including the amount or effect.
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/payments/preview \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"operation":"checkout.ticket","target":"ticket_123","provider":"stripe"}'
+```
+
+```json
+{ "data": { "ownerRef": "account_456", "provider": "stripe", "confirm": "PAYMENTS account_123 stripe checkout.ticket ticket_123 …" } }
+```
+</Step>
+<Step title="Check it with a person">
+Show the account, target, provider and amount to the person who pays or decides, and get their approval for that exact action.
+</Step>
+<Step title="Operate">
+`POST /api/v1/payments/operate` with the same fields plus `"confirmed": true`, the `confirm` text copied unchanged, and a new `requestId` of 1 to 128 characters.
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/payments/operate \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"operation":"checkout.ticket","target":"ticket_123","provider":"stripe","confirmed":true,"confirm":"PAYMENTS account_123 stripe checkout.ticket ticket_123 …","requestId":"buy-ticket-123-001"}'
+```
+</Step>
+</Steps>
+
+Before anything happens, Hive3 checks the confirmation and your access again. If something changed since the preview, such as the price, the request fails with `400 invalid_request` and the new `confirm` text in `error.confirm`; preview again and ask again.
+
+Checkouts, portals and approvals return a link instead of charging anything: `{ "url": "…", "private": true, "browserRequired": true, "message": "…" }`. The buyer opens it privately in their own browser and pays or approves there. Treat the link like a password: do not log, store or share it.
+
+Preview allows 60 requests per minute and operate 20 per minute. Bodies are limited to 8 KiB, and unknown fields are rejected with `400`.
+
+## Operations
+
+| `operation` | `target` | Other fields | What it does |
+| --- | --- | --- | --- |
+| `checkout.subscription` | Plan ID | `provider` (`stripe` or `paypal`) | Starts a subscription checkout. |
+| `checkout.ticket` | Ticket ID | `provider` | Starts a ticket checkout. |
+| `checkout.membership` | `self`, or an account you own | `tier` (`honey`, `swarm` or `royal`) | Starts a Hive3 membership checkout on Stripe. |
+| `checkout.quest-credit` | Account ID | `planType` (`single` or `bundle`) | Buys a quest credit on Stripe. |
+| `checkout.metaverse-time` | Account ID | `quantity` (hours, 1 to 100) | Buys metaverse time on Stripe. |
+| `finalize.stripe` | Stripe checkout session ID | `kind` (`membership`, `subscription`, `ticket`, `questCredit` or `metaverseTime`) | Records a Stripe checkout you paid for. |
+| `finalize.subscription` | Plan ID | `checkoutIntentId`, `paypalSubscriptionId` | Records a PayPal subscription you approved. |
+| `finalize.ticket` | Ticket ID | `orderId` | Records a PayPal ticket order you approved. |
+| `subscription.cancel`, `subscription.resume` | Subscription ID | None | Stops or restarts renewal of a subscription you hold. |
+| `subscription.portal` | Subscription ID | None | Returns a Stripe billing portal link for payment methods, invoices and cancelling. |
+| `subscription.revise` | Subscription ID | `newPlanId` | Switches a PayPal subscription to another plan; you approve the change in the browser. |
+| `membership.cancel`, `membership.resume`, `membership.portal` | `self` | None | The same for your Hive3 membership. |
+| `membership.revise` | `self` | `tier` | Changes your Hive3 membership plan. |
+| `refund.request` | Purchase ID (from [tickets you bought](/developers/api-tickets#read-tickets-you-bought)) | `reason` (optional) | Asks the seller for a ticket refund. |
+| `refund.approve`, `refund.reject` | Refund request ID | `reviewNote` (optional) | The seller's decision on a refund request. Owners and admins only. |
+
+Finalizing works only for the person who paid: you cannot finalize someone else's checkout. A membership checkout for an account you own is for its owner only; after that, the account manages its membership with its own sign-in. Changing the plan of a Stripe creator subscription is not supported, nor is managing an older PayPal Hive3 membership.
+
+## When the outcome is unknown
+
+Each confirmed action is recorded once. If a request times out or returns `409 conflict` with a `state` field, the outcome is not known yet: do not send a new action. Check the histories, the browser or the provider first. Reuse the same `requestId` only to repeat the identical request.
+
+- A second checkout for something already being paid is blocked.
+- A pending or failed refund does not remove the buyer's access; a completed refund does.
+- If two separate payments for the same thing were both completed, both are kept so each can be managed or refunded.

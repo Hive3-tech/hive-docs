@@ -6,9 +6,39 @@ accent: developer
 
 This page lists changes that can affect an integration: new endpoints and scopes, changed behavior, and corrections to earlier documentation. Each entry ends with what you need to do. The API stays at `/api/v1`: existing paths, scopes and field names are unchanged unless an entry says otherwise.
 
-## November 2026: event worlds, limits and notifications
+## November 2026: API and CLI 0.5.0
 
-This update lets API and CLI events go straight into an account's default 3D world, raises the daily event limit, and notifies members about new items.
+This update adds selling, payments, Stripe, private conversations and feedback to the API and the CLI, removes account deletion from both, makes ticket changes require confirmation, lets events go straight into an account's default 3D world, raises the daily event limit, and notifies members about new items. Items in the CLI pages marked "(0.5+)" need CLI 0.5.0 or later; run `hive3 update --check` to see your version.
+
+### Breaking changes
+
+- **Account deletion is browser only.** `POST /api/v1/account/deletion` (request) and `DELETE /api/v1/account/deletion` (cancel) are gone, the `account:destroy` scope can no longer be requested, and `hive3 account deletion cancel` is gone from the CLI. Delete an account, or cancel a pending deletion, in the Hive3 app. Keys of an account waiting to be deleted return `401 invalid_api_key` on every route. See [Data export and key revocation](/developers/api-account-data).
+- **Ticket changes need confirmation and a request ID.** `PATCH /api/v1/tickets/{ticketId}` now requires `"confirmed": true` and a `requestId` or `Idempotency-Key`; without them it returns `400`. `hive3 tickets update` now requires `--yes`. Ticket currencies are `USD`, `EUR` and `GBP`. See [Tickets](/developers/api-tickets#confirmation-and-retries).
+- **Data export needs every read scope.** `POST /api/v1/account/export` (`hive3 account export`) now needs `account:read`, `account:write`, `communities:read`, `resources:read`, `tickets:read`, `payments:read`, `feedback:read`, `ai:read` and `credentials:read`. A Full access key created after this update has them all. See [Export account data](/developers/api-account-data#export-account-data).
+- **Login only talks to Hive3 by default.** `hive3 login` refuses API or app hosts other than `app.hive3.tech`, `staging.hive3.tech` and `localhost` unless you add `--allow-custom-api-url`. `--app-url` now defaults to the API URL's site. See [Login options](/developers/cli-authentication#login-options).
+
+**What to do:** remove API or CLI calls that request or cancel account deletion; add `confirmed` and a request ID to ticket changes (`--yes` in the CLI); sign in again with Full access before exporting data; add `--allow-custom-api-url` only if you sign in against your own server.
+
+### Selling and payments
+
+- **Products and subscription plans.** `GET`/`POST /api/v1/products`, `GET`/`DELETE /api/v1/products/{productId}`, `GET`/`POST /api/v1/products/{productId}/plans`, `GET`/`PATCH`/`DELETE /api/v1/subscriptions/{planId}` and `POST .../activate` or `.../deactivate`; CLI `hive3 products` and `hive3 subscriptions`. See [Products, subscription plans and Stripe](/developers/api-selling).
+- **Ticket creation.** `POST /api/v1/tickets`, `GET /api/v1/tickets/entities`, attaching with `PATCH` (`entityType`, `entityId`) and stopping sales with `DELETE`; CLI `hive3 tickets create`, `entities`, `attach` and `remove`. See [Tickets](/developers/api-tickets).
+- **Stripe connection.** `/api/v1/payments/stripe/status`, `onboarding`, `refresh`, `dashboard`, `tax-setup` and `disconnect`; CLI `hive3 stripe`. Owners and admins only; identity and bank steps stay on Stripe's pages.
+- **Payments.** Histories under `GET /api/v1/payments/…`, and `POST /api/v1/payments/preview` then `POST /api/v1/payments/operate` for checkouts, finalizing, subscription and membership cancel, resume, portal and plan changes, and ticket refund requests and decisions; CLI `hive3 payments`. Every action is previewed, then confirmed with the exact preview text; the payment itself happens in the buyer's browser, and nothing is retried automatically. See [Payments](/developers/api-payments).
+- Seller and payment writes require `"confirmed": true` and a request ID (`--yes` in the CLI). Keys with payment scopes keep managing existing payments after a downgrade below Honey Bee.
+
+### Conversations and feedback
+
+- **Conversations.** `/api/v1/conversations` for your direct messages and message requests, and `/api/v1/community-messages` for community conversations: read, send, reply, edit, delete, react, mark read and accept; CLI `hive3 conversations`. Text only, always as the key owner. See [Conversations](/developers/api-conversations).
+- **Feedback.** `/api/v1/feedback` to send bug reports and suggestions with up to four images and one video, list your tickets, read the conversation and reply; CLI `hive3 feedback`. See [Feedback and bug reports](/developers/api-feedback).
+
+### Scopes and sign-in
+
+- **Six new scopes.** `payments:read`, `payments:write`, `feedback:read` and `feedback:write` are part of Read access and Full access for new keys and CLI logins. `messages:read` and `messages:write` are never part of a preset: choose <UI>Private messaging access</UI> on the key page, or run `hive3 login --messages-access read|full` and tick the separate consent on the approval page. See [Scopes](/developers/api-authentication#scopes) and [Private messaging access](/developers/cli-authentication#private-messaging-access).
+- **Approval page.** The request name now shows as **Name supplied by the requesting device**, with when and from which IP address the login started.
+- **Reading resources.** `GET /api/v1/{kind}/{id}` also returns resources of other accounts that your account could see in the app, in the form a visitor sees. See [Events, courses, content, quests, jobs](/developers/api-resources).
+
+**What to do:** existing keys do not gain the new scopes. Create a new key, or run `hive3 login` again, to use selling, payments or feedback, and add messaging only where you need it. After `hive3 update`, run `hive3 skill install --force` so your agent learns the new commands.
 
 ### Events and worlds
 
@@ -39,7 +69,7 @@ This update adds five endpoint families, makes plan and permission checks strict
 
 - **Five new families.** [Search](/developers/api-search), [Broadcasts](/developers/api-broadcasts), [Tickets](/developers/api-tickets), [AI assistant](/developers/api-ai-assistant) and [Credentials](/developers/api-credentials).
 - **Eight new scopes.** `broadcasts:read`, `broadcasts:write`, `tickets:read`, `tickets:write`, `ai:read`, `ai:write`, `credentials:read` and `credentials:write`. No existing scope implies them. In the app, Read access adds the four `:read` scopes and Full access adds all eight. See [Scopes](/developers/api-authentication#scopes).
-- **`DELETE /api/v1/account/keys/current`.** A key can revoke itself. It needs no scope. See [Export and deletion](/developers/api-account-data).
+- **`DELETE /api/v1/account/keys/current`.** A key can revoke itself. It needs no scope. See [Data export and key revocation](/developers/api-account-data).
 - **Quests in welcome pages.** The welcome-page builder accepts `quests` sections, entries and spotlights, as the app does.
 
 **What to do:** keys created before this update cannot reach the new families. Create a new key with the new scopes to use them.
@@ -117,14 +147,14 @@ These behaviors were already in place; the documentation now matches them. If yo
 
 ## CLI 0.4.0
 
-CLI 0.4.0 is not published yet. Until it is, `npm install --global @hive3/cli` installs the previous release. Run `hive3 update --check` to see the latest published version. Items in the CLI pages marked "(0.4+)" need this version or later.
+CLI 0.4.0 was published on npm on October 28, 2026. Items in the CLI pages marked "(0.4+)" need this version or later.
 
 ### New commands
 
 - **`hive3` is the command name.** The CLI is now called `hive3` everywhere, in the documentation and in its own messages. `hive` also works as a short alias for existing users and runs the same program. Update scripts and agent instructions when convenient; nothing breaks if you do not.
 - **`hive3 --version`** (or `-v`) prints the installed version.
 - **`hive3 skill`** (`install`, `path`, `show`) installs the Hive3 agent skill that now ships inside the CLI, for Claude Code, Codex, Cursor or any skills directory. The skill is named `hive3`. See [Use Hive3 with AI agents](/developers/cli-agents#install-the-skill).
-- `hive3 search`, `hive3 broadcasts`, `hive3 tickets`, `hive3 assistant` and `hive3 credentials`. See [CLI commands: search, broadcasts, tickets, assistant, credentials](/developers/cli-commands-areas).
+- `hive3 search`, `hive3 broadcasts`, `hive3 tickets`, `hive3 assistant` and `hive3 credentials`. See [CLI commands: search, broadcasts, assistant, credentials](/developers/cli-commands-areas); tickets moved to [Selling and payments](/developers/cli-commands-payments#tickets) in 0.5.
 - `get <id>` for every resource family, `hive3 notifications unread-count`, and `hive3 account linked-communities` with `list` and `disconnect`.
 - `--account <id-or-handle>` on profile, builder, broadcast, ticket, assistant and credential commands, to act on an account you own, administer or moderate.
 - `hive3 broadcasts update --remove-hero-image`.
@@ -132,7 +162,7 @@ CLI 0.4.0 is not published yet. Until it is, `npm install --global @hive3/cli` i
 ### Safer by default
 
 - **Confirmation flags.** `--confirm <exact id>` is required by `hive3 wallets remove`, `hive3 communities remove-member`, `hive3 account linked-communities disconnect` and `hive3 assistant documents delete`. `--yes` is required by `hive3 broadcasts send` and `hive3 credentials award`.
-- **Account deletion.** `hive3 account deletion request` is gone. Delete an account in the Hive3 app under Settings. `hive3 account deletion cancel` still cancels a pending deletion.
+- **Account deletion.** `hive3 account deletion request` is gone. Delete an account in the Hive3 app under Settings. (`hive3 account deletion cancel` was removed in 0.5.)
 - **Upload address check.** Before sending a file, `hive3 upload` and `hive3 assistant documents add` refuse an upload address that is not `https` (plain `http` only for a local development server), is not on the API host or a Hive3 storage host, or redirects. No key is sent with the file.
 - **Help never runs a command.** `--help` or `-h` after any command prints help, including `logout`, `whoami`, `capabilities`, `login` and `update`. In earlier versions `hive3 logout --help` signed you out.
 - **Private config files.** The config file and update cache are written through a private staging directory with mode `0600` and an atomic rename.

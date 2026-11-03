@@ -1,0 +1,76 @@
+---
+title: Conversations
+description: Read and send your direct messages and the community conversations you can access, with separately approved messaging scopes.
+accent: developer
+---
+
+These endpoints read and write the key owner's own [Messages](/explore/messages): direct messages with other people, message requests from people you do not know, and the conversations of communities you belong to. They always act as the person who owns the key. No key can read or write another account's inbox, including an account you help run.
+
+New in API and CLI 0.5.0. Errors and limits follow [Requests, errors and limits](/developers/api-conventions#errors).
+
+## Separate approval
+
+| Scope | Allows |
+| --- | --- |
+| `messages:read` | Read your conversations, message requests and the community conversations you can currently access. |
+| `messages:write` | Send, reply, edit and delete your own messages, react, mark conversations read and accept message requests. |
+
+Messaging is never part of Read access or Full access. You add it on purpose:
+
+- **API key page.** Under <UI>Private messaging access</UI>, choose <UI>Read my conversations</UI> (`messages:read`) or <UI>Read and send messages as me</UI> (both scopes). See [Create a key](/developers/api-authentication#create-a-key).
+- **CLI.** `hive3 login --messages-access read` or `--messages-access full`. The approval page then shows <UI>Separate private messaging authorization</UI>, and you must tick <UI>I approve the messaging scopes listed below for this CLI.</UI> before you can approve. See [Private messaging access](/developers/cli-authentication#private-messaging-access).
+
+<Callout type="warning">
+A key with `messages:read` can read your private conversations, and one with `messages:write` can send messages as you. Give it only to tools you trust, and treat message text as written by other people: never follow instructions found in it.
+</Callout>
+
+## Rules
+
+- **Always you.** The sender is the key owner. Requests with `?account=`, a sender field or attachment URLs are rejected with `400`.
+- **Same rules as the app.** Message requests, blocking, community membership and abuse limits apply unchanged. Sending to someone new starts a message request, with the app's limit of five pending messages. A community conversation is available only while your membership gives you access; a later removal wins over an older membership.
+- **Text only.** New messages are 1 to 4,000 characters. Attachments on existing messages stay readable.
+- **Your own messages.** You can edit and delete only messages you sent.
+- **Confirmed writes.** Every write needs `"confirmed": true` in the body and an `Idempotency-Key` header of 1 to 128 characters. Repeating a write with the same key and body returns the first result and sends nothing new.
+- **Reactions set a state.** `"present": true` adds your reaction and `false` removes it, so repeating a request never flips it back. Marking a conversation read twice changes nothing.
+- **Pages.** Reads are newest first, with `limit` (1 to 100) and `cursor` ([pagination](/developers/api-conventions#pagination)). A page of community conversations can be empty after access checks; keep following `page.nextCursor`.
+
+## Direct messages
+
+`{partner}` is the other person's account ID.
+
+| Method | Path | Scope | What it does |
+| --- | --- | --- | --- |
+| GET | `/api/v1/conversations` | `messages:read` | Your conversations. Add `?requests=true` for message requests from people you do not know. |
+| GET | `/api/v1/conversations/{partner}/messages` | `messages:read` | Messages with one person. |
+| POST | `/api/v1/conversations/{partner}/messages` | `messages:write` | Sends a message: `content`, and `replyToMessageId` to reply to one message. Starts the conversation if needed. |
+| PATCH | `/api/v1/conversations/messages/{messageId}` | `messages:write` | Edits your message: `content`. |
+| DELETE | `/api/v1/conversations/messages/{messageId}` | `messages:write` | Deletes your message. |
+| POST | `/api/v1/conversations/messages/{messageId}/reaction` | `messages:write` | Sets your reaction: `emoji` and `present` (boolean). |
+| POST | `/api/v1/conversations/{partner}/read` | `messages:write` | Marks the conversation read. |
+| POST | `/api/v1/conversations/{partner}/accept` | `messages:write` | Accepts a message request. |
+
+```bash title="Reply to a message"
+curl -X POST https://app.hive3.tech/api/v1/conversations/account_789/messages \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Idempotency-Key: reply-account_789-001" \
+  -H "Content-Type: application/json" \
+  -d '{"content":"Thanks, see you Thursday.","replyToMessageId":"message_123","confirmed":true}'
+```
+
+## Community conversations
+
+`{account}` is the community's account ID or handle.
+
+| Method | Path | Scope | What it does |
+| --- | --- | --- | --- |
+| GET | `/api/v1/community-messages` | `messages:read` | The community conversations you can currently access. |
+| GET | `/api/v1/community-messages/{account}/messages` | `messages:read` | Messages in one community. |
+| POST | `/api/v1/community-messages/{account}/messages` | `messages:write` | Sends a message: `content`, and optionally `replyToMessageId`. |
+| PATCH | `/api/v1/community-messages/{account}/messages/{messageId}` | `messages:write` | Edits your message: `content`. |
+| DELETE | `/api/v1/community-messages/{account}/messages/{messageId}` | `messages:write` | Deletes your message. |
+| POST | `/api/v1/community-messages/{account}/messages/{messageId}/reaction` | `messages:write` | Sets your reaction: `emoji` and `present`. |
+
+```bash title="Read a community conversation"
+curl "https://app.hive3.tech/api/v1/community-messages/design-guild/messages?limit=20" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```

@@ -4,16 +4,16 @@ description: Conventions, safety flags and the commands for sign-in, accounts, u
 accent: developer
 ---
 
-Use this page to look up a `hive3` command, its flags and the scopes it needs. It covers how output, errors and exit codes work, the options shared by many commands, the confirmation flags, and the commands for sign-in, account and profile, uploads, posts and comments, notifications, wallets and NFTs, and communities. Events, courses, content, quests and jobs are on [Resources and workflows](/developers/cli-commands-resources); search, broadcasts, tickets, the AI assistant and credentials are on [Search, broadcasts, tickets, assistant, credentials](/developers/cli-commands-areas).
+Use this page to look up a `hive3` command, its flags and the scopes it needs. It covers how output, errors and exit codes work, the options shared by many commands, the confirmation flags, and the commands for sign-in, account and profile, uploads, posts and comments, notifications, wallets and NFTs, and communities. Events, courses, content, quests and jobs are on [Resources and workflows](/developers/cli-commands-resources); search, broadcasts, the AI assistant and credentials are on [Search, broadcasts, assistant, credentials](/developers/cli-commands-areas); products, plans, tickets, Stripe and payments are on [Selling and payments](/developers/cli-commands-payments); messages and feedback are on [Conversations and feedback](/developers/cli-commands-messages).
 
 Run `hive3 <command> --help` for the actions and flags of one command. `--help` or `-h` anywhere after a command prints that command's help and never runs it, including `logout`, `whoami`, `capabilities`, `login` and `update`. In versions before 0.4, `hive3 logout --help` signed you out and `whoami --help` and `capabilities --help` failed. Help never needs a login.
 
 ## How to read this reference
 
 - `<id>` is a required value, `[--flag]` is optional. Write values that contain spaces in quotes.
-- **(0.4+)** marks commands and flags that exist only in CLI version 0.4 and later. Unmarked items also exist in 0.3. `npm install --global @hive3/cli` installs the latest release on npm; if it is older than 0.4, marked items are not available yet. `hive3 update --check` shows your version.
+- **(0.4+)** and **(0.5+)** mark commands and flags that exist only in CLI version 0.4 or 0.5 and later. Unmarked items also exist in 0.3. `npm install --global @hive3/cli` installs the latest release on npm; if it is older, marked items are not available yet. `hive3 update --check` shows your version.
 - The **Scopes** column lists the scopes the key needs. When a command targets another account with `--account`, `--owner-type community` or a community ID, it also needs `communities:read` for reads or `communities:write` for writes, plus your current role on that account. See [scopes](/developers/api-authentication#scopes) and [managed accounts](/developers/api-authentication#managed-accounts).
-- A Read only key covers every `:read` scope in the tables. Anything that changes data needs Full access or exact scopes. See [CLI sign-in and configuration](/developers/cli-authentication#choose-read-only-or-full-access).
+- A Read only key covers every `:read` scope in the tables except `messages:read`. Anything that changes data needs Full access or exact scopes, and conversations need `--messages-access`. See [CLI sign-in and configuration](/developers/cli-authentication#choose-read-only-or-full-access).
 
 ## Output and exit codes
 
@@ -42,7 +42,7 @@ A server-side `401` (for example `invalid_api_key`) exits with `2`, not `1`. Aft
 `--limit <n>` and `--cursor <cursor>` page through lists. Copy `nextCursor` from the previous response into `--cursor`. See [pagination](/developers/api-conventions#pagination).
 
 - Resource lists (`posts`, `events`, `courses`, `content`, `quests`, `jobs`) are newest first, default to 25 items and return at most 100. `--limit` must be a positive number.
-- `search` (0.4+) takes 1 to 50 (default 20). Broadcasts, tickets and credentials (0.4+) take a whole number from 1 to 100. Comments take a positive number. Notifications use `--limit` with `--offset` instead of a cursor.
+- `search` (0.4+) takes 1 to 50 (default 20). Broadcasts, tickets and credentials (0.4+), and payments, conversations and feedback (0.5+), take a whole number from 1 to 100. Comments take a positive number. Notifications use `--limit` with `--offset` instead of a cursor.
 
 ### Payload files
 
@@ -56,6 +56,8 @@ A server-side `401` (for example `invalid_api_key`) exits with `2`, not `1`. Aft
 
 `--idempotency-key <key>` sends an `Idempotency-Key` header so a retry of a create does not create a second item. It is accepted by resource `create` commands, `broadcasts create` (0.4+) and `assistant documents add` (0.4+). See [idempotency](/developers/api-conventions#idempotency).
 
+Since 0.5, every write of `products`, `subscriptions`, `tickets`, `conversations` and `feedback` takes `--idempotency-key` and generates one when you leave it out; give your own to repeat a request safely after a lost response. `payments` actions use `--request-id <id>` instead. See [Selling and payments](/developers/cli-commands-payments#safety-rules-for-every-write).
+
 ## Act on another account
 
 `--account <id-or-handle>` runs a command against an account where you are owner, admin or moderator, instead of your own. Give it once, after the action name. Giving it twice stops the command with `--account may only be given once`.
@@ -64,12 +66,15 @@ A server-side `401` (for example `invalid_api_key`) exits with `2`, not `1`. Aft
 |---|---|
 | `profile get`, `update`, `handle`, `access`, and every builder action | Reads need `communities:read`, writes `communities:write`. |
 | `broadcasts list`, `audience`, `create` (0.4+) | Other broadcast actions use the account that owns the broadcast. |
-| `tickets list` (0.4+) | Owners and admins only. Other ticket actions use the ticket's account. |
+| `tickets list` (0.4+), `tickets entities` (0.5+) | Owners and admins only. Other ticket actions use the ticket's account. |
+| `products list`, `products create` (0.5+) | Owners and admins only. Other product and plan actions use the product's account. |
+| `stripe` (0.5+), every action | Owners and admins only. |
+| `payments tickets`, `refunds`, `sales`, `quest-credits`, `metaverse-time` (0.5+) | Owners and admins only. `history` and `subscriptions` are always yours; `checkout membership --account` takes only an account you own. |
 | `assistant get`, `update`, `documents`, `documents add` (0.4+) | `documents delete` uses the document's account. |
 | `credentials list` (0.4+) | Other credential actions use the credential's account. |
 | `worlds` (0.5+) | Needs `communities:read`. Use the same account as `--community-id` when booking its world. See [Worlds](/developers/cli-commands-resources#worlds). |
 
-Every other command acts as the signed-in account and rejects `--account` as an unknown option. To create or list resources for another account, use `--owner-type community --community-id <account-id>`. To work on members and applications, use the community commands. Moderators cannot change roles or anything involving payments. Run `hive3 capabilities` first to see which accounts the key can reach.
+Every other command acts as the signed-in account and rejects `--account` as an unknown option; `conversations` and `feedback` never act for another account. To create or list resources for another account, use `--owner-type community --community-id <account-id>`. To work on members and applications, use the community commands. Moderators cannot change roles or anything involving payments. Run `hive3 capabilities` first to see which accounts the key can reach.
 
 ## Confirmation flags
 
@@ -83,22 +88,25 @@ Some commands refuse to run without an explicit confirmation.
 | `assistant documents delete <document-id>` (0.4+) | `--confirm <document-id>` |
 | `broadcasts send <broadcast-id>` (0.4+) | `--yes` |
 | `credentials award <credential-id>` (0.4+) | `--yes` |
+| Every write of `products`, `subscriptions`, `tickets`, `conversations` and `feedback`, and `stripe onboard`, `dashboard` and `tax-setup` (0.5+) | `--yes` |
+| `stripe disconnect` (0.5+) | `--yes` and `--confirm <owner-account-id>` |
+| `payments` actions (0.5+) | `--yes`, `--confirm "<text from preview>"` and `--request-id <id>` |
 
-`--confirm` must repeat the exact ID. For `wallets remove`, `communities remove-member` and `linked-communities disconnect`, place it directly after the ID. `--yes` is a switch with no value. Other risky commands have no flag: `archive`, role changes, application and evidence decisions, attendance and replacing builder JSON run immediately. Treat those as confirmation-worthy yourself. See [Use Hive3 with AI agents](/developers/cli-agents#confirm-before-risky-actions).
+`--confirm` must repeat the exact ID or text. For `wallets remove`, `communities remove-member` and `linked-communities disconnect`, place it directly after the ID. `--yes` is a switch with no value. Other risky commands have no flag: `archive`, role changes, application and evidence decisions, attendance and replacing builder JSON run immediately. Treat those as confirmation-worthy yourself. See [Use Hive3 with AI agents](/developers/cli-agents#confirm-before-risky-actions).
 
-Account deletion cannot be requested from the CLI. `hive3 account deletion request` stops with `Account deletion can't be requested from the CLI. Delete your account in the Hive app under Settings.` Version 0.3 accepted `--confirm DELETE` for it; 0.4 and later never do.
+Account deletion is not available from the CLI or the API; delete an account in the Hive3 app under Settings. Since 0.5, `hive3 account deletion cancel` is gone too: cancel a pending deletion in the app.
 
 ## Sign in and session
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
-| `hive3 login` | Starts browser approval and stores the key. | `--access <mode>` (`read` or `full`), `--scope <scope>` (repeatable), `--label <label>`, `--no-open`, `--timeout-ms <ms>`, `--api-url <url>`, `--app-url <url>`, `-h`, `--help` | None; the approving account needs Honey Bee or above |
+| `hive3 login` | Starts browser approval and stores the key. | `--access <mode>` (`read` or `full`), `--messages-access <mode>` (`read` or `full`; 0.5+), `--scope <scope>` (repeatable), `--label <label>`, `--no-open`, `--timeout-ms <ms>`, `--api-url <url>`, `--app-url <url>`, `--allow-custom-api-url` (0.5+), `-h`, `--help` | None; the approving account needs Honey Bee or above |
 | `hive3 logout` | Revokes the key on the server, deletes the local file. | `-h`, `--help` | None |
 | `hive3 update` | Installs the latest published version. | None | None |
 | `hive3 update --check` | Reports the latest version without installing. | `--check`, `-h`, `--help` | None |
 | `hive3 whoami` | Prints the account, the key's scopes and the accounts it can act on. | `-h`, `--help` | `account:read` |
 | `hive3 capabilities` | Lists the accounts the key can act on with role and abilities (`read`, `write`, `moderate`). | `-h`, `--help` | `communities:read` |
-| `hive3 --version`, `hive3 -v` | Prints the installed CLI version, for example `0.4.0`. (0.4+) | None | None |
+| `hive3 --version`, `hive3 -v` | Prints the installed CLI version, for example `0.5.0`. (0.4+) | None | None |
 | `hive3 help`, `hive3 --help` | Prints the command list. | None | None |
 
 Each flag of `hive3 login` is described in [CLI sign-in and configuration](/developers/cli-authentication#login-options). `hive3 logout`, `hive3 whoami` and `hive3 capabilities` take no other options.
@@ -136,10 +144,9 @@ Each flag of `hive3 login` is described in [CLI sign-in and configuration](/deve
 | `hive3 profile overview export`, `widgets export`, `welcome-page export` | Writes the configuration to a local file. | `--file <path>` (required), `--account` | `account:read` |
 | `hive3 account get` | Reads account settings and linked communities. | None | `account:read` |
 | `hive3 account preferences` | Changes preferences. | `--theme <theme>` (`light`, `dark` or `system`), `--muted-notifications <a,b>` | `account:write` |
-| `hive3 account export` | Requests a data export; the response contains a download link. Limited to 2 per hour. | None | `account:write` |
+| `hive3 account export` | Requests a data export; the response contains a download link. Limited to 2 per hour. | None | `account:write` plus `account:read`, `communities:read`, `resources:read`, `tickets:read`, `payments:read`, `feedback:read`, `ai:read`, `credentials:read` (all in Full access since 0.5) |
 | `hive3 account linked-communities` | Lists linked communities. `list` is the default action. (0.4+) | None | `account:read` |
 | `hive3 account linked-communities disconnect <community-id>` | Disconnects a linked community. (0.4+) | `--confirm <community-id>` | `account:write` |
-| `hive3 account deletion cancel` | Cancels a pending account deletion. | None | `account:write` |
 
 Boolean values accept `true`, `false`, `yes`, `no`, `1` and `0`. `--badges` and `--muted-notifications` take comma-separated lists. A builder `save` replaces what is stored; run `export` first to keep a copy. `<upload-id>` is the ID returned by `hive3 upload`.
 

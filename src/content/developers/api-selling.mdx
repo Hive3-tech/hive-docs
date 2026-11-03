@@ -1,0 +1,171 @@
+---
+title: Products, subscription plans and Stripe
+description: Create and retire the products and subscription plans an account sells, and manage its Stripe connection from the API.
+accent: developer
+---
+
+These endpoints manage what an account sells: its products, the subscription plans inside each product, and the Stripe connection that takes the payments. They match <Path items={["My Hive", "My Dashboard", "Monetize"]} /> in the app; see [Get paid: subscriptions and tickets](/community/get-paid) for the app side. Tickets have their own page: [Tickets](/developers/api-tickets). Buying, cancelling and refunds are on [Payments](/developers/api-payments).
+
+New in API and CLI 0.5.0. Errors and limits follow [Requests, errors and limits](/developers/api-conventions#errors).
+
+## Scopes and who can sell
+
+| Scope | Allows |
+| --- | --- |
+| `payments:read` | Read products, plans and the Stripe connection status. |
+| `payments:write` | Create and remove products, create, edit, start and stop plans, and manage the Stripe connection. |
+
+Both scopes are in the Read access and Full access presets of keys created after this update; older keys need to be replaced ([scopes](/developers/api-authentication#scopes)).
+
+- **Your account or one you run.** Routes act on the key owner's own account unless `?account=<account ID or @handle>` names another. For another account the key also needs `communities:read` (reads) or `communities:write` (writes), must include the account when it is limited to selected accounts, and the key owner must currently be its **owner or admin**. Moderators cannot manage anything involving payments. See [managed accounts](/developers/api-authentication#managed-accounts).
+- **Starting sales.** Creating a product or plan, or turning a plan back on, needs a claimed seller account on Honey Bee or above with a ready payment provider, the same rules as in the app. Stopping or removing a plan always works.
+- **After a downgrade.** Keys with `payments:read` or `payments:write` keep managing existing products, plans and connections when the account drops below Honey Bee; other routes return `403 plan_required`.
+
+## Confirmation and retries
+
+Every write here is a money setting, so it must be confirmed and carry a request ID:
+
+- Send `"confirmed": true` in the JSON body. Without it the request fails with `400` (`Explicit confirmed:true is required (--yes)`).
+- Send a request ID of 1 to 128 characters, either as `"requestId"` in the body or as an `Idempotency-Key` header (when you send both they must match).
+- Repeating the same request with the same ID returns the first result and changes nothing. Reusing an ID with different fields is rejected.
+- Steps that reach the payment provider are recorded once. If such a step failed or you are unsure whether it ran, check the product or plan first and only then send a new request with a new ID. Nothing is retried for you.
+
+Creating a product is limited to 20 requests per minute and other writes to 30 per minute per route; bodies are limited to 8 KiB.
+
+## Products
+
+A product groups the plans or tickets you sell, for example "Membership" or "Event tickets".
+
+<Endpoint method="GET" path="/api/v1/products" scopes={["payments:read"]}>
+
+Lists the account's products. `?account=` selects another account you run. Each product has `id`, `ownerId`, `title`, `description`, `imageUrl`, `createdAt` and `updatedAt` (ISO 8601).
+
+```bash
+curl "https://app.hive3.tech/api/v1/products?account=@design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+</Endpoint>
+
+<Endpoint method="GET" path="/api/v1/products/{productId}" scopes={["payments:read"]}>
+
+Returns one product of an account you own or run as owner or admin.
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/products" scopes={["payments:write"]}>
+
+Creates a product. Returns `201` with the product.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `account` | query | string | No | Account ID or `@handle` of the seller. Defaults to the key owner. |
+| `title` | body | string | Yes | 1 to 127 characters. |
+| `description` | body | string | No | Up to 256 characters. |
+| `imageUrl` | body | string | No | Product image URL. |
+| `confirmed` | body | boolean | Yes | Must be `true`. |
+| `requestId` | body | string | Yes, or `Idempotency-Key` | 1 to 128 characters. |
+
+```bash
+curl -X POST "https://app.hive3.tech/api/v1/products?account=@design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Idempotency-Key: membership-product" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Membership","description":"Monthly and yearly access","confirmed":true}'
+```
+
+</Endpoint>
+
+<Endpoint method="DELETE" path="/api/v1/products/{productId}" scopes={["payments:write"]}>
+
+Removes a product from future sales. Existing subscriptions, purchases and refund history are kept. Send `{"confirmed": true}` and a request ID.
+
+</Endpoint>
+
+## Subscription plans
+
+A plan is a recurring price inside a product. Prices are decimal strings such as `"12.00"`; the currency is `USD` (default), `EUR` or `GBP`; the interval is `monthly` or `yearly`.
+
+<Endpoint method="GET" path="/api/v1/products/{productId}/plans" scopes={["payments:read"]}>
+
+Lists the plans of a product. Each plan has `id`, `productId`, `name`, `description`, `amount`, `currency`, `interval`, `status` (`active` or `inactive`), `createdAt` and `updatedAt`.
+
+</Endpoint>
+
+<Endpoint method="GET" path="/api/v1/subscriptions/{planId}" scopes={["payments:read"]}>
+
+Returns one plan.
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/products/{productId}/plans" scopes={["payments:write"]}>
+
+Creates a plan and starts selling it. Returns `201` with the plan.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `name` | body | string | Yes | 1 to 127 characters. |
+| `amount` | body | string | Yes | Positive decimal with at most two decimals, for example `"12.00"`. |
+| `interval` | body | string | Yes | `monthly` or `yearly`. |
+| `currency` | body | string | No | `USD` (default), `EUR` or `GBP`. |
+| `description` | body | string | No | Up to 256 characters. |
+| `confirmed`, `requestId` | body | | Yes | See [Confirmation and retries](#confirmation-and-retries). |
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/products/product_123/plans \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Idempotency-Key: monthly-plan" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Monthly","amount":"12.00","currency":"USD","interval":"monthly","confirmed":true}'
+```
+
+</Endpoint>
+
+<Endpoint method="PATCH" path="/api/v1/subscriptions/{planId}" scopes={["payments:write"]}>
+
+Edits a plan. Send the whole plan: `name`, `amount`, `currency` and `interval` are required, `description` is optional, plus `confirmed` and a request ID.
+
+A plan connected to PayPal cannot change its price, currency or interval; create a replacement plan instead. Its name and description can still be edited.
+
+</Endpoint>
+
+<Endpoint method="POST" path="/api/v1/subscriptions/{planId}/activate" scopes={["payments:write"]}>
+
+Starts selling the plan again. `POST /api/v1/subscriptions/{planId}/deactivate` stops new sales. Both take `{"confirmed": true}` and a request ID. Stopping sales does not cancel people who already subscribed.
+
+</Endpoint>
+
+<Endpoint method="DELETE" path="/api/v1/subscriptions/{planId}" scopes={["payments:write"]}>
+
+Removes a plan from future sales. Existing subscriptions and their history are kept.
+
+</Endpoint>
+
+## Stripe connection
+
+These routes manage the account's Stripe connection, the same as the <UI>Stripe Connect</UI> section of <UI>Monetize</UI>. All of them accept `?account=` for an account where you are owner or admin. The identity, bank and legal steps always happen on Stripe's own pages in the browser; the API never completes them for you.
+
+| Method | Path | Scope | What it does |
+| --- | --- | --- | --- |
+| GET | `/api/v1/payments/stripe/status` | `payments:read` | Returns `ownerId`, `connected`, `disconnecting` and `status`: whether onboarding, payments, payouts and tax are ready, what Stripe still needs, and when it was last refreshed. |
+| POST | `/api/v1/payments/stripe/onboarding` | `payments:write` | Starts or resumes Stripe onboarding and returns a private link to open in the browser, with the outstanding requirements. |
+| POST | `/api/v1/payments/stripe/refresh` | `payments:write` | Asks Stripe for the latest status and saves it. |
+| POST | `/api/v1/payments/stripe/dashboard` | `payments:write` | Returns a private sign-in link to the account's Stripe dashboard. |
+| POST | `/api/v1/payments/stripe/tax-setup` | `payments:write` | Returns a link to the tax settings on the account's Hive3 dashboard. |
+| POST | `/api/v1/payments/stripe/disconnect` | `payments:write` | Disconnects Stripe. The body must be `{"confirm": "<ownerId>"}`, the `ownerId` from `status`. |
+
+POST bodies accept only the optional `confirm` string; Stripe account IDs and any other fields are rejected.
+
+<Callout type="warning">
+Onboarding and dashboard links give access to the seller's Stripe account. Open them privately, and never log, store or share them.
+</Callout>
+
+Disconnecting stops renewing Stripe subscriptions at the end of their period, turns off the account's Stripe plans and removes the connection from Hive3. It does not close the account at Stripe. From the moment it starts, new Stripe sales and renewals are blocked; if it is interrupted, send the same disconnect again to finish it.
+
+```bash title="Check the connection, then start onboarding"
+curl "https://app.hive3.tech/api/v1/payments/stripe/status?account=@design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+
+curl -X POST "https://app.hive3.tech/api/v1/payments/stripe/onboarding?account=@design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```

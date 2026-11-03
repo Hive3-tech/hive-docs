@@ -120,7 +120,7 @@ Returns `200`. Errors: `403 insufficient_scope` (`communities:read` missing), `4
 
 <Endpoint method="GET" path="/api/v1/{kind}/{id}" scopes={["resources:read", "communities:read (managed accounts)"]}>
 
-Returns one active resource owned by your account or an account you manage. Anything else, including archived resources, returns `404 not_found` (`Resource not found`).
+Returns one active resource. For your own account, or an account you manage within the key's scopes and allowlist, you get the full resource. Since API 0.5.0, other resources are returned when your account could see them in the app, in the same form a visitor sees there: paid content stays hidden until you have access, and management-only fields are left out. A resource of an account you manage but that the key does not cover, an archived resource, or one you cannot see returns `404 not_found` (`Resource not found`).
 
 ```bash
 curl https://app.hive3.tech/api/v1/jobs/job_123 \

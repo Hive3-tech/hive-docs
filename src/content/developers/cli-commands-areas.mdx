@@ -1,12 +1,12 @@
 ---
-title: CLI commands for search, broadcasts, tickets, assistant and credentials
-description: Search Hive3, draft and send broadcasts, edit tickets, manage an AI assistant's documents, and award credentials from the hive3 CLI.
+title: CLI commands for search, broadcasts, assistant and credentials
+description: Search Hive3, draft and send broadcasts, manage an AI assistant's documents, and award credentials from the hive3 CLI.
 accent: developer
 ---
 
-These five commands arrived in CLI version 0.4, so every command and flag on this page is **(0.4+)**. If `hive3 search` prints `Unknown command: search`, your installed CLI is older; run `hive3 update --check`. Shared conventions such as output, exit codes, `--file` and `--account` are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference).
+These four commands arrived in CLI version 0.4, so every command and flag on this page is **(0.4+)**. If `hive3 search` prints `Unknown command: search`, your installed CLI is older; run `hive3 update --check`. Shared conventions such as output, exit codes, `--file` and `--account` are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference). Tickets moved to [Selling and payments](/developers/cli-commands-payments#tickets) in 0.5.
 
-Keys created before the broadcast, ticket, AI and credential scopes existed do not include them. Sign in again with `hive3 login` to get a key that does. Search uses the existing `resources:read` scope. When you target another account with `--account`, each command also needs `communities:read` (reads) or `communities:write` (writes) and your current role. See [Act on another account](/developers/cli-commands#act-on-another-account).
+Keys created before the broadcast, AI and credential scopes existed do not include them. Sign in again with `hive3 login` to get a key that does. Search uses the existing `resources:read` scope. When you target another account with `--account`, each command also needs `communities:read` (reads) or `communities:write` (writes) and your current role. See [Act on another account](/developers/cli-commands#act-on-another-account).
 
 ## Search
 
@@ -60,27 +60,6 @@ hive3 broadcasts create --file broadcast.json --account design-guild --idempoten
 hive3 broadcasts test "<broadcast-id>"
 hive3 broadcasts send "<broadcast-id>" --yes --at 2026-11-02T15:00:00Z
 hive3 broadcasts cancel "<broadcast-id>"
-```
-
-## Tickets
-
-Tickets are the paid entries set up on an account's events, courses and quests. Creating tickets, checkout and refunds are not available from the CLI.
-
-| Command | What it does | Flags | Scopes |
-|---|---|---|---|
-| `hive3 tickets list` | Lists tickets an account sells. Owners and admins only. | `--account`, `--limit <n>`, `--cursor <cursor>` | `tickets:read` |
-| `hive3 tickets get <id>` | Reads one ticket. | None | `tickets:read` |
-| `hive3 tickets update <id>` | Changes a ticket. At least one field is required. | `--name <text>`, `--description <text>`, `--amount <amount>`, `--currency <code>`, `--status <status>` | `tickets:write` |
-| `hive3 tickets mine` | Lists tickets you bought, with their status. | `--limit <n>`, `--cursor <cursor>` | `tickets:read` |
-
-- `--amount` is a positive decimal with at most two decimals, such as `12.50`. `--currency` is a three-letter code, such as `USD`; it is converted to upper case.
-- `--status` is `active` or `inactive`. Turning a ticket back on needs a seller on Honey Bee or above.
-- Managing tickets is for owners and admins; moderators cannot.
-
-```bash title="Change a ticket's price"
-hive3 tickets list --account design-guild
-hive3 tickets update "<ticket-id>" --amount 12.50 --currency USD
-hive3 tickets update "<ticket-id>" --status inactive
 ```
 
 ## AI assistant

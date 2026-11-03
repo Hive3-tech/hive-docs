@@ -40,7 +40,7 @@ hive3 --help
 </Steps>
 
 <Callout type="note">
-Commands and flags marked **(0.4+)** need CLI version 0.4 or later. `npm install --global @hive3/cli` installs the latest release published to npm; if that release is older than 0.4, marked commands, such as `hive3 search`, are not available yet. Run `hive3 update --check` to see your installed version.
+Commands and flags marked **(0.4+)** or **(0.5+)** need CLI version 0.4 or 0.5 or later. `npm install --global @hive3/cli` installs the latest release published to npm; if that release is older, marked commands, such as `hive3 search` (0.4+) or `hive3 payments` (0.5+), are not available yet. Run `hive3 update --check` to see your installed version.
 </Callout>
 
 ## Sign in
@@ -103,7 +103,7 @@ hive3 capabilities
 ```text title="Example output"
 Account: Ada
 Handle: @ada
-Scopes: account:read, ai:read, broadcasts:read, communities:read, credentials:read, posts:read, resources:read, tickets:read
+Scopes: account:read, ai:read, broadcasts:read, communities:read, credentials:read, feedback:read, payments:read, posts:read, resources:read, tickets:read
 Accounts this key can act on: 2
 - Ada (owner): read, write, moderate
 - Design Guild (admin): read, write, moderate

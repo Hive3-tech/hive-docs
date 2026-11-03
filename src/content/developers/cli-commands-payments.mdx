@@ -1,0 +1,125 @@
+---
+title: CLI commands for selling and payments
+description: Manage products, subscription plans, tickets and the Stripe connection, and preview and confirm payments, from the hive3 CLI.
+accent: developer
+---
+
+These commands arrived in CLI version 0.5, so every command and flag on this page is **(0.5+)**; `hive3 tickets list`, `get`, `update` and `mine` existed in 0.4 but now follow the rules below. If `hive3 products` prints `Unknown command: products`, your installed CLI is older; run `hive3 update --check`. Every command prints JSON. Shared conventions such as output and exit codes are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference).
+
+`products`, `subscriptions`, `stripe` and `payments` need `payments:read` or `payments:write`; `tickets` needs `tickets:read` or `tickets:write`. Keys from before 0.5 do not have the payment scopes: run `hive3 login` again. For an account you run, `--account` also needs `communities:read` or `communities:write`, the key's account allowlist, and your current **owner or admin** role there; moderators cannot manage payments. The API side is on [Products, subscription plans and Stripe](/developers/api-selling), [Tickets](/developers/api-tickets) and [Payments](/developers/api-payments).
+
+## Safety rules for every write
+
+- **`--yes` is required** on every command that changes something. Without it the command stops before calling the API.
+- **Idempotency.** Seller writes accept `--idempotency-key <key>` (1 to 128 characters); without it the CLI generates one. Keep the key to repeat the same request safely after a lost response. Payment operations use `--request-id` instead.
+- **No automatic retries.** Steps that reach the payment provider are tried once. If one failed or you are not sure it ran, check the item, `hive3 stripe status` or `hive3 payments` history before trying again with a new key.
+- **Starting sales** (creating a product, plan or ticket, or turning one back on) needs a claimed seller account on Honey Bee or above with a ready payment provider. Stopping sales always works.
+- **Currencies** are `USD` (default), `EUR` and `GBP`.
+
+## Products
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive3 products list` | Lists the account's products. | `--account` | `payments:read` |
+| `hive3 products get <id>` | Reads one product. | None | `payments:read` |
+| `hive3 products create` | Creates a product. | `--title <title>` (required), `--description <text>`, `--image-url <url>`, `--account`, `--file <path>`, `--idempotency-key <key>`, `--yes` | `payments:write` |
+| `hive3 products delete <id>` | Removes the product from future sales. Existing subscriptions, purchases and refunds are kept. | `--idempotency-key`, `--yes` | `payments:write` |
+
+## Subscription plans
+
+`hive3 subscriptions` manages the plans you sell. Your own subscriptions as a buyer are under [`hive3 payments`](#payments).
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive3 subscriptions list` | Lists the plans of a product. | `--product <product-id>` (required) | `payments:read` |
+| `hive3 subscriptions get <plan-id>` | Reads one plan. | None | `payments:read` |
+| `hive3 subscriptions create` | Creates a plan and starts selling it. | `--product <product-id>`, `--name <name>`, `--amount <decimal>`, `--interval monthly\|yearly` (all required), `--currency <code>`, `--description <text>`, `--file`, `--idempotency-key`, `--yes` | `payments:write` |
+| `hive3 subscriptions update <plan-id>` | Replaces a plan's details. | `--name`, `--amount`, `--currency`, `--interval` (all required), `--description`, `--file`, `--idempotency-key`, `--yes` | `payments:write` |
+| `hive3 subscriptions activate <plan-id>`, `deactivate <plan-id>` | Starts or stops new sales of a plan. | `--idempotency-key`, `--yes` | `payments:write` |
+| `hive3 subscriptions delete <plan-id>` | Removes a plan from future sales. Existing subscriptions are kept. | `--idempotency-key`, `--yes` | `payments:write` |
+
+A plan connected to PayPal cannot change its price, currency or interval; create a replacement plan instead. Its name and description can still change.
+
+## Tickets
+
+Tickets are the one-time purchases on an account's events, courses, quests and bookings.
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive3 tickets list` | Lists tickets an account sells. | `--account`, `--limit <1-100>`, `--cursor <cursor>` | `tickets:read` |
+| `hive3 tickets entities` | Lists the events, courses, quests and bookings a ticket can be attached to, with their IDs. | `--account` | `tickets:read` |
+| `hive3 tickets get <id>` | Reads one ticket. | None | `tickets:read` |
+| `hive3 tickets mine` | Lists tickets you bought, with their status. | `--limit`, `--cursor` | `tickets:read` |
+| `hive3 tickets create` | Creates a ticket and attaches it. | `--product <id>`, `--name <name>`, `--amount <decimal>`, `--entity-type event\|course\|quest\|coordination`, `--entity-id <id>` (all required), `--currency <code>`, `--description <text>`, `--status active\|inactive`, `--file`, `--idempotency-key`, `--yes` | `tickets:write` |
+| `hive3 tickets update <id>` | Changes a ticket. At least one field is required. | `--name`, `--description`, `--amount`, `--currency`, `--status`, `--file`, `--idempotency-key`, `--yes` | `tickets:write` |
+| `hive3 tickets attach <id>` | Moves a ticket to another item of the same account. | `--entity-type`, `--entity-id` (both required), `--file`, `--idempotency-key`, `--yes` | `tickets:write` |
+| `hive3 tickets remove <id>` | Stops selling the ticket (sets it to `inactive`). Buyers keep their access. | `--idempotency-key`, `--yes` | `tickets:write` |
+
+- `--amount` is a positive decimal with at most two decimals, such as `12.50`, up to `1000000`.
+- The product and the item must belong to the same account. Once anyone has checked out with a ticket, it cannot be moved to another item.
+- `create`, `update` and `attach` accept `--file <path>` with a JSON object instead of field flags (`productId`, `name`, `amount`, `currency`, `description`, `entityType`, `entityId`, `status`); flags override the file.
+
+```bash title="Sell tickets for an event"
+hive3 products create --title "Event tickets" --account design-guild --yes
+hive3 tickets entities --account design-guild
+hive3 tickets create --product "<product-id>" --name "Entry ticket" --amount 25.00 --entity-type event --entity-id "<event-id>" --yes
+hive3 tickets update "<ticket-id>" --amount 30.00 --yes
+hive3 tickets remove "<ticket-id>" --yes
+```
+
+## Stripe
+
+`hive3 stripe` manages the account's Stripe connection. Owners and admins only.
+
+| Command | What it does | Flags | Scopes |
+|---|---|---|---|
+| `hive3 stripe status` | Shows whether the account is connected and what Stripe still needs, and prints the owner account ID used by `disconnect`. | `--account` | `payments:read` |
+| `hive3 stripe onboard` | Starts or resumes Stripe onboarding and returns a private link. | `--account`, `--yes` | `payments:write` |
+| `hive3 stripe refresh` | Asks Stripe for the latest status. | `--account` | `payments:write` |
+| `hive3 stripe dashboard` | Returns a private sign-in link to the Stripe dashboard. | `--account`, `--yes` | `payments:write` |
+| `hive3 stripe tax-setup` | Returns a link to the tax settings on the account's Hive3 dashboard. | `--account`, `--yes` | `payments:write` |
+| `hive3 stripe disconnect` | Disconnects Stripe from Hive3. | `--account`, `--yes`, `--confirm <owner-account-id>` (required) | `payments:write` |
+
+Identity checks, bank details and Stripe's terms are completed by the account owner on Stripe's pages in the browser; the CLI cannot do them. Onboarding and dashboard links give access to the Stripe account: open them privately and never share or save them.
+
+Disconnecting stops renewing Stripe subscriptions at the end of their period, turns off the account's Stripe plans and removes the connection from Hive3; the Stripe account itself stays open. New Stripe sales are blocked from the moment it starts. If it is interrupted, run the same command again to finish.
+
+## Payments
+
+`hive3 payments` reads histories and runs buyer and seller payment actions. Every action is previewed first, then confirmed with the exact text the preview printed.
+
+| Command | What it does | Scopes |
+|---|---|---|
+| `hive3 payments history` | Your payments. `--limit`, `--cursor`. | `payments:read` |
+| `hive3 payments subscriptions` | Your subscriptions, with the IDs used below. | `payments:read` |
+| `hive3 payments tickets`, `refunds`, `sales` | Ticket purchases, refund requests or sales. `--account <seller>` for an account you run, `--limit`, `--cursor`. | `payments:read` |
+| `hive3 payments quest-credits`, `metaverse-time` | Quest credit or metaverse time purchases. `--account`, `--limit`, `--cursor`. | `payments:read` |
+| `hive3 payments preview <action>` | Shows what an action will do and prints its `confirm` text. Changes nothing. | `payments:write` |
+| `hive3 payments <action> --yes --confirm "<confirm>" --request-id <id>` | Runs the action. | `payments:write` |
+
+| Action | Arguments |
+|---|---|
+| `checkout subscription <plan-id>`, `checkout ticket <ticket-id>` | `--provider stripe\|paypal` |
+| `checkout membership` | `--tier honey\|swarm\|royal` (required), `--account <owned-account>` |
+| `checkout quest-credit <account>` | `--plan-type single\|bundle` (required) |
+| `checkout metaverse-time <account>` | `--quantity <1-100 hours>` (required) |
+| `finalize stripe <session-id>` | `--kind membership\|subscription\|ticket\|questCredit\|metaverseTime` (required) |
+| `finalize subscription <plan-id>` | `--checkout-intent <id>`, `--paypal-subscription <id>` (both required) |
+| `finalize ticket <ticket-id>` | `--order <order-id>` (required) |
+| `subscription cancel\|resume\|portal <subscription-id>` | None |
+| `subscription revise <subscription-id>` | `--plan <new-plan-id>` (required; PayPal subscriptions only) |
+| `membership cancel\|resume\|portal` | None |
+| `membership revise` | `--tier honey\|swarm\|royal` (required) |
+| `refund request <purchased-ticket-id>` | `--reason <text>` |
+| `refund approve\|reject <refund-request-id>` | `--note <text>`; owners and admins of the seller only |
+
+```bash title="Buy a ticket"
+hive3 payments preview checkout ticket "<ticket-id>" --provider stripe
+hive3 payments checkout ticket "<ticket-id>" --provider stripe --yes \
+  --confirm "<confirm text from the preview>" --request-id buy-ticket-001
+```
+
+- **Paste `confirm` unchanged.** It names the account, provider, action, target and amount. If anything changed since the preview, the command stops with `confirm must exactly match the current payment preview`; run the preview again.
+- **Payment happens in the browser.** Checkouts, portals and plan changes return a private link that the buyer opens in their own browser to pay or approve. The CLI never approves a purchase on its own.
+- **One attempt per request ID.** Use a new `--request-id` (up to 128 characters) for each action, and the same one only to repeat the identical request. If the result is unknown, check `hive3 payments history` or the browser before doing anything else; a second checkout for the same thing is blocked.
+- **Not supported:** changing the plan of a Stripe creator subscription (its portal handles payment methods, invoices and cancelling), managing an older PayPal Hive3 membership, payouts and wallet transfers. A membership checkout for an account you own is for its owner only; after that, that account manages its membership with its own sign-in.

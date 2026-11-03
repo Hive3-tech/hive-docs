@@ -32,7 +32,9 @@ If you are not signed in, the page shows <UI>Sign in first</UI>. Choose a sign-i
 Under <UI>Enter the code</UI>, type the code from your terminal into <UI>CLI code</UI>. Codes have the form `XXXX-XXXX`. The field ignores case, spaces and dashes, and codes never contain the characters `I`, `O`, `0` or `1`. If the page says the code does not match an active CLI login, start a new login from your terminal.
 </Step>
 <Step title="Review and approve">
-The <UI>Approve login</UI> card shows the account you approve as, the request name (see `--label`), the access toggle, and the <UI>Granted scopes</UI> list. The <UI>Approve login</UI> button stays disabled until the code you typed matches the request. Select it to approve, or <UI>Cancel</UI> to refuse.
+The <UI>Approve login</UI> card shows the account you approve as, the request name under **Name supplied by the requesting device** (see `--label`) with when and from which IP address the login was started, the access toggle, and the <UI>Granted scopes</UI> list. Anyone can choose that name, so do not trust it on its own; the card also says **Only approve if you just ran hive3 login yourself. Hive3 staff will never ask you for this code.** The <UI>Approve login</UI> button stays disabled until the code you typed matches the request. Select it to approve, or <UI>Cancel</UI> to refuse.
+
+When the login includes payment scopes, the card adds that payment access includes checkout links, subscription management and refund decisions, and that the payment itself stays in your browser. When it asks for messaging, see [Private messaging access](#private-messaging-access).
 
 If your account is below Honey Bee, the card shows **A Honey Bee subscription is required to create API keys.** and the button stays disabled.
 </Step>
@@ -65,13 +67,13 @@ Approve only the code your own terminal printed. Anyone can start a login reques
 When you run `hive3 login` without `--access` or `--scope`, the approval page shows two choices. <UI>Read only</UI> is selected by default. Your choice decides which scopes the key gets.
 
 <Callout type="warning">
-A <UI>Full access</UI> key can change your account and content, export all account data, and change or remove linked wallets. Treat it like a password. The page shows **This credential can modify your account and content.** whenever the granted scopes include any write scope.
+A <UI>Full access</UI> key can change your account and content, start checkouts, change subscriptions and decide refunds, and change or remove linked wallets. Treat it like a password. The page shows **This credential can modify your account and content.** whenever the granted scopes include any write scope.
 </Callout>
 
 | Scope | <UI>Read only</UI> | <UI>Full access</UI> | Covers |
 |---|---|---|---|
 | `account:read` | Yes | Yes | Account, profile, wallets, notifications, builders |
-| `account:write` | No | Yes | Profile and settings, uploads, data export, wallets, NFT visibility, notification state |
+| `account:write` | No | Yes | Profile and settings, uploads, wallets, NFT visibility, notification state; with every read scope, data export |
 | `posts:read` | Yes | Yes | Posts and comments |
 | `posts:write` | No | Yes | Create, edit, archive and like posts and comments |
 | `resources:read` | Yes | Yes | Events, courses, content, quests, jobs, participants, search |
@@ -81,34 +83,51 @@ A <UI>Full access</UI> key can change your account and content, export all accou
 | `communities:write` | No | Yes | Writes on managed accounts, membership, access type |
 | `broadcasts:read` | Yes | Yes | Broadcast drafts, sends and audience |
 | `broadcasts:write` | No | Yes | Create, edit, test, send and cancel broadcasts |
-| `tickets:read` | Yes | Yes | Ticket setup and your own tickets |
-| `tickets:write` | No | Yes | Edit ticket name, description, price and status |
+| `tickets:read` | Yes | Yes | Ticket setup, attachable items and your own tickets |
+| `tickets:write` | No | Yes | Create, attach, edit and stop selling tickets |
 | `ai:read` | Yes | Yes | AI assistant settings and documents |
 | `ai:write` | No | Yes | Change the assistant, add and remove documents |
 | `credentials:read` | Yes | Yes | Credentials, yours and claimable ones |
 | `credentials:write` | No | Yes | Award custom credentials |
+| `payments:read` | Yes | Yes | Products, plans, Stripe status, payment and sales histories (0.5+) |
+| `payments:write` | No | Yes | Manage products, plans and Stripe; preview and confirm payments (0.5+) |
+| `feedback:read` | Yes | Yes | Your bug reports and suggestions (0.5+) |
+| `feedback:write` | No | Yes | Send reports and reply on them (0.5+) |
 
-Read only grants 8 scopes and Full access grants 17. Neither grants `account:destroy`. Keys created before the broadcast, ticket, AI and credential scopes existed do not include them; sign in again to get them.
+Read only grants 10 scopes and Full access grants 21. Neither includes the messaging scopes. Keys created before a scope existed do not include it: sign in again to get the payment and feedback scopes of 0.5, or the broadcast, ticket, AI and credential scopes of 0.4.
 
 Scopes are necessary but not sufficient. For anything on another account you also need your live role there. See [scopes](/developers/api-authentication#scopes).
+
+## Private messaging access
+
+`hive3 conversations` (0.5+) needs `messages:read` or `messages:write`, which Read only and Full access never include. Ask for them on top of either bundle with `--messages-access`:
+
+```bash title="Add messaging to a login"
+hive3 login --access read --messages-access read
+hive3 login --access full --messages-access full
+```
+
+`read` adds `messages:read`; `full` adds `messages:read` and `messages:write`. The approval page then shows **Separate private messaging authorization**: read scopes expose your private conversations and write scopes allow sending messages as you. Tick **I approve the messaging scopes listed below for this CLI.** before you approve; without it the approval fails and the request stays open. The scopes cover only your own inbox and the community conversations you can access, never another account's inbox. The same consent applies when you request `messages:read` or `messages:write` with `--scope`. See [Conversations](/developers/cli-commands-messages#conversations).
 
 ## Login options
 
 | Flag | What it does |
 |---|---|
 | `--access <mode>` | Preselects the bundle: `read` or `full`. The page shows the granted scopes without the toggle. Omit it to choose in the browser. |
+| `--messages-access <mode>` | Also requests messaging: `read` or `full`. Needs the separate consent above. (0.5+) |
 | `--scope <scope>` | Advanced. Requests one exact scope; repeat the flag for several. The page shows exactly those scopes and no toggle. |
 | `--label <label>` | Name shown on the approval card and used as the key's name in the app. Default `Hive CLI`; at most 80 characters. |
 | `--no-open` | Prints the URL and code without opening a browser. |
 | `--timeout-ms <ms>` | How long the CLI waits for approval. Default 600000. Must be a positive number. |
 | `--api-url <url>` | API base URL for this login. Default `$HIVE_API_URL`, then `https://app.hive3.tech/api/v1`. |
-| `--app-url <url>` | Approval site URL. Default `$HIVE_APP_URL`, then `https://app.hive3.tech`. |
+| `--app-url <url>` | Approval site URL. Default `$HIVE_APP_URL`, then the origin of the API URL. |
+| `--allow-custom-api-url` | Allows an API or app host other than `app.hive3.tech`, `staging.hive3.tech` or `localhost`. (0.5+) |
 | `-h`, `--help` | Prints the login usage. |
 
 - `--access` cannot be combined with `--scope`. The CLI stops with `--access cannot be combined with --scope. Use one permission bundle or exact scopes.`
-- `--scope account:destroy` is refused: the server answers `Hive API error 400 (invalid_request): scopes must contain supported public API scopes.` The CLI never receives permission to delete an account.
-- Scope names must be one of the 17 in the table above.
-- `--api-url` and `--app-url` are for local and staging setups. The server uses an `--app-url` only when it has the same origin as its own site address. Plain `http` is accepted only for `localhost`, `127.0.0.1` and `::1`; otherwise the CLI refuses to send credentials over an insecure connection.
+- Scope names must be one of the 21 in the table above, or `messages:read` and `messages:write`. Unknown scopes are refused by the server with `Hive API error 400 (invalid_request): scopes must contain supported public API scopes.` No scope lets the CLI delete an account.
+- The server that answers a login receives the new key. Since 0.5 the CLI talks only to `app.hive3.tech`, `staging.hive3.tech` and `localhost` (`127.0.0.1`, `::1`) unless you add `--allow-custom-api-url`, and then prints a warning naming each other host. Use it only for a server you run or trust. The CLI also refuses an approval URL on a different site than the app URL.
+- Plain `http` is accepted only for `localhost`, `127.0.0.1` and `::1`; otherwise the CLI refuses to send credentials over an insecure connection.
 
 ```bash title="Scripted logins"
 hive3 login --access read --label "Reporting script" --no-open

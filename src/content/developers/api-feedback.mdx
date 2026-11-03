@@ -1,0 +1,67 @@
+---
+title: Feedback and bug reports
+description: Send bug reports and suggestions with screenshots or a video, and follow up on your support tickets from the API.
+accent: developer
+---
+
+These endpoints are the API side of <Path items={["Settings", "Help & feedback"]} /> ([Help and feedback](/account/help)): send a bug report or a suggestion, attach images or a video, read your tickets and the conversation with Hive3 support, and reply. Feedback tickets are support conversations; they have nothing to do with the paid [tickets](/developers/api-tickets) people buy.
+
+New in API and CLI 0.5.0. Errors and limits follow [Requests, errors and limits](/developers/api-conventions#errors).
+
+## Scopes
+
+| Scope | Allows |
+| --- | --- |
+| `feedback:read` | Read your own feedback tickets and their conversations. |
+| `feedback:write` | Send reports and suggestions, get upload links for attachments, and reply on your tickets. |
+
+Both are in the Read access and Full access presets of keys created after this update ([scopes](/developers/api-authentication#scopes)). A key only ever sees the tickets its owner sent; asking for anyone else's returns `404`.
+
+## Rules
+
+- **Text.** A report's description is 10 to 5,000 characters. A reply is 1 to 2,000 characters. Closed tickets do not take new replies.
+- **Attachments.** Up to four images (8 MiB each) and one video (19 MiB) per report. Each file must be uploaded through its own upload link from `POST /api/v1/feedback/upload-url`, by the same account, and can be attached once.
+- **Confirmed writes.** Sending a report and replying need `"confirmed": true` in the body and an `Idempotency-Key` header. Repeating the same request with the same key returns the first result; the same key with a different body is rejected.
+- **Limits.** Reports share the app's limit of five per hour per account; replies share its message budget.
+- **Pages.** Lists use `limit` (1 to 100) and `cursor` ([pagination](/developers/api-conventions#pagination)). A cursor from another list returns `400 invalid_request`.
+- **Report text is private data.** Include only what the issue needs, and never paste keys or passwords.
+
+## Endpoints
+
+`{ticket}` is a ticket ID or the ticket number shown in the app (it starts with `HV`).
+
+| Method | Path | Scope | What it does |
+| --- | --- | --- | --- |
+| POST | `/api/v1/feedback/upload-url` | `feedback:write` | Body `{"kind": "image"}` or `{"kind": "video"}`. Returns an upload link for one file. |
+| POST | `/api/v1/feedback` | `feedback:write` | Sends a report: `kind` (`bug` or `suggestion`), `description`, optional `attachments` (`[{"kind": "image", "storageId": "…"}]`), and `confirmed`. Returns the ticket ID and number. |
+| GET | `/api/v1/feedback` | `feedback:read` | Your tickets, newest first. |
+| GET | `/api/v1/feedback/{ticket}` | `feedback:read` | One of your tickets, with its status. |
+| GET | `/api/v1/feedback/{ticket}/messages` | `feedback:read` | The conversation on a ticket. |
+| POST | `/api/v1/feedback/{ticket}/messages` | `feedback:write` | Replies: `{"body": "…", "confirmed": true}`. |
+
+## Send a report with a screenshot
+
+<Steps>
+<Step title="Get an upload link">
+```bash
+curl -X POST https://app.hive3.tech/api/v1/feedback/upload-url \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"kind":"image"}'
+```
+</Step>
+<Step title="Upload the file">
+POST the raw file to the `uploadUrl` from the response with its `Content-Type` (for example `image/png`). The upload returns `{ "storageId": "…" }`.
+</Step>
+<Step title="Send the report">
+```bash
+curl -X POST https://app.hive3.tech/api/v1/feedback \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Idempotency-Key: report-checkout-button-001" \
+  -H "Content-Type: application/json" \
+  -d '{"kind":"bug","description":"The checkout button does nothing on the event page.","attachments":[{"kind":"image","storageId":"<storageId>"}],"confirmed":true}'
+```
+</Step>
+</Steps>
+
+You get the same in-app notifications and, with a verified email, the same confirmation and status emails as a report sent from the app.
