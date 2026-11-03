@@ -11,9 +11,10 @@ This page lists changes that can affect an integration: new endpoints and scopes
 This CLI release changes no API behavior or scopes.
 
 - **Hive3 CLI naming.** Every message that said "Hive CLI" now says "Hive3 CLI", for example `Hive3 CLI authenticated as API key hive_sk_…` and `Hive3 CLI login timed out.` The default `--label`, and so the default key name in the app, is now `Hive3 CLI`, and the approval page says **Hive3 CLI approved** or **Hive3 CLI canceled**. CLI 0.5.0 and older still print "Hive CLI"; scripts that match these messages should accept both. See [CLI sign-in and configuration](/developers/cli-authentication).
-- **Skill update rule.** The bundled agent skill tells agents to run `hive3 update --check` at the start of a session and tell you when a newer version exists. They install it (`hive3 update`, then `hive3 skill install --force`) only when you agree. See [What the skill tells the agent to do](/developers/cli-agents#what-the-skill-tells-the-agent-to-do).
+- **Skill update rule.** The bundled agent skill tells agents to run `hive3 update --check` at the start of a session and tell you when a newer version exists. They install it (`hive3 update`, then `hive3 skill install --force` with the options the skill was installed with) only when you agree. See [What the skill tells the agent to do](/developers/cli-agents#what-the-skill-tells-the-agent-to-do).
+- **Messages.** The plan-limit message is now `API access needs Honey Bee or above. Upgrade under Settings in the Hive3 app. …`, and API errors start with `Hive3 API error`.
 
-**What to do:** run `hive3 update`, then `hive3 skill install --force`.
+**What to do:** run `hive3 update`, then `hive3 skill install --force` with the same `--agent`, `--project` or `--dir` options you installed the skill with.
 
 ## November 2026: API and CLI 0.5.0
 

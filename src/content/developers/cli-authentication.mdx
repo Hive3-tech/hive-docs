@@ -125,7 +125,7 @@ hive3 login --access full --messages-access full
 | `-h`, `--help` | Prints the login usage. |
 
 - `--access` cannot be combined with `--scope`. The CLI stops with `--access cannot be combined with --scope. Use one permission bundle or exact scopes.`
-- Scope names must be one of the 21 in the table above, or `messages:read` and `messages:write`. Unknown scopes are refused by the server with `Hive API error 400 (invalid_request): scopes must contain supported public API scopes.` No scope lets the CLI delete an account.
+- Scope names must be one of the 21 in the table above, or `messages:read` and `messages:write`. Unknown scopes are refused by the server with `Hive3 API error 400 (invalid_request): scopes must contain supported public API scopes.` No scope lets the CLI delete an account.
 - The server that answers a login receives the new key. Since 0.5 the CLI talks only to `app.hive3.tech`, `staging.hive3.tech` and `localhost` (`127.0.0.1`, `::1`) unless you add `--allow-custom-api-url`, and then prints a warning naming each other host. Use it only for a server you run or trust. The CLI also refuses an approval URL on a different site than the app URL.
 - Plain `http` is accepted only for `localhost`, `127.0.0.1` and `::1`; otherwise the CLI refuses to send credentials over an insecure connection.
 
@@ -217,15 +217,15 @@ Run `hive3 update` to install it.
 
 - `hive3 update --check` reports the latest version without installing it. If you are current it prints `Hive3 CLI <version> is already the latest version.`
 - `hive3 update` looks up the latest version, prints it, and installs exactly that version with `npm install --global @hive3/cli@<version>`. The version is validated before it reaches npm.
-- The check only reads public package metadata from npm. It never sends your Hive credentials and adds no signature check beyond npm's own.
-- After updating, run `hive3 skill install --force` if you use the [agent skill](/developers/cli-agents#install-the-skill), so the installed skill matches the new version.
+- The check only reads public package metadata from npm. It never sends your Hive3 credentials and adds no signature check beyond npm's own.
+- After updating, refresh the [agent skill](/developers/cli-agents#install-the-skill) if you use it: run `hive3 skill install --force` with the same options you installed it with (`--agent codex` or `--agent cursor`, `--project`, or `--dir <path>`; no options is Claude Code for your user account). `hive3 skill path` with those options shows the folder it will replace.
 - CLI 0.5.0 and older print `Hive CLI` where 0.5.1 prints `Hive3 CLI`, for example `Hive CLI login timed out.` The messages on this page are from 0.5.1.
 
 ## Troubleshooting
 
 | Message or symptom | Cause and fix |
 |---|---|
-| `Your Hive plan doesn't include API access: the API and CLI need Honey Bee or above.` | The key owner's account is below Honey Bee (`plan_required`). Upgrade under Settings in the app. The same key works again afterwards. |
+| `API access needs Honey Bee or above. Upgrade under Settings in the Hive3 app. …` | The key owner's account is below Honey Bee (`plan_required`). Upgrade under Settings in the app. The same key works again afterwards. |
 | **A Honey Bee subscription is required to create API keys.** on the approval page | The approving account is below Honey Bee. Upgrade, then run `hive3 login` again. If the plan drops after you approve but before the CLI collects the key, the terminal prints `Hive3 CLI login was denied in the browser.` |
 | `Hive3 CLI login expired. Run hive3 login again.` | The code was older than 10 minutes, or approved more than 2 minutes before the CLI collected it. Start again. |
 | `Hive3 CLI login was denied in the browser.` | Someone selected <UI>Cancel</UI>, or the plan check above failed. |
@@ -233,12 +233,12 @@ Run `hive3 update` to install it.
 | `Hive3 CLI login was already completed. Run hive3 login again.` or `Hive3 CLI login request was not found.` | The request was already used, or was cleaned up. Start a new login. |
 | **That code does not match an active CLI login.** | The code was mistyped, expired, or already used. Check it against the terminal or start again. |
 | `Too many attempts. Try again shortly.` | More than 10 code lookups in a minute on the approval page. Wait a minute. |
-| `Hive API error 429 (rate_limited): Too many CLI login requests.` | More than 10 login starts in a minute from one IP address. Wait a minute. While waiting for approval, the CLI honors `Retry-After` on a 429 and keeps polling, so shared networks usually recover without action. |
+| `Hive3 API error 429 (rate_limited): Too many CLI login requests.` | More than 10 login starts in a minute from one IP address. Wait a minute. While waiting for approval, the CLI honors `Retry-After` on a 429 and keeps polling, so shared networks usually recover without action. |
 | `Not logged in. Run hive3 login first.` | No credential file at the expected location. Check `HIVE_CONFIG_HOME`, or run `hive3 login`. Exit code 1. |
-| `Hive API error 401 (invalid_api_key): …` | The key is revoked, expired (90 days) or belongs to an account that is unavailable. Run `hive3 login` again. |
-| `Hive API error 403 (insufficient_scope): … Required scopes: …` | The key lacks a scope. Sign in again with `--access full` or `--scope`. |
-| `Hive API error 403 (forbidden): …` | The key has the scope but your account has no current role on that target. Check `hive3 capabilities`. |
+| `Hive3 API error 401 (invalid_api_key): …` | The key is revoked, expired (90 days) or belongs to an account that is unavailable. Run `hive3 login` again. |
+| `Hive3 API error 403 (insufficient_scope): … Required scopes: …` | The key lacks a scope. Sign in again with `--access full` or `--scope`. |
+| `Hive3 API error 403 (forbidden): …` | The key has the scope but your account has no current role on that target. Check `hive3 capabilities`. |
 | The browser does not open | Common on servers and containers. Copy the URL from the terminal and open it on any machine, or use `--no-open`. |
-| `Refusing to send Hive credentials over an insecure connection.` | `--api-url` or the stored URL uses plain `http` for a host other than localhost. Use `https`. |
+| `Refusing to send Hive3 credentials over an insecure connection.` | `--api-url` or the stored URL uses plain `http` for a host other than localhost. Use `https`. |
 
 For a failing request, [Requests, errors and limits](/developers/api-conventions#errors) lists every error code.

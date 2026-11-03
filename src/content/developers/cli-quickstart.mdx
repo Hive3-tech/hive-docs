@@ -158,7 +158,7 @@ hive3 update --check
 hive3 update
 ```
 
-`hive3 update` installs exactly the version it reports with `npm install --global @hive3/cli@<version>`. If you installed the [agent skill](/developers/cli-agents), run `hive3 skill install --force` afterwards. Set `HIVE_NO_UPDATE_CHECK=1` to turn off the daily check.
+`hive3 update` installs exactly the version it reports with `npm install --global @hive3/cli@<version>`. If you installed the [agent skill](/developers/cli-agents), refresh it afterwards with `hive3 skill install --force` and the same options you installed it with (for example `--agent codex`). Set `HIVE_NO_UPDATE_CHECK=1` to turn off the daily check.
 
 To uninstall, sign out first so the key is revoked on the server, then remove the package:
 
@@ -174,7 +174,7 @@ Uninstalling the package alone does not revoke the key or delete the stored cred
 <PlanBadge tier="honey" /> is the lowest plan that can create API keys and approve a CLI login. See [Plans and pricing](/start/plans) for the full plan comparison.
 
 - **Signing in** needs the approving account to be on Honey Bee or above at the moment you approve.
-- **Using a key** needs the key owner's account to stay on Honey Bee or above. If the plan drops, the key is kept but every request returns `plan_required`. The CLI prints `Your Hive plan doesn't include API access: the API and CLI need Honey Bee or above.` and asks you to upgrade under Settings. The same key works again once the plan is active; you do not need to sign in again.
+- **Using a key** needs the key owner's account to stay on Honey Bee or above. If the plan drops, the key is kept but every request returns `plan_required`. The CLI prints `API access needs Honey Bee or above. Upgrade under Settings in the Hive3 app.` The same key works again once the plan is active; you do not need to sign in again.
 - **Other limits still apply.** Paid-plan rules in the app, such as broadcast frequency or members-only content, apply to the CLI in the same way.
 
 ## Next steps

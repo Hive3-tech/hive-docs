@@ -22,10 +22,10 @@ Commands that return data print one pretty-printed JSON document on stdout. Succ
 Errors go to stderr as one line. API errors have this form:
 
 ```text title="API error"
-Hive API error 403 (insufficient_scope): API key does not include the required scope. Required scopes: posts:write.
+Hive3 API error 403 (insufficient_scope): API key does not include the required scope. Required scopes: posts:write.
 ```
 
-Mistakes the CLI catches itself print only the message, for example `--confirm must exactly match the wallet address`. A `plan_required` error prints `Your Hive plan doesn't include API access: the API and CLI need Honey Bee or above.` and tells you to upgrade under Settings.
+Mistakes the CLI catches itself print only the message, for example `--confirm must exactly match the wallet address`. A `plan_required` error prints `API access needs Honey Bee or above. Upgrade under Settings in the Hive3 app.` and says the same key works again once the plan is active.
 
 | Exit code | Meaning |
 |---|---|
