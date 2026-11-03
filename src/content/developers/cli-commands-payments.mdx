@@ -109,7 +109,7 @@ Disconnecting stops renewing Stripe subscriptions at the end of their period, tu
 | `subscription cancel\|resume\|portal <subscription-id>` | None |
 | `subscription revise <subscription-id>` | `--plan <new-plan-id>` (required; PayPal subscriptions only) |
 | `membership cancel\|resume\|portal` | None |
-| `membership revise` | `--tier honey\|swarm\|royal` (required) |
+| `membership revise` | `--tier honey\|swarm\|royal` (required); an upgrade charges your saved payment method immediately |
 | `refund request <purchased-ticket-id>` | `--reason <text>` |
 | `refund approve\|reject <refund-request-id>` | `--note <text>`; owners and admins of the seller only |
 
@@ -120,6 +120,7 @@ hive3 payments checkout ticket "<ticket-id>" --provider stripe --yes \
 ```
 
 - **Paste `confirm` unchanged.** It names the account, provider, action, target and amount. If anything changed since the preview, the command stops with `confirm must exactly match the current payment preview`; run the preview again.
-- **Payment happens in the browser.** Checkouts, portals and plan changes return a private link that the buyer opens in their own browser to pay or approve. The CLI never approves a purchase on its own.
+- **New purchases are paid in the browser.** Checkouts, portals and PayPal plan changes return a private link that the buyer opens in their own browser to pay or approve. The CLI never starts a new purchase on its own.
+- **Some confirmed actions take effect at once.** `membership revise` to a higher tier charges the saved payment method on your membership straight away for the prorated difference (a failed payment leaves the plan unchanged; a downgrade waits for the next renewal). `refund approve` sends the refund through the payment provider. Run these only when the person asked for that exact change.
 - **One attempt per request ID.** Use a new `--request-id` (up to 128 characters) for each action, and the same one only to repeat the identical request. If the result is unknown, check `hive3 payments history` or the browser before doing anything else; a second checkout for the same thing is blocked.
 - **Not supported:** changing the plan of a Stripe creator subscription (its portal handles payment methods, invoices and cancelling), managing an older PayPal Hive3 membership, payouts and wallet transfers. A membership checkout for an account you own is for its owner only; after that, that account manages its membership with its own sign-in.

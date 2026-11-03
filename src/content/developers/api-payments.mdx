@@ -4,7 +4,7 @@ description: Read payment histories and run previewed, confirmed checkouts, subs
 accent: developer
 ---
 
-The payments endpoints let a script or an agent read what an account bought and sold, start a checkout, cancel or resume a subscription, open a billing portal, and request or decide ticket refunds. They do the same things as the app's payment screens, with one rule on top: every action is **previewed first and then confirmed** with the exact text the preview returned. The payment itself always happens in the buyer's browser.
+The payments endpoints let a script or an agent read what an account bought and sold, start a checkout, cancel or resume a subscription, open a billing portal, and request or decide ticket refunds. They do the same things as the app's payment screens, with one rule on top: every action is **previewed first and then confirmed** with the exact text the preview returned. New purchases are paid in the buyer's browser; a few confirmed actions on existing subscriptions and refunds take effect straight away (see [What happens after you confirm](#what-happens-after-you-confirm)).
 
 New in API and CLI 0.5.0. Products, plans and the Stripe connection are on [Products, subscription plans and Stripe](/developers/api-selling); ticket setup is on [Tickets](/developers/api-tickets). For what buyers see in the app, read [Tickets and subscriptions](/explore/tickets-and-subscriptions).
 
@@ -18,7 +18,7 @@ New in API and CLI 0.5.0. Products, plans and the Stripe connection are on [Prod
 - **Buyer actions are yours.** Purchases, subscriptions and refund requests always belong to the key owner. No key can act on another person's purchases or payment methods.
 - **Seller actions.** Sales history and refund decisions for an account you run need `?account=` (histories) or a target that belongs to it, plus `communities:read` or `communities:write`, the key's account allowlist, and a current **owner or admin** role there.
 - **After a downgrade.** Keys with these scopes keep managing existing payments and subscriptions when the account drops below Honey Bee.
-- **What is not possible.** Payouts, wallet transfers, choosing prices or recipients, passing payment-provider IDs, and approving a payment without the buyer's browser. Nothing is retried automatically.
+- **What is not possible.** Payouts, wallet transfers, choosing prices or recipients, passing payment-provider IDs, and starting a new purchase without the buyer's browser. Nothing is retried automatically.
 
 ## Histories
 
@@ -81,7 +81,10 @@ curl -X POST https://app.hive3.tech/api/v1/payments/operate \
 
 Before anything happens, Hive3 checks the confirmation and your access again. If something changed since the preview, such as the price, the request fails with `400 invalid_request` and the new `confirm` text in `error.confirm`; preview again and ask again.
 
-Checkouts, portals and approvals return a link instead of charging anything: `{ "url": "…", "private": true, "browserRequired": true, "message": "…" }`. The buyer opens it privately in their own browser and pays or approves there. Treat the link like a password: do not log, store or share it.
+### What happens after you confirm
+
+- **New purchases return a link instead of charging anything.** Checkouts, billing portals and PayPal plan changes return `{ "url": "…", "private": true, "browserRequired": true, "message": "…" }`. The buyer opens it privately in their own browser and pays or approves there. Treat the link like a password: do not log, store or share it.
+- **Some confirmed actions take effect straight away, with no browser step.** Upgrading your Hive3 membership with `membership.revise` charges the payment method already on your Stripe membership at once for the prorated difference, as the app's upgrade button does; if the payment fails, the plan stays as it was. A downgrade takes effect at the end of the current period and charges nothing. Cancel and resume change renewal only. Approving a refund sends the money back to the buyer through the payment provider. Confirm these only when the person has asked for exactly that change.
 
 Preview allows 60 requests per minute and operate 20 per minute. Bodies are limited to 8 KiB, and unknown fields are rejected with `400`.
 
@@ -101,7 +104,7 @@ Preview allows 60 requests per minute and operate 20 per minute. Bodies are limi
 | `subscription.portal` | Subscription ID | None | Returns a Stripe billing portal link for payment methods, invoices and cancelling. |
 | `subscription.revise` | Subscription ID | `newPlanId` | Switches a PayPal subscription to another plan; you approve the change in the browser. |
 | `membership.cancel`, `membership.resume`, `membership.portal` | `self` | None | The same for your Hive3 membership. |
-| `membership.revise` | `self` | `tier` | Changes your Hive3 membership plan. |
+| `membership.revise` | `self` | `tier` | Changes your Hive3 membership plan. An upgrade charges your saved payment method immediately for the prorated difference; a downgrade starts at the next renewal. |
 | `refund.request` | Purchase ID (from [tickets you bought](/developers/api-tickets#read-tickets-you-bought)) | `reason` (optional) | Asks the seller for a ticket refund. |
 | `refund.approve`, `refund.reject` | Refund request ID | `reviewNote` (optional) | The seller's decision on a refund request. Owners and admins only. |
 
