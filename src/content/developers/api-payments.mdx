@@ -18,7 +18,7 @@ New in API and CLI 0.5.0. Products, plans and the Stripe connection are on [Prod
 - **Buyer actions are yours.** Purchases, subscriptions and refund requests always belong to the key owner. No key can act on another person's purchases or payment methods.
 - **Seller actions.** Sales history and refund decisions for an account you run need `?account=` (histories) or a target that belongs to it, plus `communities:read` or `communities:write`, the key's account allowlist, and a current **owner or admin** role there.
 - **After a downgrade.** Keys with these scopes keep managing existing payments and subscriptions when the account drops below Honey Bee.
-- **What is not possible.** Payouts, wallet transfers, choosing prices or recipients, passing payment-provider IDs, and starting a new purchase without the buyer's browser. Nothing is retried automatically.
+- **What is not possible.** Payouts, wallet transfers, choosing prices or recipients, using payment-provider IDs that don't belong to your own checkout (finalizing takes only the session or order ID of a checkout you started), and starting a new purchase without the buyer's browser. Nothing is retried automatically.
 
 ## Histories
 
