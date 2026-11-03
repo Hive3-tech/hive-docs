@@ -30,6 +30,7 @@ For an item owned by a community, add `communities:write` to the write scopes an
 | `--content-type <type>` | `contentType` (used by content) |
 | `--image-url <url>` | `imageUrl` |
 | `--visibility <value>` | `public`, `protected` or `private`. Anything other than public needs Honey Bee or above on the owning account. |
+| `--world <world>` | Events only (0.5+): `worldId`, the 3D world to book, as a world ID or `default` for the owning account's default world. See [the default world](/developers/api-resources-events#the-default-world). |
 | `--file <path>` | A JSON object with any other fields. See [payload files](/developers/cli-commands#payload-files). |
 
 | Owner and list flag | What it does |
@@ -42,7 +43,8 @@ For an item owned by a community, add `communities:write` to the write scopes an
 
 Things to know before you create:
 
-- **Events** need RSVP approval by default. Put `"autoEnroll": true` in the file to accept attendees automatically. `eventSlots` entries need ISO 8601 `startsAt` and `endsAt` with a `Z` or offset, and each end must come after its start.
+- **Events** need RSVP approval by default. Put `"autoEnroll": true` in the file to accept attendees automatically. `eventSlots` entries need ISO 8601 `startsAt` and `endsAt` with a `Z` or offset, and each end must come after its start. You can create 50 events per day, counted against your own account and shared with the app.
+- **World events.** Without `--world` an event is not in a 3D world. `--world default` books the owning account's default world: Swarm's default shared world chosen on the dashboard, Honey Bee's default shared world (Hive3 Dome unless another is set), or a Royal Hive account's own world. Worker Bee accounts, and Royal Hive accounts whose world isn't set up yet, get `400` and nothing is created. A world event has exactly one slot, may spend metaverse time, and returns `409 conflict` when the slot is already booked. See [Book a world](/developers/api-resources-events#book-a-world).
 - **Quests** need `questCreditPlan` (`single` for quests up to 7 days, `bundle` for up to 30) and spend one quest credit of the owning account. A credited quest needs a valid `startsAt`.
 - Once an event or quest has started, `update` and `archive` return `409 conflict`.
 - Plan rules apply as in the app. A Worker Bee account publishes publicly only and cannot attach subscriptions.
@@ -64,6 +66,11 @@ Things to know before you create:
 hive3 events create --file event.json --idempotency-key portfolio-night-2026
 hive3 events list --limit 5
 hive3 events archive "<event-id>"
+```
+
+```bash title="Book the account's default world"
+hive3 events create --file event.json --world default
+hive3 events update "<event-id>" --world default
 ```
 
 ```bash title="Create for a community you manage"

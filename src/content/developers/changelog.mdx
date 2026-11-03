@@ -6,6 +6,30 @@ accent: developer
 
 This page lists changes that can affect an integration: new endpoints and scopes, changed behavior, and corrections to earlier documentation. Each entry ends with what you need to do. The API stays at `/api/v1`: existing paths, scopes and field names are unchanged unless an entry says otherwise.
 
+## November 2026: event worlds, limits and notifications
+
+This update lets API and CLI events go straight into an account's default 3D world, raises the daily event limit, and notifies members about new items.
+
+### Events and worlds
+
+- **`"worldId": "default"`.** On `POST` and `PATCH /api/v1/events`, `default` books the owning account's default world without a world ID: Swarm's default shared world chosen on the dashboard, Honey Bee's default shared world (Hive3 Dome unless another is set), or a Royal Hive account's own world. A Worker Bee account, or a Royal Hive account whose world isn't set up yet, gets `400 invalid_request` and nothing is created or changed. The usual booking rules (one slot, attendee limit, overlaps, metaverse time) apply unchanged. Events sent without `worldId` stay outside any world, as before. See [The default world](/developers/api-resources-events#the-default-world).
+- **CLI 0.5.0: `--world`.** `hive3 events create|update --world <world-id|default>` sets `worldId`. See [Resource commands](/developers/cli-commands-resources).
+- **50 events per day.** The daily limit on creating events rose from 20 to 50 per account, shared with the app. The per-minute limit is unchanged. See [Rate limits](/developers/api-conventions#rate-limits).
+
+**What to do:** to put events in the account's world without looking up a world ID, send `"worldId": "default"` (or `--world default`). If you throttled event creation to 20 a day, you can raise it to 50.
+
+### Notifications
+
+- New events, courses and quests created through the API or CLI (and in the app) now notify the owning account's accepted members in-app as `new_event`, `new_course` or `new_quest` notifications (existing mutes apply, and the creator is not notified). Members can also turn on a daily email digest of new items in Settings → Display & notifications.
+
+**What to do:** if you read notifications through the API, handle the three new `type` values.
+
+### Corrections to the documentation
+
+- **Which worlds a plan can book.** Earlier pages said Honey Bee and Swarm accounts book the shared Hive3 Dome. Honey Bee can book any shared world (today Hive3 Dome and Night Lounge), Swarm books the shared world chosen as its default on the dashboard, Royal Hive books only its own world, and Worker Bee books none. Metaverse time and the 500-attendee limit apply to every shared world, not only the Dome. See [Book a world](/developers/api-resources-events#book-a-world).
+
+**What to do:** nothing; the booking rules themselves did not change.
+
 ## October 27, 2026: API update
 
 This update adds five endpoint families, makes plan and permission checks stricter, and aligns several workflows with the Hive3 app.

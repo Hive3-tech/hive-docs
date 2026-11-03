@@ -34,7 +34,7 @@ For a community you manage, the key owner must currently be an owner, admin or m
 
 | Kind | Creates per day | Request size limit |
 |---|---|---|
-| `events` | 20 | 128 KiB |
+| `events` | 50 | 128 KiB |
 | `courses` | 10 | 256 KiB |
 | `content` | 50 | 256 KiB |
 | `quests` | 30 | 128 KiB |
@@ -291,5 +291,5 @@ Jobs keep only the fields below; others are dropped. Courses, content, events an
 Courses, content, events and quests take more fields than the common ones above:
 
 - **Courses and content** have lessons, office hours, sections and tags. See [Courses and content](/developers/api-resources-content).
-- **Events** take `eventSlots` (each with ISO 8601 `startsAt` and `endsAt`), `autoEnroll` (default `false`) and an optional `worldId`. See [Events: slots and worlds](/developers/api-resources-events).
+- **Events** take `eventSlots` (each with ISO 8601 `startsAt` and `endsAt`), `autoEnroll` (default `false`) and an optional `worldId` (a world ID, or `default` for the owning account's default world). See [Events: slots and worlds](/developers/api-resources-events).
 - **Quests** need a `questCreditPlan` (`single` or `bundle`) that spends one quest credit, plus `objectives`, `startsAt` and `endsAt`. See [Quests: credits and objectives](/developers/api-resources-quests).

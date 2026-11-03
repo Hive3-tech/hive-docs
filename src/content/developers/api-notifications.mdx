@@ -64,6 +64,8 @@ data = res.json()["data"]
 
 Returns `200`. To read the next page, send `offset` plus the number of items returned while `hasMore` is `true`. `total` is not a full count: it is the end of the current page, plus one when more items remain. `unreadCount` counts up to 1,000 unread notifications. `data` on each notification holds the notification's own fields plus `actorId`, `entityType` and `entityId`; account-valued fields are named `personId` or `communityId`.
 
+When an account you belong to creates an event, course or quest, in the app or through the API, you get a notification of type `new_event`, `new_course` or `new_quest`. You only get it for items you can see, and never for items you created yourself. Its `data` holds `kind` (`event`, `course` or `quest`), `resourceId`, `resourceTitle`, `accountName`, `accountHandle` (or `null`) and the owning account as `personId` or `communityId`; `entityType` and `entityId` point at the item. To stop them, mute the account, mute the type (`type:new_event` and so on in `mutedNotifications`), or mute everything.
+
 ```json
 {
   "data": {

@@ -4,7 +4,7 @@ description: Create and reschedule events through the API, including time slots,
 accent: developer
 ---
 
-Use these fields to schedule events from a calendar or another system, open them for automatic RSVPs or organizer approval, and book a Hive3 3D world for them. Events use the shared operations in [Events, courses, content, quests and jobs](/developers/api-resources): list, get, update and archive on `/api/v1/events`, with the same scopes, owner selector, visibility rules, `Idempotency-Key` header and limits (20 event creates per day, 128 KiB per request). To approve RSVPs or record attendance, see [Participation workflows](/developers/api-workflows).
+Use these fields to schedule events from a calendar or another system, open them for automatic RSVPs or organizer approval, and book a Hive3 3D world for them. Events use the shared operations in [Events, courses, content, quests and jobs](/developers/api-resources): list, get, update and archive on `/api/v1/events`, with the same scopes, owner selector, visibility rules, `Idempotency-Key` header and limits (50 event creates per day, 128 KiB per request). To approve RSVPs or record attendance, see [Participation workflows](/developers/api-workflows).
 
 The examples read the key from `HIVE_API_KEY`. Some field names still say `community` or `person`; both identify accounts.
 
@@ -16,7 +16,7 @@ The examples read the key from `HIVE_API_KEY`. Some field names still say `commu
 | `description` | string | Event text. `shortDescription` defaults to it. |
 | `eventSlots` | array | One object per session. Empty is allowed; see [Time slots](#time-slots). |
 | `autoEnroll` | boolean | Default `false`: RSVPs wait for organizer approval. `true` accepts RSVPs automatically. |
-| `worldId` | string | The 3D world to book. See [Book a world](#book-a-world). |
+| `worldId` | string | The 3D world to book, or `default` for the owning account's default world. Leave it out for an event outside any world. See [Book a world](#book-a-world). |
 | `maxCapacity` | integer | Attendee limit. For world events it must be a whole number from 1 up to the world's limit. |
 | `visibility`, `subscriptionId`, `badges` | | As in [Shared behavior](/developers/api-resources#shared-behavior). |
 | `imageUrl`, `heroImage`, `imageStorageId`, `heroImageStorageId` | string | Cover images (`image`, `thumbnailUrl` and `bannerImageUrl` also work). |
@@ -147,19 +147,41 @@ An event has started when its earliest valid slot start is at or before the curr
 
 ## Book a world
 
-Send `worldId` to book a 3D world for the event. The owning account's plan decides which world you can book: Honey Bee and Swarm accounts book the shared Hive3 Dome, and a Royal Hive account books its own world. Other combinations return `400` with the reason (`Booking a shared world needs a Honey Bee or Swarm plan.`, `Only this world's Royal Hive can book it.`, `That world isn't available.`).
+Send `worldId` to book a 3D world for the event. Without `worldId` the event is not in a world and spends no metaverse time. The owning account's plan decides which worlds it can book:
+
+| Plan | Worlds |
+|---|---|
+| Honey Bee | Any shared world (today Hive3 Dome and Night Lounge). |
+| Swarm | The shared world chosen as the account's default on the dashboard. The app offers only that one; the API also accepts another shared world's ID. |
+| Royal Hive | Only the account's own world. |
+| Worker Bee | None. |
+
+Other combinations return `400` with the reason (`Booking a shared world needs a Honey Bee or Swarm plan.`, `Only this world's Royal Hive can book it.`, `This account books its own world.`, `That world isn't available.`).
+
+### The default world
+
+Send `"worldId": "default"` to book the owning account's default world without looking up a world ID. It works on create and on `PATCH`, and with the [CLI](/developers/cli-commands-resources) as `--world default` (0.5+).
+
+- **Swarm:** the shared world chosen as the account's default on the dashboard, the same one the app's event form books.
+- **Honey Bee:** the account's default shared world, which is Hive3 Dome unless another shared world is stored as its default. (In the app, Honey Bee picks a world for each event.) For Swarm and Honey Bee alike, a default world that is no longer available falls back to the first shared world (Hive3 Dome).
+- **Royal Hive:** the account's own world. Before its design is chosen the request returns `400` (`This account's own world isn't set up yet. Choose its design on the dashboard first.`).
+- **Worker Bee:** `400` (`This account has no world to book. Worlds come with a paid plan.`).
+
+Once `default` is resolved, the rules below apply exactly as for an explicit `worldId`. A `400` or `409` creates or changes nothing.
+
+### Booking rules
 
 - **One slot.** A world event has exactly one slot (`World events have exactly one time slot.`).
-- **Attendee limit.** `maxCapacity` is a whole number from 1 to 500 in the shared Dome or from 1 to 100 in a Royal Hive's own world. It defaults to that maximum.
+- **Attendee limit.** `maxCapacity` is a whole number from 1 to 500 in a shared world or from 1 to 100 in a Royal Hive's own world. It defaults to that maximum.
 - **No overlaps.** A slot that overlaps another booking on the same world returns `409 conflict` (`That time is already booked in this world (…)`). Back-to-back bookings are allowed.
-- **Metaverse time.** An event in the shared Dome spends the owning account's metaverse time. Creating it charges its duration in minutes (Swarm includes 60 minutes per UTC calendar month), a `PATCH` refunds the previous charge and charges the new one, and archiving an event that has not started refunds it. When time runs out the request returns `400` (`You're running out of metaverse time. Shorten the event or top up your balance.`) and nothing changes. Events in a Royal Hive's own world are free.
+- **Metaverse time.** An event in a shared world spends the owning account's metaverse time. Creating it charges its duration in minutes (Swarm includes 60 minutes per UTC calendar month), a `PATCH` refunds the previous charge and charges the new one, and archiving an event that has not started refunds it. When time runs out the request returns `400` (`You're running out of metaverse time. Shorten the event or top up your balance.`) and nothing changes. Events in a Royal Hive's own world are free.
 - **Moving worlds.** `PATCH` with a different `worldId` removes the metaverse join links in the slots that pointed into the previous world. `worldId` cannot be cleared through the API.
 
 ```bash
 curl -X POST https://app.hive3.tech/api/v1/events \
   -H "Authorization: Bearer $HIVE_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"title":"Town Hall in the Dome","worldId":"world_123","maxCapacity":100,"eventSlots":[{"startsAt":"2030-02-01T17:00:00Z","endsAt":"2030-02-01T18:00:00Z"}]}'
+  -d '{"title":"Town Hall","worldId":"default","maxCapacity":100,"eventSlots":[{"startsAt":"2030-02-01T17:00:00Z","endsAt":"2030-02-01T18:00:00Z"}]}'
 ```
 
 ## Reschedule an event
