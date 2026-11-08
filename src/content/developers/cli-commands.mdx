@@ -11,7 +11,7 @@ Run `hive3 <command> --help` for the actions and flags of one command. `--help` 
 ## How to read this reference
 
 - `<id>` is a required value, `[--flag]` is optional. Write values that contain spaces in quotes.
-- **(0.4+)** and **(0.5+)** mark commands and flags that exist only in CLI version 0.4 or 0.5 and later. Unmarked items also exist in 0.3. `npm install --global @hive3/cli` installs the latest release on npm; if it is older, marked items are not available yet. `hive3 update --check` shows your version.
+- **(0.4+)**, **(0.5+)** and **(0.7+)** mark commands and flags that exist only in CLI version 0.4, 0.5 or 0.7 and later. Unmarked items also exist in 0.3. `npm install --global @hive3/cli` installs the latest release on npm; if it is older, marked items are not available yet. `hive3 update --check` shows your version.
 - The **Scopes** column lists the scopes the key needs. When a command targets another account with `--account`, `--owner-type community` or a community ID, it also needs `communities:read` for reads or `communities:write` for writes, plus your current role on that account. See [scopes](/developers/api-authentication#scopes) and [managed accounts](/developers/api-authentication#managed-accounts).
 - A Read only key covers every `:read` scope in the tables except `messages:read`. Anything that changes data needs Full access or exact scopes, and conversations need `--messages-access`. See [CLI sign-in and configuration](/developers/cli-authentication#choose-read-only-or-full-access).
 
@@ -41,7 +41,7 @@ A server-side `401` (for example `invalid_api_key`) exits with `2`, not `1`. Aft
 
 `--limit <n>` and `--cursor <cursor>` page through lists. Copy `nextCursor` from the previous response into `--cursor`. See [pagination](/developers/api-conventions#pagination).
 
-- Resource lists (`posts`, `events`, `courses`, `content`, `quests`, `jobs`) are newest first, default to 25 items and return at most 100. `--limit` must be a positive number.
+- Resource lists (`posts`, `events`, `courses`, `content`, `quests`, `jobs`) are newest first, default to 25 items and return at most 100. `--limit` must be a positive number. `events list --location <type>` (0.7+) lists only `irl`, `virtual` or `metaverse` events; see [Event type flags](/developers/cli-commands-resources#event-type-flags).
 - `search` (0.4+) takes 1 to 50 (default 20). Broadcasts, tickets and credentials (0.4+), and payments, conversations and feedback (0.5+), take a whole number from 1 to 100. Comments take a positive number. Notifications use `--limit` with `--offset` instead of a cursor.
 
 ### Payload files
@@ -50,7 +50,8 @@ A server-side `401` (for example `invalid_api_key`) exits with `2`, not `1`. Aft
 
 - **Resource `create` and `update`, and workflow commands** apply their options left to right and merge top-level fields; a later value replaces an earlier one for the same field. Put `--file` first to let flags override it, or last to let the file override flags. Nested objects are replaced whole, not merged. `--owner-type` and `--community-id` always set `owner`, replacing any `owner` in the file.
 - **Broadcasts `create` and `update`** (0.4+) read the file first; flags always override it, in any order.
-- **Profile builders** (`overview`, `widgets`, `welcome-page` with `save` or `import`) send the whole file as the builder configuration; there is no merge.
+- **Event type flags of `events create` and `update`** (0.7+) are applied after the file and override its `location`, `venue`, `meeting` and `checkInMode` in any order. A venue or meeting flag changes only that detail and keeps the rest of the file's `venue` or `meeting` object.
+- **Profile builders** (`overview`, `widgets`, `welcome-page` with `save` or `import`) send the whole file as the builder configuration; there is no merge. The overview file also carries `hiddenTabs`, the account page tabs switched off; see [Page tabs in the overview](/developers/api-account-settings#page-tabs-in-the-overview).
 
 ### Idempotency
 

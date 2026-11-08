@@ -6,7 +6,7 @@ accent: developer
 
 Use these commands to publish events, courses, content, quests and jobs, and to run what happens around them: RSVPs, enrollments, attendance, quest evidence and job applications. All of them print JSON. Conventions such as exit codes, `--file` merging and `--account` are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference).
 
-These commands also exist in CLI version 0.3, so nothing on this page carries the (0.4+) marker. `hive3 worlds` and `--world` are new in 0.5 and marked (0.5+).
+These commands also exist in CLI version 0.3, so nothing on this page carries the (0.4+) marker. `hive3 worlds` and `--world` are new in 0.5 and marked (0.5+). The event type flags and `events list --location` are new in 0.7 and marked (0.7+).
 
 ## Common actions
 
@@ -14,7 +14,7 @@ These commands also exist in CLI version 0.3, so nothing on this page carries th
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
-| `hive3 <kind> list` | Lists items, newest first, archived items left out. | `--limit <n>`, `--cursor <cursor>`, `--owner-type <type>`, `--community-id <id>` | `resources:read` (`posts:read` for posts) |
+| `hive3 <kind> list` | Lists items, newest first, archived items left out. | `--limit <n>`, `--cursor <cursor>`, `--owner-type <type>`, `--community-id <id>`; events also `--location <type>` (0.7+) | `resources:read` (`posts:read` for posts) |
 | `hive3 <kind> get <id>` | Reads one item you can see. | None | `resources:read` (`posts:read`) |
 | `hive3 <kind> create` | Creates an item. Prints the new item as JSON. | Fields, owner options and `--idempotency-key` below | `resources:write` (`posts:write`) |
 | `hive3 <kind> update <id>` | Changes fields of an item. At least one field is required. | Fields below and `--file`; no owner options | `resources:write` (`posts:write`) |
@@ -30,7 +30,8 @@ For an item owned by a community, add `communities:write` to the write scopes an
 | `--content-type <type>` | `contentType` (used by content) |
 | `--image-url <url>` | `imageUrl` |
 | `--visibility <value>` | `public`, `protected` or `private`. Anything other than public needs Honey Bee or above on the owning account. |
-| `--world <world>` | Events only (0.5+): `worldId`, the 3D world to book, as a world ID from [`hive3 worlds`](#worlds) or `default` for the owning account's default world. See [the default world](/developers/api-resources-events#the-default-world). |
+| `--world <world>` | Events only (0.5+): `worldId`, the 3D world to book for a metaverse event, as a world ID from [`hive3 worlds`](#worlds) or `default` for the owning account's default world. See [the default world](/developers/api-resources-events#the-default-world). |
+| `--location <type>`, `--address`, `--meeting-url`, … | Events only (0.7+): the event type and its venue or meeting. See [Event type flags](#event-type-flags). |
 | `--file <path>` | A JSON object with any other fields. See [payload files](/developers/cli-commands#payload-files). |
 
 | Owner and list flag | What it does |
@@ -44,6 +45,7 @@ For an item owned by a community, add `communities:write` to the write scopes an
 Things to know before you create:
 
 - **Events** need RSVP approval by default. Put `"autoEnroll": true` in the file to accept attendees automatically. `eventSlots` entries need ISO 8601 `startsAt` and `endsAt` with a `Z` or offset, and each end must come after its start. You can create 50 events per day, counted against your own account and shared with the app.
+- **Event type.** Set where the event happens with `--location irl`, `virtual` or `metaverse` and the matching [event type flags](#event-type-flags), or `location`, `venue`, `meeting` and `checkInMode` in the file. A Zoom, Meet or Teams link goes in `--meeting-url` of a `virtual` event, never in a slot link or an in-person address.
 - **World events.** Without `--world` an event is not in a 3D world; never add it to an online or in-person event. When the user names a venue (for example "the Dome", "Night Lounge" or "our own world"), run [`hive3 worlds`](#worlds), match the name and pass that world's `id` with `--world <id>`. If the named world isn't listed, it can't be booked for that account: say so rather than booking another one. `--world default` books the owning account's default world (the one listed with `isDefault: true`): Swarm's default shared world chosen on the dashboard, Honey Bee's default shared world (Hive3 Dome unless another is set), or a Royal Hive account's own world. Use it only when no venue is named, and report which world it booked. Worker Bee accounts, and Royal Hive accounts whose world isn't set up yet, get `400` and nothing is created. A world event has exactly one slot, may spend metaverse time, and returns `409 conflict` when the slot is already booked. See [Book a world](/developers/api-resources-events#book-a-world).
 - **Quests** need `questCreditPlan` (`single` for quests up to 7 days, `bundle` for up to 30) and spend one quest credit of the owning account. A credited quest needs a valid `startsAt`.
 - Once an event or quest has started, `update` and `archive` return `409 conflict`.
@@ -55,26 +57,28 @@ Things to know before you create:
   "description": "Bring two projects for feedback.",
   "visibility": "public",
   "autoEnroll": true,
-  "location": "Online",
   "eventSlots": [
     { "startsAt": "2026-12-12T18:00:00Z", "endsAt": "2026-12-12T20:00:00Z" }
   ]
 }
 ```
 
-```bash title="Create, check and archive an event"
-hive3 events create --file event.json --idempotency-key portfolio-night-2026
-hive3 events list --limit 5
+The file has no event type, so each example below adds one with flags. Putting `"location": "virtual"` and a `"meeting"` object in the file works the same way.
+
+```bash title="Create, check and archive a virtual event"
+hive3 events create --file event.json --location virtual \
+  --meeting-url "https://us02web.zoom.us/j/123456" --idempotency-key portfolio-night-2026
+hive3 events list --location virtual --limit 5
 hive3 events archive "<event-id>"
 ```
 
 ```bash title="Book the world the user named"
 hive3 worlds
-hive3 events create --file event.json --world "<world-id>"
+hive3 events create --file event.json --location metaverse --world "<world-id>"
 ```
 
 ```bash title="Book the account's default world when no venue is named"
-hive3 events create --file event.json --world default
+hive3 events create --file event.json --location metaverse --world default
 hive3 events update "<event-id>" --world default
 ```
 
@@ -82,6 +86,52 @@ hive3 events update "<event-id>" --world default
 hive3 capabilities
 hive3 posts create --body "Moderator update" --owner-type community --community-id "<account-id>"
 ```
+
+### Event type flags
+
+`hive3 events create` and `update` (0.7+) take these flags. Flags override the same fields from `--file`. The CLI checks the values before sending and prints the API's message for a wrong one, for example `location must be irl, virtual or metaverse`.
+
+| Flag | Sets | Notes |
+|---|---|---|
+| `--location <type>` | `location` | `irl` (in person), `virtual` or `metaverse`. Left out, the type follows from the other flags: `--world` means `metaverse`, meeting flags `virtual`, venue flags `irl`. |
+| `--address <text>` | `venue.address` | In person. Public, up to 300 characters. A new address drops the old map details (city, place ID, coordinates). |
+| `--venue-name <text>` | `venue.name` | In person, up to 120 characters. Needs an address. |
+| `--venue-instructions <text>` | `venue.instructions` | In person: "getting there" notes, up to 1,000 characters. |
+| `--check-in <mode>` | `checkInMode` | In person: `self` (one event QR code, the default) or `door` (a pass per guest, scanned at the door). |
+| `--meeting-url <https-url>` | `meeting.url` | Virtual. Must be `https://`. |
+| `--meeting-provider <provider>` | `meeting.provider` | Virtual: `zoom`, `google_meet`, `microsoft_teams`, `x_spaces`, `discord`, `youtube` or `other`. Left out, it is recognised from the link. |
+| `--meeting-instructions <text>` | `meeting.instructions` | Virtual: passcode or dial-in details, up to 1,000 characters. |
+| `--world <id\|default>` | `worldId` | Metaverse (0.5+). Only metaverse events can book a world. |
+
+The CLI refuses these before anything is sent:
+
+- Venue flags on an event that isn't in person: `--address, --venue-name, --venue-instructions and --check-in are for in-person events (--location irl)`.
+- Meeting flags on an event that isn't virtual: `--meeting-url, --meeting-provider and --meeting-instructions are for virtual events (--location virtual)`.
+- `--world` with `--location irl` or `virtual`: `Only metaverse events can book a world.`
+- `--venue-name` or `--venue-instructions` when the event has no address: `In-person events need an address.`
+- Text over its limit, for example `address must be 300 characters or fewer`.
+
+On `update`, the type stays as it is unless a flag changes it (an event in a world stays `metaverse`). When you give any event type flag, the CLI reads the event first. If the type doesn't change, its current venue, meeting and check-in mode fill in whatever you leave out, so changing one detail keeps the others. A new `--address` drops the old city, place ID and coordinates. A new `--meeting-url` without `--meeting-provider` lets the API recognise the provider again. `update --location irl` or `virtual` on an event in a world moves it out of the world.
+
+Output is the API's JSON, with `location`, `venue`, `meeting` and `checkInMode` (`null` unless `irl`). `meeting.url` and `meeting.instructions` appear only when you manage the event; other readers get only the provider. See [Event types](/developers/api-resources-events#event-types).
+
+```bash title="In person, with door scanning"
+hive3 events create --file event.json --title "Builders meetup" \
+  --location irl --address "Torstraße 1, 10119 Berlin" --venue-name "Hive3 Space" \
+  --venue-instructions "Ring the bell at the side door." --check-in door
+```
+
+```bash title="Virtual, then change the link"
+hive3 events create --file event.json --title "Office hours" \
+  --location virtual --meeting-url "https://meet.google.com/abc-defg-hij"
+hive3 events update "<event-id>" --meeting-url "https://us02web.zoom.us/j/123456" --meeting-instructions "Passcode 4242"
+```
+
+```bash title="List only in-person events"
+hive3 events list --location irl --limit 20
+```
+
+QR check-in (event codes, passes and the door scanner) and Google Calendar sync are only in the app, in the browser. There are no CLI commands for them. See [Check in at events](/create/check-in-at-events).
 
 ## Events
 
@@ -168,6 +218,8 @@ hive3 events create --file event.json --owner-type community --community-id "<ac
   ]
 }
 ```
+
+Objective types are those of the API, including `in_person_events_attended` (counted by QR check-in at an in-person event), `virtual_events_attended` and `metaverse_events_attended`. Each counts only events of its own type; with `targetEventId`, pick the type that matches the event's `location`. See [Event objectives](/developers/api-resources-quests#event-objectives).
 
 To attach a file as evidence, upload it first and reference the returned upload ID. Use the `byteSize` and `contentType` of the file you uploaded.
 

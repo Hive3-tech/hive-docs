@@ -4,7 +4,7 @@ description: Manage products, subscription plans, tickets and the Stripe connect
 accent: developer
 ---
 
-These commands arrived in CLI version 0.5, so every command and flag on this page is **(0.5+)**; `hive3 tickets list`, `get`, `update` and `mine` existed in 0.4 but now follow the rules below. If `hive3 products` prints `Unknown command: products`, your installed CLI is older; run `hive3 update --check`. Every command prints JSON. Shared conventions such as output and exit codes are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference).
+These commands arrived in CLI version 0.5, so every command and flag on this page is **(0.5+)** unless it is marked **(0.7+)**; `hive3 tickets list`, `get`, `update` and `mine` existed in 0.4 but now follow the rules below. If `hive3 products` prints `Unknown command: products`, your installed CLI is older; run `hive3 update --check`. Every command prints JSON. Shared conventions such as output and exit codes are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference).
 
 `products`, `subscriptions`, `stripe` and `payments` need `payments:read` or `payments:write`; `tickets` needs `tickets:read` or `tickets:write`. Keys from before 0.5 do not have the payment scopes: run `hive3 login` again. For an account you run, `--account` also needs `communities:read` or `communities:write`, the key's account allowlist, and your current **owner or admin** role there; moderators cannot manage payments. The API side is on [Products, subscription plans and Stripe](/developers/api-selling), [Tickets](/developers/api-tickets) and [Payments](/developers/api-payments).
 
@@ -100,7 +100,7 @@ Disconnecting stops renewing Stripe subscriptions at the end of their period, tu
 | Action | Arguments |
 |---|---|
 | `checkout subscription <plan-id>`, `checkout ticket <ticket-id>` | `--provider stripe\|paypal` |
-| `checkout membership` | `--tier honey\|swarm\|royal` (required), `--account <owned-account>` |
+| `checkout membership` | `--tier honey\|swarm\|royal` (required), `--billing month\|quarter\|year` (0.7+; default `month`), `--account <owned-account>` |
 | `checkout quest-credit <account>` | `--plan-type single\|bundle` (required) |
 | `checkout metaverse-time <account>` | `--quantity <1-100 hours>` (required) |
 | `finalize stripe <session-id>` | `--kind membership\|subscription\|ticket\|questCredit\|metaverseTime` (required) |
@@ -109,9 +109,17 @@ Disconnecting stops renewing Stripe subscriptions at the end of their period, tu
 | `subscription cancel\|resume\|portal <subscription-id>` | None |
 | `subscription revise <subscription-id>` | `--plan <new-plan-id>` (required; PayPal subscriptions only) |
 | `membership cancel\|resume\|portal` | None |
-| `membership revise` | `--tier honey\|swarm\|royal` (required); an upgrade charges your saved payment method immediately |
+| `membership revise` | `--tier honey\|swarm\|royal` (required), `--billing month\|quarter\|year` (0.7+; keeps the current period when left out); an upgrade charges your saved payment method immediately |
 | `refund request <purchased-ticket-id>` | `--reason <text>` |
 | `refund approve\|reject <refund-request-id>` | `--note <text>`; owners and admins of the seller only |
+
+`--billing` (0.7+) picks how often a Hive3 membership is billed: `month` (full price), `quarter` (10% off, paid up front every 3 months) or `year` (20% off, paid up front once a year). Another value stops with `--billing must be month, quarter or year`. The preview's amount names the price for the whole period and the period, for example `720.00 USD yearly honey IMMEDIATE PRORATED INVOICE`. With `membership revise`, a higher tier or a longer period starts now and a lower tier or a shorter period starts at the next renewal (`SCHEDULE NEXT BILLING PERIOD`); a higher tier always starts now. Revising to your current tier and period while a change is scheduled cancels that change. See [Billing periods](/start/plans#billing-periods).
+
+```bash title="Switch your membership to yearly billing"
+hive3 payments preview membership revise --tier honey --billing year
+hive3 payments membership revise --tier honey --billing year --yes \
+  --confirm "<confirm text from the preview>" --request-id honey-yearly-001
+```
 
 ```bash title="Buy a ticket"
 hive3 payments preview checkout ticket "<ticket-id>" --provider stripe
@@ -121,6 +129,6 @@ hive3 payments checkout ticket "<ticket-id>" --provider stripe --yes \
 
 - **Paste `confirm` unchanged.** It names the account, provider, action, target and amount. If anything changed since the preview, the command stops with `confirm must exactly match the current payment preview`; run the preview again.
 - **New purchases are paid in the browser.** Checkouts, portals and PayPal plan changes return a private link that the buyer opens in their own browser to pay or approve. The CLI never starts a new purchase on its own.
-- **Some confirmed actions take effect at once.** `membership revise` to a higher tier charges the saved payment method on your membership straight away for the prorated difference (a failed payment leaves the plan unchanged; a downgrade waits for the next renewal). `refund approve` sends the refund through the payment provider. Run these only when the person asked for that exact change.
+- **Some confirmed actions take effect at once.** `membership revise` to a higher tier charges the saved payment method on your membership straight away for the prorated difference, and a move to a longer billing period charges the new period today less a credit for the unused time (a failed payment leaves the plan unchanged; a downgrade or shorter period waits for the next renewal). `refund approve` sends the refund through the payment provider. Run these only when the person asked for that exact change.
 - **One attempt per request ID.** Use a new `--request-id` (up to 128 characters) for each action, and the same one only to repeat the identical request. If the result is unknown, check `hive3 payments history` or the browser before doing anything else; a second checkout for the same thing is blocked.
 - **Not supported:** changing the plan of a Stripe creator subscription (its portal handles payment methods, invoices and cancelling), managing an older PayPal Hive3 membership, payouts and wallet transfers. A membership checkout for an account you own is for its owner only; after that, that account manages its membership with its own sign-in.

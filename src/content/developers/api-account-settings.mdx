@@ -278,3 +278,14 @@ Returns `200` with the saved document.
 - `429 rate_limited`: more than 60 saves in a minute; wait for `Retry-After`.
 
 </Endpoint>
+
+### Page tabs in the overview
+
+The `overview` document also controls the page's tabs. `hiddenTabs` is an array of tab IDs to hide from everyone, the switches under **Page tabs** in the Account Builder: `activity`, `communities`, `offerings`, `credentials`, `affiliates`, `events`, `metaverse`, `content`, `courses`, `jobs`, `nfts`, `quests` and `streams`. **Overview** always shows and cannot be hidden. A document without `hiddenTabs`, or with an empty array, leaves every tab on; unknown IDs are ignored. Tabs that are on show by themselves: `activity`, `communities`, `credentials` and `affiliates` always, the others once the account has something in them that the viewer can see. The overview's `content` section (off by default) features published articles and videos on Overview.
+
+```jsonc
+{ "blocks": [/* the saved blocks, unchanged */], "hiddenTabs": ["nfts", "streams"] }
+```
+
+Because a save replaces the whole document, read it first and keep its `blocks` when you change `hiddenTabs`; the CLI's `hive3 profile overview get` and `save --file` carry the field the same way.
+

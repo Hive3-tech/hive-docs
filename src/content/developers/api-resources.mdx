@@ -55,6 +55,7 @@ Lists active resources of one kind, newest first. Without filters you get your o
 | `cursor` | query | string | No | The `page.nextCursor` of the previous page. |
 | `communityId` | query | string | No | List one account's resources (ID or `@handle`). Needs `communities:read`. |
 | `ownerType` | query | string | No | `person` or `community`; it does not filter by type. `community` without `communityId` returns an empty list. |
+| `location` | query | string | No | Events only: `irl`, `virtual` or `metaverse` lists only events of that [type](/developers/api-resources-events#filter-the-list-by-type). Any other value returns `400`. Other kinds ignore it. |
 
 <Tabs labels={["curl","JavaScript","Python"]}>
 <Tab>
@@ -291,5 +292,5 @@ Jobs keep only the fields below; others are dropped. Courses, content, events an
 Courses, content, events and quests take more fields than the common ones above:
 
 - **Courses and content** have lessons, office hours, sections and tags. See [Courses and content](/developers/api-resources-content).
-- **Events** take `eventSlots` (each with ISO 8601 `startsAt` and `endsAt`), `autoEnroll` (default `false`) and an optional `worldId` (a world ID, or `default` for the owning account's default world). See [Events: slots and worlds](/developers/api-resources-events).
+- **Events** take a `location` (`irl`, `virtual` or `metaverse`) with a `venue`, a `meeting` or a `worldId` (a world ID, or `default` for the owning account's default world), plus `eventSlots` (each with ISO 8601 `startsAt` and `endsAt`) and `autoEnroll` (default `false`). See [Events: types, slots and worlds](/developers/api-resources-events).
 - **Quests** need a `questCreditPlan` (`single` or `bundle`) that spends one quest credit, plus `objectives`, `startsAt` and `endsAt`. See [Quests: credits and objectives](/developers/api-resources-quests).

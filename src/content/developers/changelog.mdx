@@ -6,6 +6,44 @@ accent: developer
 
 This page lists changes that can affect an integration: new endpoints and scopes, changed behavior, and corrections to earlier documentation. Each entry ends with what you need to do. The API stays at `/api/v1`: existing paths, scopes and field names are unchanged unless an entry says otherwise.
 
+## November 7, 2026: API update and CLI 0.7.0
+
+Events now have a stored type: in person, virtual or metaverse, with a venue, a meeting link or a world. Quests count the three types separately, and account page tabs can be hidden. Items in the CLI pages marked "(0.7+)" need CLI 0.7.0 or later; run `hive3 update --check` to see your version.
+
+### Event types
+
+- **New event fields.** Create and `PATCH` on `/api/v1/events` accept `location` (`irl`, `virtual` or `metaverse`), `venue` (`address`, `name`, `instructions`, `city`, `placeId`, `latitude`, `longitude`), `meeting` (`provider`, `url`, `instructions`) and `checkInMode` (`self` or `door`). Every event read returns all four; `checkInMode` is `null` unless the event is `irl`. See [Event types](/developers/api-resources-events#event-types).
+- **Existing events were converted.** Events in a world are `metaverse`. Events whose slot link pointed at a meeting service (Zoom, Google Meet, Teams, YouTube and similar) are `virtual`, with that link moved out of `eventSlots` into `meeting`. Everything else is `irl`, without a venue until its host adds one.
+- **The join link is private.** `meeting.url` and `meeting.instructions` are returned only to the owning account and keys that manage it. Every other reader gets `meeting: { "provider": … }`.
+- **Filter by type.** `GET /api/v1/events?location=irl|virtual|metaverse`. Other values return `400` (`location must be irl, virtual or metaverse`). A filtered page can be shorter than `limit` while `hasMore` is `true`.
+- **Moving out of a world.** `PATCH` with `location` `irl` or `virtual` now removes the event's world booking, which `worldId` alone could not do. `worldId` with `irl` or `virtual` returns `400` (`Only metaverse events can book a world.`).
+- **New `400 invalid_request` messages:** `location must be irl, virtual or metaverse`, `Metaverse events need a world.`, `Only metaverse events can book a world.`, `Virtual events need a meeting link that starts with https://.`, `meeting.provider must be zoom, google_meet, microsoft_teams, x_spaces, discord, youtube or other`, `checkInMode must be self or door`, and `<field> must be <n> characters or fewer` for venue and meeting text. The API does not require a venue for `irl` events; the app does.
+- **Emails to guests.** Approved guests get a confirmation email with the address and check-in details, the join link or the world link. Changes to the time, venue, check-in mode, join link or world send one "Updated details" email, and archiving an upcoming event emails everyone who RSVP'd. This applies to events changed through the API too.
+- QR check-in and Google Calendar sync are new in the app and have no API or CLI commands. See [Check in at events](/create/check-in-at-events).
+
+### Quests and account pages
+
+- **New objective type `in_person_events_attended`** counts in-person events the participant checked in at. `virtual_events_attended` now counts only `virtual` events and `metaverse_events_attended` only `metaverse` events. Existing `virtual_events_attended` objectives that targeted an in-person event were changed to `in_person_events_attended`. See [Event objectives](/developers/api-resources-quests#event-objectives).
+- **`hiddenTabs` in the overview builder document** lists account page tabs to hide. Without it every tab is on. See [Page tabs in the overview](/developers/api-account-settings#page-tabs-in-the-overview).
+
+### CLI 0.7.0
+
+- `hive3 events create` and `update` take `--location`, `--address`, `--venue-name`, `--venue-instructions`, `--check-in`, `--meeting-url`, `--meeting-provider` and `--meeting-instructions`, next to `--world`. They check values before sending, and `update` keeps the event's other venue and meeting details. See [Event type flags](/developers/cli-commands-resources#event-type-flags).
+- `hive3 events list --location irl|virtual|metaverse` filters by type.
+- Quest objectives accept `in_person_events_attended`.
+- **Membership billing periods.** 0.7.0 is the first published release with `--billing month|quarter|year` on `hive3 payments checkout membership` and `membership revise` (prepared as 0.6.0, which was never published). Checkout defaults to `month`; `revise` keeps the current period. See [Payments](/developers/cli-commands-payments#payments).
+
+**What to do:** send `location` with every new event, and put meeting links in `meeting.url` rather than in a slot link. Read `location` instead of guessing the type from `worldId` or links. Change quest objectives for in-person events to `in_person_events_attended`. When you save an overview document, keep its `hiddenTabs`. Run `hive3 update`, then `hive3 skill install --force` with the options you installed the skill with.
+
+## November 5, 2026: membership billing periods
+
+Hive3 memberships can be billed monthly, quarterly (10% off, paid every 3 months) or yearly (20% off, paid once a year), in the app and the API.
+
+- `POST /api/v1/payments/preview` and `operate` accept `billingPeriod` (`month`, `quarter` or `year`) on `checkout.membership` (default `month`) and `membership.revise` (default: the current period). Other values return `400` (`billingPeriod must be month, quarter or year`).
+- The preview `amount` is the price of one whole period with the period named, for example `720.00 USD yearly honey …`, and for `membership.revise` ends with when the change happens (`IMMEDIATE PRORATED INVOICE`, `SCHEDULE NEXT BILLING PERIOD`, `CANCEL SCHEDULED CHANGE` or `NO CHANGE`). A higher tier or a longer period starts now; a lower tier or a shorter period starts at the next renewal. See [Membership billing periods](/developers/api-payments#membership-billing-periods).
+
+**What to do:** nothing for monthly memberships. To offer quarterly or yearly billing, send `billingPeriod`, and show the person the preview's amount before you confirm.
+
 ## November 2026: CLI 0.5.1
 
 This CLI release changes no API behavior or scopes.

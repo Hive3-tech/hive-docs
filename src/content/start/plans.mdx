@@ -6,7 +6,7 @@ accent: addons
 
 Hive3 has four plans. Worker Bee is free and covers joining, learning and publishing. The paid plans add private and paid access, community management tools and monthly allowances for quests and 3D worlds.
 
-Prices are in US dollars. Honey Bee is $75 a month, Swarm is $250 a month and Royal Hive is $550 a month.
+Prices are in US dollars. Honey Bee is $75 a month, Swarm is $250 a month and Royal Hive is $550 a month when billed monthly. Paying quarterly saves 10% and paying yearly saves 20%; see [Billing periods](/start/plans#billing-periods).
 
 <Walkthrough
   src="/media/walkthroughs/plans.mp4"
@@ -46,10 +46,10 @@ You can upgrade from any plan at any time.
 Go to <Path items={["Settings", "Subscriptions"]} />. The **Hive3 Membership** card shows your current plan.
 </Step>
 <Step title="Choose a plan">
-Select <UI>Change plan</UI> (or <UI>Start membership</UI> if you are on Worker Bee). On **Choose Your Plan**, select the plan you want. The button at the bottom reads <UI>Upgrade to</UI> followed by the plan name.
+Select <UI>Change plan</UI> (or <UI>Start membership</UI> if you are on Worker Bee). On **Choose Your Plan**, pick <UI>Monthly</UI>, <UI>Quarterly</UI> (<UI>Save 10%</UI>) or <UI>Yearly</UI> (<UI>Save 20%</UI>) at the top, then select the plan you want. Each plan card shows the price per month and how it is billed, for example <UI>Billed monthly</UI>. The button at the bottom reads <UI>Upgrade to</UI> followed by the plan name.
 </Step>
 <Step title="Review the checkout summary">
-The <UI>Upgrade to</UI> window shows the price per month. Open <UI>Have a promo code?</UI> to apply a code. If you were invited, <UI>Have a referral code?</UI> appears too.
+The <UI>Upgrade to</UI> window has the same <UI>Billing</UI> choice and a <UI>Checkout Summary</UI> with what you pay for the period you picked. Open <UI>Have a promo code?</UI> to apply a code. If you were invited, <UI>Have a referral code?</UI> appears too.
 </Step>
 <Step title="Continue with Stripe">
 Select <UI>Continue with Stripe</UI> and enter your payment details on the Stripe page. When payment completes you return to Hive3 and the new plan is active.
@@ -64,20 +64,32 @@ You can also compare plans before you sign in at [app.hive3.tech/pricing](https:
 
 ## How billing works
 
-- Memberships renew monthly until you cancel. Checkout tells you this before you pay.
+- Memberships renew at the end of each billing period until you cancel. Checkout tells you this before you pay.
 - <Path items={["Settings", "Subscriptions"]} /> shows your status, for example **Active · renews** with a date.
 - Select <UI>Manage billing in Stripe</UI> to update your payment method, see invoices or cancel.
 - You can switch plans from the same page with <UI>Change plan</UI>.
 
 <Figure src="/media/start/plans/subscriptions-settings.webp" alt="Settings Subscriptions page with the Hive3 Membership card showing the current plan, its renewal date and the Change plan and Manage billing in Stripe buttons" caption="Settings, Subscriptions." />
 
+### Billing periods
+
+| Period | Price | Charged |
+|---|---|---|
+| <UI>Monthly</UI> | Full price | Every month |
+| <UI>Quarterly</UI> | 10% off | Up front for 3 months, every 3 months |
+| <UI>Yearly</UI> | 20% off | Up front for 12 months, once a year |
+
+For example, Honey Bee costs $202.50 every 3 months or $720 a year. Included quest credits and metaverse time still reset every calendar month, whichever period you pay for.
+
+To change the period, open <UI>Change plan</UI>, pick the new period and select your plan. A longer period (for example monthly to yearly) starts now: Stripe credits the unused part of your current plan and charges the new period today, less that credit, and your billing date resets to today. A shorter period starts at your next renewal, with no charge today.
+
 ### Move up to a higher plan
 
-An upgrade takes effect immediately. Stripe works out the difference for the rest of the billing period and invoices it. If the payment is declined, your plan does not change.
+An upgrade takes effect immediately, even if you pick a shorter billing period at the same time. Stripe works out the difference for the rest of the billing period and invoices it, and your renewal date stays the same. If you also switch to a different billing period, the new period starts today instead, as described above. If the payment is declined, your plan does not change.
 
 ### Move down to a lower plan
 
-A change to a lower paid plan starts at the end of the current billing period. You keep your current plan until then, with no charge today. You can see the date in the window before you confirm.
+A change to a lower paid plan, or to a shorter billing period, starts at the end of the current billing period. You keep your current plan until then, with no charge today. You can see the date in the window before you confirm. While a change is waiting, the window says when it starts and offers <UI>Keep current plan</UI> to cancel it.
 
 ### Cancel
 

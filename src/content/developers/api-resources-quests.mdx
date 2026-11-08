@@ -32,11 +32,23 @@ Objectives are stored as you send them. Each is an object:
 | Field | Type | Notes |
 |---|---|---|
 | `id` | string | Stable ID used when participants submit evidence. Defaults to the quest ID plus the position. |
-| `type` | string | `post_likes_given`, `post_comments_created`, `courses_completed`, `course_progress`, `metaverse_events_attended`, `virtual_events_attended`, `jobs_applied` or `custom`. Progress for the first seven is counted by Hive3; `custom` objectives are completed with evidence, and unknown types never advance. |
+| `type` | string | `post_likes_given`, `post_comments_created`, `courses_completed`, `course_progress`, `in_person_events_attended`, `virtual_events_attended`, `metaverse_events_attended`, `jobs_applied` or `custom`. Progress for all but `custom` is counted by Hive3; `custom` objectives are completed with evidence, and unknown types never advance. See [Event objectives](#event-objectives). |
 | `name`, `shortDescription` | string | Labels shown to participants. |
 | `targetCount` | integer | How many times; default 1. |
 | `evidenceType` | string | For `custom`: `written`, `link` or `document`. |
 | `targetEventId`, `targetCourseId`, `targetJobId` | string | Limit an objective to one resource. |
+
+### Event objectives
+
+The three event types count only events of their own [event type](/developers/api-resources-events#event-types) (`location`). Attendance a manager records in the app or through [the enrollment workflow](/developers/api-workflows) counts for every type.
+
+| `type` | Counts | Recorded by the guest |
+|---|---|---|
+| `in_person_events_attended` | `irl` events | QR check-in at the venue (app only). |
+| `virtual_events_attended` | `virtual` events | Selecting **Join event** in the app while the event is live. |
+| `metaverse_events_attended` | `metaverse` events | Entering the event's world. |
+
+With `targetEventId`, use the objective type that matches the event's `location`; an objective of another type never advances for that event. Existing `virtual_events_attended` objectives that targeted an in-person event were changed to `in_person_events_attended`.
 
 ## Quest credits
 

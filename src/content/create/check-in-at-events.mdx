@@ -1,0 +1,89 @@
+---
+title: Check in at events
+description: Record who came to an in-person event with one event QR code or a personal pass for each guest.
+accent: events
+---
+
+Guests at an in-person event check in with a QR code, and that check-in is how Hive3 records that they attended. You choose how it works for each event: with **self check-in**, guests scan one event QR code. With **door scanning**, you or your team scan each guest's personal pass. Attendance counts toward event credentials and toward quests with the <UI>Attend an in-person event</UI> objective.
+
+**Who can do this:** the host of the event and the owner, admins and moderators of the hosting community. Check-in is only for in-person events. Virtual events record attendance when a guest selects <UI>Join event</UI>, and metaverse events when they enter the world.
+
+## Choose a check-in mode
+
+Set the mode on the <UI>Event Type</UI> step of the event form, under <UI>Check-in</UI>, after you select <UI>In person</UI> and enter the address. See [Create an event](/create/create-an-event#in-person). You can change it with <UI>Edit Event</UI> until the event starts. Guests who are already approved get an updated email.
+
+| Mode | How guests check in | Best for |
+|---|---|---|
+| <UI>Self check-in</UI> | You print or show one QR code. Guests scan it with their phone camera when they arrive. | Meetups and open events, and events where walk-ins are welcome. |
+| <UI>Door scanning</UI> | Each guest gets a personal QR pass. You or your team scan it at the entrance in the Hive3 scanner. | Ticketed events, limited spaces, or when you want to see each guest come in. |
+
+New in-person events start on <UI>Self check-in</UI>.
+
+## When check-in is open
+
+Check-in opens 1 hour before the event starts and closes when it ends. Outside that window a guest sees <UI>Check-in opens 1 hour before the event starts.</UI> or <UI>Check-in has closed for this event.</UI>
+
+## Self check-in
+
+<Steps>
+<Step title="Show the event QR code">
+On the event page, the <UI>Check-in</UI> card shows how many guests have checked in, for example <UI>12 of 40 checked in</UI>. Select <UI>Show check-in QR</UI>. The <UI>Check-in QR code</UI> window shows the code with the event title and <UI>Scan to check in</UI>.
+</Step>
+<Step title="Print it or put it on a screen">
+Select <UI>Download</UI> to save the code as an image you can print, or <UI>Full screen</UI> to show it on a laptop or tablet at the entrance.
+</Step>
+<Step title="Guests scan it">
+Guests open the code with their phone camera. Hive3 checks them in and shows <UI>You're checked in to</UI> the event. If the event awards a credential, they also see <UI>You can now claim this event's credential.</UI>
+</Step>
+</Steps>
+
+### Walk-ins
+
+Anyone who scans the code can check in, even without an RSVP. A guest who is signed out sees <UI>Sign in or create your Hive3 account to check in</UI> and can create an account on the spot. Once signed in, they are approved and checked in straight away, even if the event is full or uses <UI>Apply for entry</UI>.
+
+A few people still cannot check in:
+
+- A guest whose RSVP you declined sees <UI>The host declined your RSVP for this event.</UI>
+- For a members-only or ticketed event, the guest needs membership or a ticket first, and otherwise sees <UI>You need access to this event before you can check in.</UI>
+
+### Reset the QR code
+
+If the code was shared somewhere it should not be, open <UI>Show check-in QR</UI> and select <UI>Reset code</UI>. Hive3 warns that <UI>Printed or shared copies of the current QR code will stop working.</UI> Confirm to get a new code, then print or show the new one. Anyone who scans the old code sees <UI>This check-in code is no longer valid. Ask the host for the current QR code.</UI>
+
+<Callout type="tip">
+The event QR code is never emailed to guests, so it only works for people who are at the venue or who you share it with.
+</Callout>
+
+## Door scanning
+
+### Guests get a pass
+
+Every guest who RSVPs gets a personal pass. On the event page they select <UI>Show my pass</UI> to see the QR code with their name and <UI>Show this at the door.</UI> Approved guests also get the pass QR in their confirmation email, with an <UI>Open your pass</UI> button. Guests whose RSVP is still pending can show a pass too, so you can approve them at the door.
+
+### Scan passes
+
+<Steps>
+<Step title="Open the scanner">
+On the event page, select <UI>Open scanner</UI> in the <UI>Check-in</UI> card. Allow camera access when your browser asks. The scanner works best on a phone, using the back camera.
+</Step>
+<Step title="Point the camera at a pass">
+Each pass you scan shows the guest's photo, name and handle with a status: <UI>Checked in</UI>, or <UI>Already checked in at</UI> a time if they came in earlier.
+</Step>
+<Step title="Approve guests who are not approved yet">
+A guest whose RSVP is pending shows <UI>Needs approval</UI>. Select <UI>Approve & check in</UI> to approve and check them in in one step. For a members-only or ticketed event, the guest still needs membership or a ticket.
+</Step>
+</Steps>
+
+The scanner shows the live count, and a <UI>Walk-in QR</UI> button opens the event QR code for guests without a pass. A pass for another event shows <UI>This pass is for a different event.</UI>
+
+If the scanner cannot start, you see <UI>No camera found on this device.</UI> or <UI>Camera access is blocked. Allow camera access for this site and reload.</UI> You can also scan a pass with your phone's own camera app: it opens the pass in Hive3, where you see the same <UI>Check in</UI> or <UI>Approve & check in</UI> button. Anyone else who opens a pass link is told to show it to the host at the door.
+
+## See who came
+
+Checked-in guests show <UI>Attended</UI> on <UI>Manage Enrollment</UI>, and guests see <UI>Checked in</UI> with the time on the event page. Attendance at an in-person event is only recorded by check-in or by you selecting <UI>Mark attended</UI>.
+
+## Related guides
+
+- [Create an event](/create/create-an-event)
+- [Attend events](/explore/attend-events)
+- [Create a quest](/create/create-a-quest)

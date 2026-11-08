@@ -84,7 +84,7 @@ Before anything happens, Hive3 checks the confirmation and your access again. If
 ### What happens after you confirm
 
 - **New purchases return a link instead of charging anything.** Checkouts, billing portals and PayPal plan changes return `{ "url": "…", "private": true, "browserRequired": true, "message": "…" }`. The buyer opens it privately in their own browser and pays or approves there. Treat the link like a password: do not log, store or share it.
-- **Some confirmed actions take effect straight away, with no browser step.** Upgrading your Hive3 membership with `membership.revise` charges the payment method already on your Stripe membership at once for the prorated difference, as the app's upgrade button does; if the payment fails, the plan stays as it was. A downgrade takes effect at the end of the current period and charges nothing. Cancel and resume change renewal only. Approving a refund sends the money back to the buyer through the payment provider. Confirm these only when the person has asked for exactly that change.
+- **Some confirmed actions take effect straight away, with no browser step.** Upgrading your Hive3 membership with `membership.revise` charges the payment method already on your Stripe membership at once for the prorated difference, as the app's upgrade button does; if the payment fails, the plan stays as it was. Moving to a longer [billing period](#membership-billing-periods) also starts at once. A downgrade or a shorter period takes effect at the end of the current period and charges nothing. Cancel and resume change renewal only. Approving a refund sends the money back to the buyer through the payment provider. Confirm these only when the person has asked for exactly that change.
 
 Preview allows 60 requests per minute and operate 20 per minute. Bodies are limited to 8 KiB, and unknown fields are rejected with `400`.
 
@@ -94,7 +94,7 @@ Preview allows 60 requests per minute and operate 20 per minute. Bodies are limi
 | --- | --- | --- | --- |
 | `checkout.subscription` | Plan ID | `provider` (`stripe` or `paypal`) | Starts a subscription checkout. |
 | `checkout.ticket` | Ticket ID | `provider` | Starts a ticket checkout. |
-| `checkout.membership` | `self`, or an account you own | `tier` (`honey`, `swarm` or `royal`) | Starts a Hive3 membership checkout on Stripe. |
+| `checkout.membership` | `self`, or an account you own | `tier` (`honey`, `swarm` or `royal`), `billingPeriod` (optional: `month`, `quarter` or `year`; default `month`) | Starts a Hive3 membership checkout on Stripe. |
 | `checkout.quest-credit` | Account ID | `planType` (`single` or `bundle`) | Buys a quest credit on Stripe. |
 | `checkout.metaverse-time` | Account ID | `quantity` (hours, 1 to 100) | Buys metaverse time on Stripe. |
 | `finalize.stripe` | Stripe checkout session ID | `kind` (`membership`, `subscription`, `ticket`, `questCredit` or `metaverseTime`) | Records a Stripe checkout you paid for. |
@@ -104,11 +104,26 @@ Preview allows 60 requests per minute and operate 20 per minute. Bodies are limi
 | `subscription.portal` | Subscription ID | None | Returns a Stripe billing portal link for payment methods, invoices and cancelling. |
 | `subscription.revise` | Subscription ID | `newPlanId` | Switches a PayPal subscription to another plan; you approve the change in the browser. |
 | `membership.cancel`, `membership.resume`, `membership.portal` | `self` | None | The same for your Hive3 membership. |
-| `membership.revise` | `self` | `tier` | Changes your Hive3 membership plan. An upgrade charges your saved payment method immediately for the prorated difference; a downgrade starts at the next renewal. |
+| `membership.revise` | `self` | `tier`, `billingPeriod` (optional; keeps the current period when left out) | Changes your Hive3 membership plan or billing period. An upgrade charges your saved payment method immediately; a downgrade starts at the next renewal. See [Membership billing periods](#membership-billing-periods). |
 | `refund.request` | Purchase ID (from [tickets you bought](/developers/api-tickets#read-tickets-you-bought)) | `reason` (optional) | Asks the seller for a ticket refund. |
 | `refund.approve`, `refund.reject` | Refund request ID | `reviewNote` (optional) | The seller's decision on a refund request. Owners and admins only. |
 
 Finalizing works only for the person who paid: you cannot finalize someone else's checkout. A membership checkout for an account you own is for its owner only; after that, the account manages its membership with its own sign-in. Changing the plan of a Stripe creator subscription is not supported, nor is managing an older PayPal Hive3 membership.
+
+### Membership billing periods
+
+`billingPeriod` sets how often a Hive3 membership is billed: `month` at full price, `quarter` at 10% off paid up front every 3 months, or `year` at 20% off paid up front once a year. Any other value returns `400 invalid_request` (`billingPeriod must be month, quarter or year`). The preview's `amount` is the price of one whole period, for example `720.00 USD yearly honey …`.
+
+For `membership.revise`, the preview says when the change happens:
+
+| End of `amount` | When |
+|---|---|
+| `IMMEDIATE PRORATED INVOICE` | A higher tier, or the same tier with a longer period. It starts now. With the same period, the prorated difference is charged and the renewal date stays; with a new period, the unused part of the current plan is credited, the new period is charged today and the billing date resets to today. |
+| `SCHEDULE NEXT BILLING PERIOD` | A lower tier, or the same tier with a shorter period. It starts at the next renewal, with no charge now. A higher tier always starts now, even with a shorter period. |
+| `CANCEL SCHEDULED CHANGE` | Your current tier and period while a change is scheduled. It cancels that change. |
+| `NO CHANGE` | Your current tier and period, with nothing scheduled. |
+
+Included quest credits and metaverse time reset every calendar month whatever the billing period.
 
 ## When the outcome is unknown
 

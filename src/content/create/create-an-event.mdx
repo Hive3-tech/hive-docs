@@ -1,10 +1,10 @@
 ---
 title: Create an event
-description: Publish an in-person, linked or 3D-world event, decide who can RSVP, and optionally charge for entry.
+description: Publish an in-person, virtual or 3D-world event, decide who can RSVP, and optionally charge for entry.
 accent: events
 ---
 
-An event is a single block of time that people can RSVP to. It can take place in person, at a link such as a map or a video call, or inside a 3D world on Hive3. This guide walks through the four steps of the event form and what you can do once the event is live.
+An event is a single block of time that people can RSVP to. It takes place in person at an address, online on a video call or live audio room, or inside a 3D world on Hive3. This guide walks through the four steps of the event form and what you can do once the event is live.
 
 **Who can do this:** any account on any plan can publish events, and so can the owner, admins and moderators of a community. Some options need more:
 
@@ -68,27 +68,57 @@ If your plan includes credentials, you also see a <UI>Credential image</UI> fiel
 
 ## Event Type
 
-Choose where the event happens.
+Choose where the event happens. The three tiles are <UI>In person</UI> (at a real address, with a map and QR check-in), <UI>Virtual</UI> (on Zoom, Google Meet, Teams, X Spaces or another call link) and <UI>Metaverse</UI> (hosted in a Hive3 3D world).
+
+### In person
 
 <Steps>
-<Step title="Select IRL Event or Metaverse Event">
-<UI>IRL Event</UI> is for an in-person event or one at a linked location. <UI>Metaverse Event</UI> is hosted in a 3D world. There is no separate online type: use <UI>IRL Event</UI> with a video-call link.
+<Step title="Enter the Address">
+Required. Start typing a street address or venue name and pick a suggestion: Hive3 fills in the address and the city and places the venue on the map. You can also type any address by hand. The address is public, so everyone who can see the event sees it.
 </Step>
-<Step title="For an IRL event, add the Event Link">
-Required. Paste a map link such as `https://maps.google.com/...` or a call link such as `https://zoom.us/...`. Select <UI>Unlimited participants</UI>, or clear it and enter a maximum RSVP count.
+<Step title="Add the Venue name and Getting there">
+Both optional. <UI>Venue name</UI> is shown above the address. Use <UI>Getting there</UI> for parking, the entrance, the floor or a door code, up to 1,000 characters.
 </Step>
-<Step title="For a Metaverse Event, set the capacity and choose the world">
-Enter <UI>Maximum participants</UI>. It is required: up to 500 in a shared world and up to 100 in a Royal Hive world. Then choose the world. Honey Bee picks one of the shared worlds for each event. Swarm uses its default shared world and Royal Hive uses its own world. If you do not have a world yet, a <UI>Choose your world</UI> button opens your Worlds page in a new tab so you keep your place.
+<Step title="Choose how guests check in">
+Under <UI>Check-in</UI>, pick <UI>Self check-in</UI> (one QR code that guests scan when they arrive; walk-ins can sign up on the spot) or <UI>Door scanning</UI> (each guest gets a personal QR pass that you or your staff scan at the entrance). See [Check in at events](/create/check-in-at-events).
+</Step>
+<Step title="Set the capacity">
+Select <UI>Unlimited participants</UI>, or clear it and enter a maximum RSVP count.
 </Step>
 </Steps>
 
+A preview of the map appears under the address while you edit. On the event page, guests see the venue, an embedded Google map, a <UI>Get directions</UI> link to Google Maps and an <UI>Apple Maps</UI> link.
+
+### Virtual
+
+<Steps>
+<Step title="Pick the Meeting app">
+Choose Zoom, Google Meet, Microsoft Teams, X Spaces, Discord, YouTube Live or Other link. If you skip it, Hive3 recognises the app from the link.
+</Step>
+<Step title="Paste the Meeting link">
+Required. The link must start with `https://`.
+</Step>
+<Step title="Add Joining details">
+Optional: a passcode, a dial-in number or anything else guests need, up to 1,000 characters.
+</Step>
+<Step title="Set the capacity">
+Select <UI>Unlimited participants</UI>, or clear it and enter a maximum RSVP count.
+</Step>
+</Steps>
+
+Everyone sees which meeting app the event uses. Only you, your moderators and guests whose RSVP is approved see the link and the joining details; for a ticketed or members-only event, guests also need their ticket or membership. Everyone else sees <UI>The join link appears here once your RSVP is approved.</UI> While the event is live, approved guests select <UI>Join event</UI> to open the link, and Hive3 records their attendance.
+
+### Metaverse
+
+Enter <UI>Maximum participants</UI>. It is required: up to 500 in a shared world and up to 100 in a Royal Hive world. Then choose the world. Honey Bee picks one of the shared worlds for each event. Swarm uses its default shared world and Royal Hive uses its own world. If you do not have a world yet, a <UI>Choose your world</UI> button opens your Worlds page in a new tab so you keep your place. Only metaverse events can book a world.
+
 <Callout type="plan">
-Worker Bee accounts cannot book a 3D world, so the <UI>Metaverse Event</UI> option is not usable on that plan. Honey Bee and above can book worlds.
+Worker Bee accounts cannot book a 3D world, so the <UI>Metaverse</UI> option is not usable on that plan. Honey Bee and above can book worlds.
 </Callout>
 
 <Figure
   src="/media/create/create-an-event/event-type-metaverse.webp"
-  alt="The Event Type step with Metaverse Event selected, a Maximum participants field and the shared world available to your plan."
+  alt="The Event Type step with Metaverse selected, a Maximum participants field and the shared world available to your plan."
   caption="Choosing a metaverse event and its world."
 />
 
@@ -163,9 +193,11 @@ You land on the event page. As the host you see these buttons at the top:
 - <UI>Enrollments</UI> opens <UI>Manage Enrollment</UI>.
 - <UI>Edit Event</UI>, until the event starts.
 
+For an in-person event you also get a <UI>Check-in</UI> card with <UI>Show check-in QR</UI> and <UI>Open scanner</UI> and a live count of guests checked in. See [Check in at events](/create/check-in-at-events).
+
 ### Manage RSVPs
 
-<UI>Manage Enrollment</UI> lists everyone who RSVP'd, with tabs for <UI>All</UI>, <UI>Pending</UI>, <UI>Approved</UI> and <UI>Denied</UI> and a count on each. With <UI>Apply for entry</UI>, review each request and select <UI>Approve</UI> or <UI>Deny</UI>. For approved guests you can select <UI>Mark attended</UI>, which then shows <UI>Attended</UI>.
+<UI>Manage Enrollment</UI> lists everyone who RSVP'd, with tabs for <UI>All</UI>, <UI>Pending</UI>, <UI>Approved</UI> and <UI>Denied</UI> and a count on each. With <UI>Apply for entry</UI>, review each request and select <UI>Approve</UI> or <UI>Deny</UI>. For approved guests you can select <UI>Mark attended</UI>, which then shows <UI>Attended</UI>. Guests who check in at an in-person event, or join a virtual event with <UI>Join event</UI>, show <UI>Attended</UI> automatically.
 
 <Figure
   src="/media/create/create-an-event/enrollments.webp"
@@ -179,15 +211,33 @@ From your [dashboard](/create/your-dashboard), use <UI>Edit</UI>, <UI>Delete</UI
 
 Once an event has started it can no longer be edited or deleted. After it has finished you can hide it from your profile. If you delete a metaverse event before it starts, the purchased metaverse time it used goes back to your balance.
 
+## Emails guests get
+
+Hive3 emails guests at three moments, for every event type:
+
+| When | What the email holds |
+|---|---|
+| An RSVP is approved | A confirmation with the time. In person: the address, getting-there notes and a directions link, plus either the guest's personal pass QR and an <UI>Open your pass</UI> button (door scanning) or a reminder to scan the event's QR code on arrival (self check-in). Virtual: the join link, the joining details and a button to join. Metaverse: the world and an <UI>Enter</UI> button that opens the world for this event. |
+| You change the details | One "Updated details" email when the time, venue, check-in mode, join link or world changes. Several edits within a few minutes arrive as one email. |
+| You delete an upcoming event | A "Cancelled" email to everyone who RSVP'd and was not declined. |
+
+The join link and the world link only go to guests who still have access, so a guest whose ticket or membership lapsed does not get them. The event's self check-in QR code is never emailed.
+
+## Add to Google Calendar
+
+Approved guests see <UI>Add to Google Calendar</UI> on the event page. The first time, it asks them to connect Google Calendar. After that, every event they are approved for is added to a <UI>Hive3</UI> calendar in their Google account and kept up to date when you change the time, place or link, or delete the event. The calendar entry holds the address, the join link or the world link. See [Settings](/account/settings#google-calendar).
+
 ## Tips
 
 - Keep the title short enough to read on a card. The <UI>Short Description</UI> carries the detail.
 - Choose <UI>Apply for entry</UI> when your space is limited and you want to see who is coming.
+- For an in-person event, write entrance and parking notes in <UI>Getting there</UI>: they appear on the event page, in the email and in guests' calendars.
 - Check your metaverse time on the dashboard before you schedule a long event in a shared world.
-- Everything on this page can be edited until the event starts, including the time and the access rules.
+- Everything on this page can be edited until the event starts, including the time, the place and the access rules. Guests are told about changes by email.
 
 ## Related guides
 
+- [Check in at events](/create/check-in-at-events)
 - [Host in a 3D world](/create/host-in-a-world)
 - [Get paid: subscriptions and tickets](/community/get-paid)
 - [Attend events](/explore/attend-events)

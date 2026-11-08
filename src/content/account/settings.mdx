@@ -47,7 +47,7 @@ On a computer, the list of sections sits on the left and the open section on the
 
 | Section | What it covers | Guide |
 |---|---|---|
-| <UI>Account</UI> | Handle, email, sign-in methods, security, Camera Liveness Check and proof-of-human providers | [Sign in and security](/account/security), [Liveness and proof of human](/account/proof-of-human) |
+| <UI>Account</UI> | Handle, email, sign-in methods, Google Calendar, security, Camera Liveness Check and proof-of-human providers | [Sign in and security](/account/security), [Liveness and proof of human](/account/proof-of-human) |
 | <UI>Subscriptions</UI> | Your Hive3 plan and the subscriptions you bought from creators | [Plans and pricing](/start/plans), [Tickets and subscriptions](/explore/tickets-and-subscriptions) |
 | <UI>Wallets</UI> | Your Hive3 wallet, linked wallets and NFT visibility | [Wallets](/account/wallets) |
 | <UI>Credentials</UI> | The network for new credentials you create | [Create and award credentials](/community/issue-credentials) |
@@ -64,8 +64,28 @@ The <UI>Account</UI> section is the longest. From top to bottom it holds:
 - **Handle.** Your @handle is part of your profile link. Type a new one and select <UI>Save handle</UI>. Hive3 checks that it is available first. Changing it breaks links that use the old one, so update anywhere you have shared it.
 - **Email.** Shows your address and whether it is verified. If it is not, select <UI>Verify email</UI>.
 - **Sign-in methods.** The accounts you can use to sign in: Google, GitHub, X and Discord. A linked method shows <UI>Linked</UI>; an unlinked one has a <UI>Connect</UI> button. Apple and LinkedIn are marked as coming soon.
+- **Google Calendar.** Adds the events you are approved for to your Google Calendar. See [Google Calendar](/account/settings#google-calendar) below.
 - **Security.** Passkeys and 2-step verification. See [Sign in and security](/account/security).
 - **Camera Liveness Check** and **Proof of human.** See [Liveness and proof of human](/account/proof-of-human).
+
+### Google Calendar
+
+The <UI>Google Calendar</UI> card puts every event you are approved for into a calendar called <UI>Hive3</UI> in your Google account. It works for in-person, virtual and metaverse events.
+
+<Steps>
+<Step title="Connect">
+Select <UI>Connect Google Calendar</UI>. Google asks you to let Hive3 manage the calendars it creates. This is separate from signing in with Google, and Hive3 cannot see or change your other calendars. You can also start from <UI>Add to Google Calendar</UI> on any event you are approved for.
+</Step>
+<Step title="Check your calendar">
+Back on Hive3 you see <UI>Google Calendar connected. Your upcoming events will appear in a Hive3 calendar.</UI> The card then shows <UI>Connected as</UI> your Google address, and event pages show <UI>In your Google Calendar</UI>.
+</Step>
+</Steps>
+
+Each entry has the event's time, a link back to the event page, and the address, the join link or the link that enters the world. Hive3 keeps the calendar in sync: when a host changes the time or place, when an event is cancelled, or when your RSVP is removed or declined, the entry is updated or removed. Upcoming events you were already approved for are added when you connect.
+
+To stop, select <UI>Disconnect</UI> and confirm <UI>Disconnect Google Calendar?</UI>. Hive3 stops syncing and removes the <UI>Hive3</UI> calendar from your Google account.
+
+If you remove Hive3's access in your Google account, the card shows <UI>Google access was removed. Reconnect to keep your events in sync.</UI> Select <UI>Reconnect</UI> to pick up where you left off. If you do not allow calendar access during connecting, Hive3 shows <UI>Google didn't return calendar access. Try again and allow calendar access.</UI>
 
 ## Subscriptions
 

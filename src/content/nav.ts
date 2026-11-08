@@ -81,6 +81,7 @@ export const navSections: NavSection[] = [
       { slug: "your-dashboard", title: "Your dashboard" },
       { slug: "build-your-page", title: "Build your account page" },
       { slug: "create-an-event", title: "Create an event" },
+      { slug: "check-in-at-events", title: "Check in at events" },
       { slug: "create-a-course", title: "Create a course" },
       { slug: "create-a-quest", title: "Create a quest" },
       { slug: "post-a-job", title: "Post a job" },

@@ -1,10 +1,10 @@
 ---
 title: Attend events
-description: Find an event, RSVP or apply, then join it in person, from a link, or inside a 3D world.
+description: Find an event, RSVP or apply, then check in at the venue, join the call, or enter a 3D world.
 accent: events
 ---
 
-Events on Hive3 can happen in person, online through a link, or inside a shared 3D world. You find them, reserve a place, and join when it starts. If the organizer attached a credential, attending earns you the right to claim it.
+Events on Hive3 happen in person, online on a video call or live room, or inside a 3D world. You find them, reserve a place, and join when it starts. If the organizer attached a credential, attending earns you the right to claim it.
 
 Any account can attend events, including Worker Bee. Some events ask for membership of the organizer's community, a ticket, or a subscription first.
 
@@ -28,7 +28,8 @@ Select <UI>Events</UI> in the sidebar. Type in <UI>Search events...</UI>, or ope
 | Filter | Shows |
 |---|---|
 | <UI>All</UI> | Every event. |
-| <UI>IRL</UI> | In-person events and events that run at a linked location, such as a video call. |
+| <UI>In person</UI> | Events at a real address. Cards show the city, for example <UI>In person · Berlin</UI>. |
+| <UI>Virtual</UI> | Events on Zoom, Google Meet, Teams, X Spaces, Discord, YouTube Live or another call link. |
 | <UI>Metaverse</UI> | Events held in a 3D world. |
 | <UI>Upcoming</UI>, <UI>Live</UI>, <UI>Finished</UI> | Events by when they happen. |
 
@@ -36,7 +37,7 @@ A **Featured Events** row at the top highlights events picked by Hive3. Events y
 
 <Figure
   src="/media/explore/attend-events/events-directory.webp"
-  alt="The Events directory with the search box, the filter menu showing All, IRL, Metaverse, Finished, Upcoming and Live, and a grid of event cards."
+  alt="The Events directory with the search box, the filter menu and a grid of event cards."
   caption="Filter the Events directory by type or by when the event happens."
 />
 
@@ -62,6 +63,12 @@ After an RSVP, the button reads <UI>RSVP'd</UI>. Point at it to see **Cancel RSV
 
 You are notified when you RSVP, when you apply, and when the organizer accepts or declines your application. If a decline happens, the page says **Your event application was not accepted.** Contact the organizer to change that decision.
 
+When your RSVP is approved, Hive3 also emails you how to get in: the address and your pass for an in-person event, the join link for a virtual one, or the world link for a metaverse one. If the organizer changes the details you get an updated email, and if they cancel the event you are told by email too.
+
+### Add it to Google Calendar
+
+Once you are approved, select <UI>Add to Google Calendar</UI> on the event page. You connect Google Calendar once, and from then on every event you are approved for appears in a <UI>Hive3</UI> calendar in your Google account and stays up to date. See [Settings](/account/settings#google-calendar).
+
 <Callout type="note">
 An RSVP reserves a place but does not guarantee admission when the event is first come, first served. If the event is full, Hive3 shows **Sorry, this event is at full capacity.**
 </Callout>
@@ -83,15 +90,20 @@ If you see a panel instead of the RSVP button, the event has an extra requiremen
 
 ## Join the event
 
-What you do when it starts depends on where it is held. You must have an accepted RSVP first.
+What you do when it starts depends on where it is held. You need an accepted RSVP first, except at an in-person event with a check-in QR code, where walk-ins can check in at the door.
 
-### Online or at a linked location
+### Virtual
 
-Once the event is live, <UI>Enter Event</UI> appears. It opens the organizer's link (a video call, a stream or a map) in a new tab and records that you attended. A toast confirms **Attendance recorded**. If the organizer attached a credential, it adds that you can now claim it.
+The event page shows which app the event uses. The join link and any joining details appear on the event page once your RSVP is approved; until then it says **The join link appears here once your RSVP is approved.** Once the event is live, select <UI>Join event</UI>. It opens the link in a new tab and records that you attended. A toast confirms **Attendance recorded**. If the organizer attached a credential, it adds that you can now claim it.
 
 ### In person
 
-Go to the place the organizer describes. For in-person events the organizer marks people as attended, and that is what makes you eligible for the credential. If the event also has a link, <UI>Enter Event</UI> works the same way as above.
+The event page shows the venue, the address and a map, with <UI>Get directions</UI> (Google Maps) and <UI>Apple Maps</UI> links and any getting-there notes from the organizer. Your attendance is recorded when you check in at the venue, from 1 hour before the start until the end:
+
+- **The organizer shows one QR code.** Scan it with your phone camera when you arrive. If you have no Hive3 account yet, you can create one on the spot and you are checked in straight away.
+- **The organizer scans passes at the door.** Select <UI>Show my pass</UI> on the event page, or open the pass from your confirmation email, and show the QR code to the organizer.
+
+The event page then shows <UI>Checked in</UI> with the time.
 
 ### In a 3D world
 

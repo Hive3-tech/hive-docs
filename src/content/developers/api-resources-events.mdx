@@ -1,10 +1,10 @@
 ---
-title: "Events: slots and worlds"
-description: Create and reschedule events through the API, including time slots, RSVP approval, 3D world bookings and the rules for events that have started.
+title: "Events: types, slots and worlds"
+description: Create and reschedule events through the API, including in-person, virtual and metaverse event types, time slots, RSVP approval, 3D world bookings and the rules for events that have started.
 accent: developer
 ---
 
-Use these fields to schedule events from a calendar or another system, open them for automatic RSVPs or organizer approval, and book a Hive3 3D world for them. Events use the shared operations in [Events, courses, content, quests and jobs](/developers/api-resources): list, get, update and archive on `/api/v1/events`, with the same scopes, owner selector, visibility rules, `Idempotency-Key` header and limits (50 event creates per day, 128 KiB per request). To approve RSVPs or record attendance, see [Participation workflows](/developers/api-workflows).
+Use these fields to schedule events from a calendar or another system, set where they happen (an address, a meeting link or a Hive3 3D world), open them for automatic RSVPs or organizer approval, and book a world for them. Events use the shared operations in [Events, courses, content, quests and jobs](/developers/api-resources): list, get, update and archive on `/api/v1/events`, with the same scopes, owner selector, visibility rules, `Idempotency-Key` header and limits (50 event creates per day, 128 KiB per request). To approve RSVPs or record attendance, see [Participation workflows](/developers/api-workflows).
 
 The examples read the key from `HIVE_API_KEY`. Some field names still say `community` or `person`; both identify accounts.
 
@@ -14,9 +14,13 @@ The examples read the key from `HIVE_API_KEY`. Some field names still say `commu
 |---|---|---|
 | `title` | string | Required. |
 | `description` | string | Event text. `shortDescription` defaults to it. |
+| `location` | string | `irl` (shown as "In person"), `virtual` or `metaverse`. See [Event types](#event-types). |
+| `venue` | object | Where an `irl` event happens. See [Venue](#venue). |
+| `meeting` | object | How guests join a `virtual` event. See [Meeting](#meeting). |
+| `checkInMode` | string | `self` or `door`, for `irl` events. Default `self`. |
 | `eventSlots` | array | One object per session. Empty is allowed; see [Time slots](#time-slots). |
 | `autoEnroll` | boolean | Default `false`: RSVPs wait for organizer approval. `true` accepts RSVPs automatically. |
-| `worldId` | string | The 3D world to book: a world ID from [`GET /api/v1/worlds`](#list-bookable-worlds), or `default` for the owning account's default world. Leave it out for an event outside any world. See [Book a world](#book-a-world). |
+| `worldId` | string | The 3D world to book for a `metaverse` event: a world ID from [`GET /api/v1/worlds`](#list-bookable-worlds), or `default` for the owning account's default world. Leave it out for an event outside any world. See [Book a world](#book-a-world). |
 | `maxCapacity` | integer | Attendee limit. For world events it must be a whole number from 1 up to the world's limit. |
 | `visibility`, `subscriptionId`, `badges` | | As in [Shared behavior](/developers/api-resources#shared-behavior). |
 | `imageUrl`, `heroImage`, `imageStorageId`, `heroImageStorageId` | string | Cover images (`image`, `thumbnailUrl` and `bannerImageUrl` also work). |
@@ -100,6 +104,10 @@ Returns `201`.
     "title": "Design Review Live",
     "description": "A live walk-through of the new designs.",
     "autoEnroll": true,
+    "location": "irl",
+    "venue": null,
+    "meeting": null,
+    "checkInMode": "self",
     "badges": [],
     "visibility": "public",
     "eventSlots": [
@@ -124,11 +132,80 @@ Returns `201`.
 
 | Status | `code` | When |
 |---|---|---|
-| 400 | `invalid_request` | `Title is required`, an invalid slot, a world rule below, not enough metaverse time, or a body over 128 KiB. |
+| 400 | `invalid_request` | `Title is required`, an invalid slot, an [event type](#event-types) error, a world rule below, not enough metaverse time, or a body over 128 KiB. |
 | 403 | `forbidden` | The Worker Bee visibility or subscription rule, or a managed account outside the key's allowlist. |
 | 409 | `conflict` | The slot overlaps another booking on the same world, or the `Idempotency-Key` was used with a different request. |
 
 </Endpoint>
+
+## Event types
+
+`location` sets the event type. Every event read returns `location`, `venue`, `meeting` and `checkInMode` (`null` when they don't apply; `checkInMode` is `null` unless `location` is `irl`).
+
+| `location` | Needs | Guests see |
+|---|---|---|
+| `irl` | `venue`, optional `checkInMode` | The address, a map and directions on the event page. Attendance is recorded by QR check-in at the venue, which is set up in the app. |
+| `virtual` | `meeting` | The meeting app. Through the API the full `meeting` goes only to keys for the owning account (or that manage it); other readers get the provider. In the app, approved guests see the link. See [Meeting](#meeting). |
+| `metaverse` | `worldId` | The world, entered from the event page. |
+
+When you leave `location` out, it is worked out from the request: `metaverse` with a `worldId`, `virtual` with a `meeting`, `irl` with a `venue`. On `PATCH` the stored type, venue, meeting and check-in mode are kept for fields you omit. On create with none of these, an event whose slot links point at a known meeting service (Zoom, Google Meet, Teams and similar) becomes `virtual` with that link as its `meeting`; anything else becomes `irl`.
+
+The API does not require a `venue` for `irl` events, so you can add the address later; the app's event form does. Changing `location` clears fields that belong to the old type, for example the `meeting` when a virtual event becomes `irl`.
+
+### Venue
+
+| Field | Type | Notes |
+|---|---|---|
+| `address` | string | Required in a `venue`, at most 300 characters. Public: everyone who can see the event sees it. |
+| `name` | string | Venue name, at most 120 characters. |
+| `instructions` | string | "Getting there" notes such as parking or a door code, at most 1,000 characters. |
+| `city` | string | At most 120 characters. Shown on event cards as "In person · city". |
+| `placeId` | string | A Google Maps place ID, at most 300 characters. Improves the map and directions. |
+| `latitude`, `longitude` | number | Kept only when both are sent and in range. |
+
+### Meeting
+
+| Field | Type | Notes |
+|---|---|---|
+| `url` | string | Required. An `https://` link, at most 2,048 characters. A link without a scheme gets `https://`. |
+| `provider` | string | `zoom`, `google_meet`, `microsoft_teams`, `x_spaces`, `discord`, `youtube` or `other`. When omitted, it is recognised from `url` (`other` when unknown). |
+| `instructions` | string | Joining details such as a passcode or dial-in number, at most 1,000 characters. |
+
+The join link is private. Through the API, only keys for the owning account (or a key that manages it) read the full `meeting`; any other reader gets only the provider, for example `"meeting": { "provider": "zoom" }`. In the app, the link is shown to the event's hosts and moderators and to guests whose RSVP is approved and who still have access (ticket, subscription or membership), and approved guests also get it in their confirmation email. For ticketed or members-only events, the link counts as protected content, just like the description.
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/events \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Office Hours","location":"virtual","meeting":{"url":"https://us02web.zoom.us/j/123456","instructions":"Passcode 4242"},"autoEnroll":true,"eventSlots":[{"startsAt":"2030-01-20T17:00:00Z","endsAt":"2030-01-20T18:00:00Z"}]}'
+```
+
+```bash
+curl -X POST https://app.hive3.tech/api/v1/events \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Builders Meetup","location":"irl","venue":{"address":"Torstraße 1, 10119 Berlin","name":"Hive3 Space","city":"Berlin","instructions":"Ring the bell at the side door."},"checkInMode":"door","eventSlots":[{"startsAt":"2030-01-22T18:00:00+01:00","endsAt":"2030-01-22T21:00:00+01:00"}]}'
+```
+
+### Filter the list by type
+
+`GET /api/v1/events?location=virtual` lists only events of that type (`irl`, `virtual` or `metaverse`); any other value returns `400 invalid_request` (`location must be irl, virtual or metaverse`). A filtered page can hold fewer than `limit` events while `page.hasMore` is still `true`; keep following `nextCursor`.
+
+### Event type errors
+
+Each returns `400 invalid_request` and changes nothing:
+
+| Message | When |
+|---|---|
+| `location must be irl, virtual or metaverse` | Another `location` value. |
+| `Metaverse events need a world.` | `location: "metaverse"` without a `worldId` on the event. |
+| `Only metaverse events can book a world.` | A `worldId` with `location` `irl` or `virtual`. |
+| `Virtual events need a meeting link that starts with https://.` | A `virtual` event without a `meeting`, or with a link that isn't `https`. |
+| `meeting.provider must be zoom, google_meet, microsoft_teams, x_spaces, discord, youtube or other` | An unknown `provider`. |
+| `checkInMode must be self or door` | Another `checkInMode` value. |
+| `address must be 300 characters or fewer` | A venue or meeting field over its limit (the message names the field and its limit). |
+
+Check-in itself (event QR codes, passes and the door scanner) and Google Calendar sync are only in the app. See [Check in at events](/create/check-in-at-events).
 
 ## Time slots
 
@@ -210,13 +287,21 @@ Once `default` is resolved, the rules below apply exactly as for an explicit `wo
 - **Attendee limit.** `maxCapacity` is a whole number from 1 to 500 in a shared world or from 1 to 100 in a Royal Hive's own world. It defaults to that maximum.
 - **No overlaps.** A slot that overlaps another booking on the same world returns `409 conflict` (`That time is already booked in this world (…)`). Back-to-back bookings are allowed.
 - **Metaverse time.** An event in a shared world spends the owning account's metaverse time. Creating it charges its duration in minutes (Swarm includes 60 minutes per UTC calendar month), a `PATCH` refunds the previous charge and charges the new one, and archiving an event that has not started refunds it. When time runs out the request returns `400` (`You're running out of metaverse time. Shorten the event or top up your balance.`) and nothing changes. Events in a Royal Hive's own world are free.
-- **Moving worlds.** `PATCH` with a different `worldId` removes the metaverse join links in the slots that pointed into the previous world. `worldId` cannot be cleared through the API.
+- **Moving worlds.** `PATCH` with a different `worldId` removes the metaverse join links in the slots that pointed into the previous world.
+- **Moving out of a world.** `PATCH` with `location` set to `irl` or `virtual` (and the `venue` or `meeting` it needs) takes the event out of its world: the booking and the old world's join links are removed, and metaverse time it used in a shared world is refunded like any other `PATCH`. Sending `worldId` together with `irl` or `virtual` returns `400` (`Only metaverse events can book a world.`). Without `location`, a `PATCH` keeps the event's world.
+
+```bash
+curl -X PATCH https://app.hive3.tech/api/v1/events/event_123 \
+  -H "Authorization: Bearer $HIVE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"location":"virtual","meeting":{"url":"https://meet.google.com/abc-defg-hij"}}'
+```
 
 ```bash
 curl -X POST https://app.hive3.tech/api/v1/events \
   -H "Authorization: Bearer $HIVE_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"title":"Town Hall","worldId":"default","maxCapacity":100,"eventSlots":[{"startsAt":"2030-02-01T17:00:00Z","endsAt":"2030-02-01T18:00:00Z"}]}'
+  -d '{"title":"Town Hall","location":"metaverse","worldId":"default","maxCapacity":100,"eventSlots":[{"startsAt":"2030-02-01T17:00:00Z","endsAt":"2030-02-01T18:00:00Z"}]}'
 ```
 
 ## Reschedule an event
@@ -232,6 +317,8 @@ curl -X PATCH https://app.hive3.tech/api/v1/events/event_123 \
   -d '{"eventSlots":[{"name":"Session","startsAt":"2030-01-16T17:00:00.000Z","endsAt":"2030-01-16T18:00:00.000Z"}]}'
 ```
 
-Returns `200` with the updated event. Errors: `400` (invalid slot, world rule), `404 not_found`, `409 conflict` (the event has started, or the new slot overlaps another booking).
+Returns `200` with the updated event. Errors: `400` (invalid slot, world rule, [event type](#event-types) error), `404 not_found`, `409 conflict` (the event has started, or the new slot overlaps another booking).
+
+Guests are kept informed whichever way you edit: when the time, venue, check-in mode, join link or world changes, approved guests get one "Updated details" email (edits a few minutes apart are combined), and archiving an upcoming event emails everyone who RSVP'd and was not declined.
 
 </Endpoint>
