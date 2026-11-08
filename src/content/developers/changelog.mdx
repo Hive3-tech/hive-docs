@@ -26,6 +26,10 @@ Events now have a stored type: in person, virtual or metaverse, with a venue, a 
 - **New objective type `in_person_events_attended`** counts in-person events the participant checked in at. `virtual_events_attended` now counts only `virtual` events and `metaverse_events_attended` only `metaverse` events. Existing `virtual_events_attended` objectives that targeted an in-person event were changed to `in_person_events_attended`. See [Event objectives](/developers/api-resources-quests#event-objectives).
 - **`hiddenTabs` in the overview builder document** lists account page tabs to hide. Without it every tab is on. See [Page tabs in the overview](/developers/api-account-settings#page-tabs-in-the-overview).
 
+### Links and images
+
+- **Link and image fields must be web links.** On content, events, courses, jobs, quests, job applications and post link previews, create and `PATCH` reject a link or image field that isn't empty, an `https://` or `http://` link, or a Hive3 file path. A `javascript:` or `data:` value, for example, returns `400 invalid_request` (`<field> must be a link that starts with https:// or http://`).
+
 ### CLI 0.7.0
 
 - `hive3 events create` and `update` take `--location`, `--address`, `--venue-name`, `--venue-instructions`, `--check-in`, `--meeting-url`, `--meeting-provider` and `--meeting-instructions`, next to `--world`. They check values before sending, and `update` keeps the event's other venue and meeting details. See [Event type flags](/developers/cli-commands-resources#event-type-flags).
@@ -33,7 +37,7 @@ Events now have a stored type: in person, virtual or metaverse, with a venue, a 
 - Quest objectives accept `in_person_events_attended`.
 - **Membership billing periods.** 0.7.0 is the first published release with `--billing month|quarter|year` on `hive3 payments checkout membership` and `membership revise` (prepared as 0.6.0, which was never published). Checkout defaults to `month`; `revise` keeps the current period. See [Payments](/developers/cli-commands-payments#payments).
 
-**What to do:** send `location` with every new event, and put meeting links in `meeting.url` rather than in a slot link. Read `location` instead of guessing the type from `worldId` or links. Change quest objectives for in-person events to `in_person_events_attended`. When you save an overview document, keep its `hiddenTabs`. Run `hive3 update`, then `hive3 skill install --force` with the options you installed the skill with.
+**What to do:** send `location` with every new event, and put meeting links in `meeting.url` rather than in a slot link. Read `location` instead of guessing the type from `worldId` or links. Change quest objectives for in-person events to `in_person_events_attended`. When you save an overview document, keep its `hiddenTabs`. Send only `https://` (or `http://`) links in link and image fields. Run `hive3 update`, then `hive3 skill install --force` with the options you installed the skill with.
 
 ## November 5, 2026: membership billing periods
 
