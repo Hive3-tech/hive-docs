@@ -59,6 +59,38 @@ Returns `200`. `communities` always includes the owner's own account with role `
 
 ## Membership
 
+<Endpoint method="GET" path="/api/v1/communities/mine" scopes={["communities:read"]}>
+
+Lists the communities and accounts the key owner belongs to, as My Hive shows them, with their role in each. Applications still waiting for a decision come first with `status: "pending"`. Deleted, merged and suspended accounts are left out.
+
+```bash
+curl https://app.hive3.tech/api/v1/communities/mine \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `kind` is `community`, or `account` for a Worker Bee account. `status` is `active` (with `role` and `joinedAt`) or `pending` (with `appliedAt` and no role). To leave, `POST` to [`/membership`](#post-api-v1-communities-communityid-membership) with `action: "leave"`.
+
+```json
+{
+  "data": [
+    {
+      "accountId": "account_123",
+      "name": "Hive3",
+      "handle": "hive3",
+      "kind": "community",
+      "membershipTier": "swarm",
+      "accessType": "open",
+      "status": "active",
+      "role": "member",
+      "joinedAt": "2026-10-01T12:00:00.000Z",
+      "appliedAt": null
+    }
+  ]
+}
+```
+
+</Endpoint>
+
 <Endpoint method="POST" path="/api/v1/communities/{communityId}/membership" scopes={["communities:write"]}>
 
 Joins, applies to or leaves a community as the key owner. `open` and `open-subscription` communities accept the membership immediately; `private` communities create a pending application for the managers to review. Sending `apply` or `join` again updates the same application. Limits: 20 joins and 20 applies per minute, 30 leaves per minute.

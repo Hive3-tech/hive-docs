@@ -4,9 +4,9 @@ description: Manage products, subscription plans, tickets and the Stripe connect
 accent: developer
 ---
 
-These commands arrived in CLI version 0.5, so every command and flag on this page is **(0.5+)** unless it is marked **(0.7+)**; `hive3 tickets list`, `get`, `update` and `mine` existed in 0.4 but now follow the rules below. If `hive3 products` prints `Unknown command: products`, your installed CLI is older; run `hive3 update --check`. Every command prints JSON. Shared conventions such as output and exit codes are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference).
+These commands arrived in CLI version 0.5, so every command and flag on this page is **(0.5+)** unless it is marked **(0.7+)** or **(0.8+)**; `hive3 tickets list`, `get`, `update` and `mine` existed in 0.4 but now follow the rules below. If `hive3 products` prints `Unknown command: products`, your installed CLI is older; run `hive3 update --check`. Every command prints JSON. Shared conventions such as output and exit codes are on the main [CLI command reference](/developers/cli-commands#how-to-read-this-reference).
 
-`products`, `subscriptions`, `stripe` and `payments` need `payments:read` or `payments:write`; `tickets` needs `tickets:read` or `tickets:write`. Keys from before 0.5 do not have the payment scopes: run `hive3 login` again. For an account you run, `--account` also needs `communities:read` or `communities:write`, the key's account allowlist, and your current **owner or admin** role there; moderators cannot manage payments. The API side is on [Products, subscription plans and Stripe](/developers/api-selling), [Tickets](/developers/api-tickets) and [Payments](/developers/api-payments).
+`products`, `subscriptions`, `stripe`, `payments` and `credits` need `payments:read` or `payments:write`; `tickets` needs `tickets:read` or `tickets:write`. Keys from before 0.5 do not have the payment scopes: run `hive3 login` again. For an account you run, `--account` also needs `communities:read` or `communities:write`, the key's account allowlist, and your current **owner or admin** role there; moderators cannot manage payments. The API side is on [Products, subscription plans and Stripe](/developers/api-selling), [Tickets](/developers/api-tickets), [Payments](/developers/api-payments) and [AI credits](/developers/api-ai-credits).
 
 ## Safety rules for every write
 
@@ -86,7 +86,7 @@ Disconnecting stops renewing Stripe subscriptions at the end of their period, tu
 
 ## Payments
 
-`hive3 payments` reads histories and runs buyer and seller payment actions. Every action is previewed first, then confirmed with the exact text the preview printed.
+`hive3 payments` reads histories and balances and runs buyer and seller payment actions. Every action is previewed first, then confirmed with the exact text the preview printed. `hive3 credits` reads your AI credits; it cannot buy or gift them.
 
 | Command | What it does | Scopes |
 |---|---|---|
@@ -94,6 +94,10 @@ Disconnecting stops renewing Stripe subscriptions at the end of their period, tu
 | `hive3 payments subscriptions` | Your subscriptions, with the IDs used below. | `payments:read` |
 | `hive3 payments tickets`, `refunds`, `sales` | Ticket purchases, refund requests or sales. `--account <seller>` for an account you run, `--limit`, `--cursor`. | `payments:read` |
 | `hive3 payments quest-credits`, `metaverse-time` | Quest credit or metaverse time purchases. `--account`, `--limit`, `--cursor`. | `payments:read` |
+| `hive3 payments balances` (0.8+) | Quest credits (per plan, remaining of total) and metaverse minutes left now, from this month's allowance plus unused purchases. `--account` for an account you run. | `payments:read` |
+| `hive3 credits`, `hive3 credits balance` (0.8+) | Your AI credit balance: purchased credits and what is left of this month's free allowance. | `payments:read` |
+| `hive3 credits usage` (0.8+) | What your AI credits were spent on: totals, per model and per day. `--days 7\|30\|90` (default 30), `--time-zone <iana-zone>` (default: your computer's time zone). | `payments:read` |
+| `hive3 credits calls`, `history` (0.8+) | Charged model calls and generations, or every change to your credits, newest first. `--limit <1-50>`, `--cursor`. | `payments:read` |
 | `hive3 payments preview <action>` | Shows what an action will do and prints its `confirm` text. Changes nothing. | `payments:write` |
 | `hive3 payments <action> --yes --confirm "<confirm>" --request-id <id>` | Runs the action. | `payments:write` |
 

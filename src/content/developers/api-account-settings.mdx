@@ -1,6 +1,6 @@
 ---
 title: Account settings and profile builders
-description: Read account state, change preferences, disconnect linked communities, and save the overview, widgets and welcome page of a profile.
+description: Read account state and referrals, change preferences, disconnect linked communities, and save the overview, widgets and welcome page of a profile.
 accent: developer
 ---
 
@@ -154,6 +154,35 @@ Returns `200`.
 ```
 
 - `404 not_found`: `Community not found`, when no account matches `communityId`.
+
+</Endpoint>
+
+## Referrals
+
+<Endpoint method="GET" path="/api/v1/referrals/mine" scopes={["account:read"]}>
+
+Returns the key owner's referral code, share link and counts, as **Settings → Referrals** shows them. Read-only, for the key owner only. New in the API on November 20, 2026, and in CLI 0.8.0. See [Referrals](/account/referrals) for how referrals work.
+
+```bash
+curl https://app.hive3.tech/api/v1/referrals/mine \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. The app creates your code the first time you open **Settings → Referrals**, and this endpoint never does: until then `code`, `codeStatus` and `link` are `null`. `codeStatus` is `active` or `deactivated`. `referredSignups` counts accounts that signed up with your code and `paidReferred` those that became paying members. `referredBy` is `{ code, referredAt, status }` for the code you signed up with, `status` being `active` or `disqualified`, or `null` when you signed up without one. `eligibleToBeReferred` is `true` only for an account that has never had a paid membership.
+
+```json
+{
+  "data": {
+    "code": "ABCD2345",
+    "codeStatus": "active",
+    "link": "https://app.hive3.tech/login?ref=ABCD2345",
+    "referredSignups": 4,
+    "paidReferred": 1,
+    "referredBy": null,
+    "eligibleToBeReferred": false
+  }
+}
+```
 
 </Endpoint>
 

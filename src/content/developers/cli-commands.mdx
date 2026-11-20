@@ -132,7 +132,7 @@ Each flag of `hive3 login` is described in [CLI sign-in and configuration](/deve
 
 ## Account and profile
 
-`profile` actions accept `--account <id-or-handle>`. The `account`, `wallets` and `nfts` commands always act as you.
+`profile` actions accept `--account <id-or-handle>`. The `account`, `referrals`, `wallets` and `nfts` commands always act as you.
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
@@ -148,6 +148,7 @@ Each flag of `hive3 login` is described in [CLI sign-in and configuration](/deve
 | `hive3 account export` | Requests a data export; the response contains a download link. Limited to 2 per hour. | None | `account:write` plus `account:read`, `communities:read`, `resources:read`, `tickets:read`, `payments:read`, `feedback:read`, `ai:read`, `credentials:read` (all in Full access since 0.5) |
 | `hive3 account linked-communities` | Lists linked communities. `list` is the default action. (0.4+) | None | `account:read` |
 | `hive3 account linked-communities disconnect <community-id>` | Disconnects a linked community. (0.4+) | `--confirm <community-id>` | `account:write` |
+| `hive3 referrals` (0.8+) | Shows your referral code, share link, signups and paid referrals. The code is `null` until you first open **Settings → Referrals** in the app. | None | `account:read` |
 
 Boolean values accept `true`, `false`, `yes`, `no`, `1` and `0`. `--badges` and `--muted-notifications` take comma-separated lists. A builder `save` replaces what is stored; run `export` first to keep a copy. `<upload-id>` is the ID returned by `hive3 upload`.
 
@@ -207,14 +208,16 @@ hive3 comments create --post-id "<post-id>" --content "See you there"
 
 ## Wallets and NFTs
 
-The CLI changes only which wallets and NFTs are visible. It never signs, transfers or holds wallet keys.
+The CLI reads balances and NFTs and changes only which wallets and NFTs are visible. It never signs, transfers or holds wallet keys.
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
 | `hive3 wallets list` | Lists linked wallets. | None | `account:read` |
+| `hive3 wallets balances` (0.8+) | Reads your Hive3 wallet's native and USDC balance on each network, live. | None | `account:read` |
 | `hive3 wallets default <address>` | Sets the default wallet. | None | `account:write` |
 | `hive3 wallets visibility <address>` | Shows or hides a wallet on your public profile. | `--public <bool>` (required) | `account:write` |
 | `hive3 wallets remove <address>` | Removes a linked wallet. | `--confirm <address>` (required) | `account:write` |
+| `hive3 nfts list` (0.8+) | Lists the NFTs held by your linked wallets. | `--limit <1-200>` (default 50) | `account:read` |
 | `hive3 nfts visibility` | Shows or hides your NFTs publicly. | `--public <bool>` (required) | `account:write` |
 
 ## Communities
@@ -223,6 +226,7 @@ These commands run as you. `<community-id>` is the account ID of the community. 
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
+| `hive3 communities mine` (0.8+) | Lists the communities and accounts you belong to, with your role, plus applications still waiting. | None | `communities:read` |
 | `hive3 communities join <community-id>` | Joins, or applies to, a community. | `--message <text>` | `communities:write` |
 | `hive3 communities apply <community-id>` | Applies to a community. | `--message <text>` | `communities:write` |
 | `hive3 communities leave <community-id>` | Leaves a community. | `--message <text>` | `communities:write` |

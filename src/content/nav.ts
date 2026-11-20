@@ -159,6 +159,7 @@ export const navSections: NavSection[] = [
       { slug: "api-selling", title: "Products, plans and Stripe", group: "Selling and payments" },
       { slug: "api-tickets", title: "Tickets", group: "Selling and payments" },
       { slug: "api-payments", title: "Payments", group: "Selling and payments" },
+      { slug: "api-ai-credits", title: "AI credits", group: "Selling and payments" },
       { slug: "cli-quickstart", title: "CLI quickstart", group: "Command line" },
       { slug: "cli-authentication", title: "CLI sign-in and configuration", group: "Command line" },
       { slug: "cli-commands", title: "CLI command reference", group: "Command line" },

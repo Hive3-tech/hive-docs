@@ -85,6 +85,54 @@ Returns `201` for a new enrollment and `200` otherwise. `accepted` is `null` whi
 
 </Endpoint>
 
+<Endpoint method="GET" path="/api/v1/workflows/quests/enrollments" scopes={["resources:read"]}>
+
+Lists the quests the key owner is enrolled in, newest first, up to 100 rows and no `page` object. Approved, waiting and declined enrollments are all listed. Archived quests and quests the key owner can no longer see are left out; a quest they can see but no longer open is listed with `locked: true` and no `progress`.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `active` | query | boolean | No | `true` leaves out completed quests. |
+
+```bash
+curl "https://app.hive3.tech/api/v1/workflows/quests/enrollments?active=true" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `status` is `approved`, `pending` (waiting for the organizer) or `declined`; `progress` is set only for approved quests. Progress is counted live for the 20 newest open quests (`progress.live: true`); for the rest it is the progress last recorded, as the app's My Hive shows. Objectives that need evidence carry `evidence` counts. `rewards` names the credentials the quest awards.
+
+```json
+{
+  "data": [
+    {
+      "questId": "quest_123",
+      "enrollmentId": "enrollment_456",
+      "title": "Builder onboarding",
+      "status": "approved",
+      "accepted": true,
+      "locked": false,
+      "questStatus": "active",
+      "endsAt": "2026-12-31T23:59:59.000Z",
+      "enrolledAt": "2026-11-10T17:00:00.000Z",
+      "organizer": { "accountId": "account_789", "handle": "hive3", "name": "Hive3" },
+      "rewards": [{ "credentialId": "credential_321", "name": "Builder badge" }],
+      "progress": {
+        "live": true,
+        "percent": 50,
+        "completedAt": null,
+        "completedObjectives": 1,
+        "totalObjectives": 2,
+        "objectives": [
+          { "objectiveId": "obj_1", "name": "Attend an event", "type": "events_attended", "currentCount": 1, "targetCount": 1, "complete": true, "description": null },
+          { "objectiveId": "obj_2", "name": "Share your project", "type": "custom", "currentCount": 0, "targetCount": 1, "complete": false, "description": "Post a link to your repo", "evidence": { "pending": 1, "approved": 0, "denied": 0 } }
+        ]
+      }
+    }
+  ]
+}
+```
+
+</Endpoint>
+
 <Endpoint method="GET" path="/api/v1/workflows/quests/{questId}/enrollments" scopes={["resources:read"]}>
 
 Lists enrollments with objective progress for quest managers (owner, admin or moderator of the quest's account), up to 200 rows and no `page` object.

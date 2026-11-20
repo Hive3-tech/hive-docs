@@ -12,11 +12,11 @@ New in API and CLI 0.5.0. Products, plans and the Stripe connection are on [Prod
 
 | Scope | Allows |
 | --- | --- |
-| `payments:read` | Read payment, subscription, ticket, refund, sales, quest-credit and metaverse-time histories. |
+| `payments:read` | Read payment, subscription, ticket, refund, sales, quest-credit and metaverse-time histories, and quest credit and metaverse time balances. Your [AI credits](/developers/api-ai-credits) use the same scope. |
 | `payments:write` | Preview and run checkouts, subscription and membership changes, billing portals and refund actions. |
 
 - **Buyer actions are yours.** Purchases, subscriptions and refund requests always belong to the key owner. No key can act on another person's purchases or payment methods.
-- **Seller actions.** Sales history and refund decisions for an account you run need `?account=` (histories) or a target that belongs to it, plus `communities:read` or `communities:write`, the key's account allowlist, and a current **owner or admin** role there.
+- **Seller actions.** Sales history, balances and refund decisions for an account you run need `?account=` (histories and balances) or a target that belongs to it, plus `communities:read` or `communities:write`, the key's account allowlist, and a current **owner or admin** role there.
 - **After a downgrade.** Keys with these scopes keep managing existing payments and subscriptions when the account drops below Honey Bee.
 - **What is not possible.** Payouts, wallet transfers, choosing prices or recipients, using payment-provider IDs that don't belong to your own checkout (finalizing takes only the session or order ID of a checkout you started), and starting a new purchase without the buyer's browser. Nothing is retried automatically.
 
@@ -42,6 +42,49 @@ Ticket history leaves out the amount paid when Hive3 did not keep the original p
 curl "https://app.hive3.tech/api/v1/payments/sales?account=@design-guild&limit=50" \
   -H "Authorization: Bearer $HIVE_API_KEY"
 ```
+
+</Endpoint>
+
+## Balances
+
+<Endpoint method="GET" path="/api/v1/payments/balances" scopes={["payments:read"]}>
+
+Returns the quest credits and metaverse time an account has left right now: this month's plan allowance plus purchases that are not used up or expired. New in the API on November 20, 2026, and in CLI 0.8.0.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `account` | query | string | No | Account ID or `@handle` of an account you own or administer. Default: the key owner. Needs `communities:read`, the key's account allowlist and a current **owner or admin** role there. |
+
+```bash
+curl "https://app.hive3.tech/api/v1/payments/balances?account=@design-guild" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. Quest credits come per plan: `single` for quests up to 7 days and `bundle` for quests up to 30 days (`maxQuestDays`). `total` is this month's included credits plus every credit bought; `remaining` is what can still start a quest. Metaverse time is in minutes for the current month (`YYYY-MM`, UTC): `remainingMinutes` is the allowance left plus the purchased time left. Allowances reset on the first day of each month.
+
+```json
+{
+  "data": {
+    "account": { "accountId": "account_123", "handle": "design-guild", "name": "Design Guild" },
+    "questCredits": {
+      "single": { "maxQuestDays": 7, "remaining": 2, "total": 3 },
+      "bundle": { "maxQuestDays": 30, "remaining": 1, "total": 1 }
+    },
+    "metaverseTime": {
+      "month": "2026-11",
+      "monthlyAllowanceMinutes": 60,
+      "allowanceUsedMinutes": 30,
+      "allowanceRemainingMinutes": 30,
+      "purchasedRemainingMinutes": 120,
+      "remainingMinutes": 150
+    }
+  }
+}
+```
+
+- `400 invalid_request`: `Unknown query parameter: <name>`, or `Account not found`.
+- `403 insufficient_scope`: `Managed seller access requires the communities scope` when `account` names another account and the key lacks `communities:read`.
+- `403 forbidden`: `API key does not include this managed account`, or `Only account owners and admins can manage this seller`.
 
 </Endpoint>
 

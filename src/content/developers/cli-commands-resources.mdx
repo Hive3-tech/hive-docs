@@ -199,6 +199,7 @@ hive3 events create --file event.json --owner-type community --community-id "<ac
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
+| `hive3 quests enrollments` (0.8+) | Without a quest ID: lists the quests you're in, with your progress and rewards. | `--active` (leaves out completed quests) | `resources:read` |
 | `hive3 quests enrollments <quest-id>` | Lists enrollments. Quest managers only. | None | `resources:read` |
 | `hive3 quests enroll <quest-id>` | Enrolls you, or withdraws. | `--enroll <bool>`, `--file <path>` | `resources:write` |
 | `hive3 quests approve <quest-id> <enrollment-id>` | Approves an enrollment. | None | `resources:write` |

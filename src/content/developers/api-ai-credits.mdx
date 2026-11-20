@@ -1,0 +1,193 @@
+---
+title: AI credits
+description: Read your AI credit balance, what your credits were spent on, each charged call and your credit history from the API.
+accent: developer
+---
+
+These endpoints read the key owner's own AI credits, as **Settings → AI credits** shows them in the app: the balance, a usage summary, the charged calls and the credit history. They are read-only. Credits are bought, gifted and topped up in the app; no key can buy, gift or move credits.
+
+New in the API on November 20, 2026, and in CLI 0.8.0 as [`hive3 credits`](/developers/cli-commands-payments#payments).
+
+## Scopes and access
+
+- **Scope.** Every route needs `payments:read`.
+- **Always yours.** The routes act on the key owner only and accept no `?account=`. Credits that another account shares with you are not listed here; their spending shows on the owner's account.
+- **After a downgrade.** Keys with `payments:read` keep reading credits when the account drops below Honey Bee, as with the [payment histories](/developers/api-payments#scopes-and-access).
+- **Unknown query parameters** return `400 invalid_request` (`Unknown query parameter: <name>`).
+
+## Credits and micros
+
+Every amount comes twice: in credits, rounded as the app shows them, and in exact `micros` (millionths of a US dollar of model cost). One credit is `creditMicros` micros, which is `8400`. Credits that are left round down; credits that were spent round to the nearest. Both round to a tenth below 100 credits and to a whole credit from 100. Add up `micros`, not credits, when you need exact totals.
+
+## Read your balance
+
+<Endpoint method="GET" path="/api/v1/ai-credits" scopes={["payments:read"]}>
+
+Returns the purchased credits and what is left of this month's free allowance. The allowance resets on the first day of each month (UTC); `period` is that month as `YYYY-MM`.
+
+```bash
+curl https://app.hive3.tech/api/v1/ai-credits \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `availableMicros` is the allowance left plus the purchased balance (a negative purchased balance counts as 0).
+
+```json
+{
+  "data": {
+    "allowance": { "remainingCredits": 18, "remainingMicros": 151200, "totalCredits": 30, "totalMicros": 252000 },
+    "availableCredits": 1018,
+    "availableMicros": 8551200,
+    "creditMicros": 8400,
+    "period": "2026-11",
+    "purchased": { "credits": 1000, "micros": 8400000 }
+  }
+}
+```
+
+</Endpoint>
+
+## Read a usage summary
+
+<Endpoint method="GET" path="/api/v1/ai-credits/usage" scopes={["payments:read"]}>
+
+Sums what your credits were spent on over the last 7, 30 or 90 calendar days, ending today. Charges that were returned, such as a generation that failed, are left out.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `days` | query | number | No | `7`, `30` (default) or `90`. Other values return `400` (`days must be 7, 30 or 90`). |
+| `timeZone` | query | string | No | An IANA time zone such as `Europe/Berlin`, used to decide which day a charge falls on. Default and fallback for an unknown zone: `UTC`. |
+
+```bash
+curl "https://app.hive3.tech/api/v1/ai-credits/usage?days=7&timeZone=America/New_York" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `allowanceCredits` and `purchasedCredits` split the total by where it was paid from. `byModel` is sorted by spending, highest first. `byDay` lists only days with at least one call, oldest first, each with its own `models`. `truncated` is `true` when the period has more than 10,000 charges and only the newest were counted.
+
+```json
+{
+  "data": {
+    "days": 7,
+    "calls": 14,
+    "inputTokens": 182400,
+    "outputTokens": 9120,
+    "allowanceCredits": 12,
+    "allowanceMicros": 100800,
+    "purchasedCredits": 7.8,
+    "purchasedMicros": 65808,
+    "totalCredits": 19.8,
+    "truncated": false,
+    "byModel": [
+      { "modelId": "z-ai/glm-5.3-flash", "label": "Hive3 Fast", "calls": 13, "inputTokens": 182400, "outputTokens": 9120, "micros": 100800, "credits": 12 },
+      { "modelId": "atlas/image_fast", "label": "Image (fast)", "calls": 1, "inputTokens": 0, "outputTokens": 0, "micros": 65808, "credits": 7.8 }
+    ],
+    "byDay": [
+      {
+        "day": "2026-11-19",
+        "calls": 14,
+        "micros": 166608,
+        "credits": 19.8,
+        "models": [
+          { "label": "Image (fast)", "calls": 1, "micros": 65808, "credits": 7.8 },
+          { "label": "Hive3 Fast", "calls": 13, "micros": 100800, "credits": 12 }
+        ]
+      }
+    ]
+  }
+}
+```
+
+</Endpoint>
+
+## List charged calls
+
+<Endpoint method="GET" path="/api/v1/ai-credits/calls" scopes={["payments:read"]}>
+
+Lists each charge, newest first: model replies, chat titles, images, videos, voice call minutes and dictation. A call paid partly from the allowance and partly from purchased credits is one entry.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `limit` | query | number | No | 1 to 50 (default 25). Other values return `400` (`limit must be an integer from 1 to 50`). |
+| `cursor` | query | string | No | `page.nextCursor` from the previous page. |
+
+```bash
+curl "https://app.hive3.tech/api/v1/ai-credits/calls?limit=10" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with a `page` object ([pagination](/developers/api-conventions#pagination)). `purpose` is `reply`, `title`, `image`, `video`, `voice` or `dictation`. `costSource` is `reported` (the provider's reported cost), `listed` (a fixed or listed price) or `settled` (looked up after a stopped run). `refunded` is `true` when the whole charge was returned. `conversation` is `null` when the chat was deleted. `spentBy` names the member who spent credits you share with them, and is `null` for your own use.
+
+```json
+{
+  "data": [
+    {
+      "id": "ledger_123",
+      "createdAt": "2026-11-19T15:04:05.000Z",
+      "purpose": "image",
+      "modelLabel": "Image (fast)",
+      "provider": "atlas",
+      "costSource": "listed",
+      "micros": 65808,
+      "credits": 7.8,
+      "allowanceMicros": 0,
+      "purchasedMicros": 65808,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "cachedInputTokens": 0,
+      "reasoningTokens": 0,
+      "refunded": false,
+      "conversation": { "threadId": "thread_456", "title": "Launch poster" },
+      "spentBy": null
+    }
+  ],
+  "page": { "hasMore": true, "nextCursor": "cursor_abc" }
+}
+```
+
+</Endpoint>
+
+## Read your credit history
+
+<Endpoint method="GET" path="/api/v1/ai-credits/history" scopes={["payments:read"]}>
+
+Lists every change to your credits, newest first: purchases, top-ups, gifts, spending and returns. Takes the same `limit` (1 to 50, default 25) and `cursor` as [charged calls](#get-api-v1-ai-credits-calls).
+
+```bash
+curl "https://app.hive3.tech/api/v1/ai-credits/history?limit=10" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with a `page` object. `micros` and `credits` are signed: credits in are positive, spending and gifts sent are negative. `kind` is `purchase`, `usage`, `adjustment` (for example credits returned for a failed generation), `gift_sent` or `gift_received`. `bucket` is `allowance` or `purchased`. `counterparty` is the other account of a gift, a top-up paid for you, or a member's spending of shared credits; otherwise `null`. `modelLabel` is set for spending and returns.
+
+```json
+{
+  "data": [
+    {
+      "id": "ledger_789",
+      "createdAt": "2026-11-18T09:30:00.000Z",
+      "kind": "adjustment",
+      "bucket": "purchased",
+      "micros": 279684,
+      "credits": 33.3,
+      "modelLabel": "Video",
+      "note": "Video could not be made",
+      "counterparty": null
+    },
+    {
+      "id": "ledger_790",
+      "createdAt": "2026-11-02T11:00:00.000Z",
+      "kind": "gift_received",
+      "bucket": "purchased",
+      "micros": 840000,
+      "credits": 100,
+      "modelLabel": null,
+      "note": "For the hackathon",
+      "counterparty": { "handle": "design-guild", "name": "Design Guild" }
+    }
+  ],
+  "page": { "hasMore": false, "nextCursor": null }
+}
+```
+
+</Endpoint>

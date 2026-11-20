@@ -1,10 +1,10 @@
 ---
 title: Wallets and NFT exposure
-description: List the wallets linked to an account, choose the default wallet, control public visibility, and remove wallets.
+description: List the wallets linked to an account, read your Hive3 wallet balances and NFTs, choose the default wallet, control public visibility, and remove wallets.
 accent: developer
 ---
 
-Use these endpoints to show which wallets are linked to an account, pick the wallet that receives credentials, and control what other people can see. The API never signs transactions, moves funds or holds private keys; it only changes settings stored in Hive3.
+Use these endpoints to show which wallets are linked to an account, read your Hive3 wallet's balances and the NFTs your wallets hold, pick the wallet that receives credentials, and control what other people can see. The API never signs transactions, moves funds or holds private keys; it only reads balances and changes settings stored in Hive3.
 
 <Callout type="warning">
 Removing a wallet and changing visibility are high-impact. A key with `account:write` can change or remove wallets and can [export all account data](/developers/api-account-data), so treat it like a password and give automations a key with only the scopes they need. See [Authentication and API keys](/developers/api-authentication#scopes).
@@ -41,6 +41,41 @@ Returns `200`. `kind` is `evm` for an external wallet you linked, or `circle` fo
         "kind": "evm",
         "isDefault": true,
         "publicallyDiscoverable": false
+      }
+    ]
+  }
+}
+```
+
+</Endpoint>
+
+## Read Hive3 wallet balances
+
+<Endpoint method="GET" path="/api/v1/wallets/hive3/balances" scopes={["account:read"]}>
+
+Returns the native and USDC balance of your Hive3 (passkey) wallet on each network, as the Hive3 wallet card on the Wallets page shows them. Each request reads every network live, so it is limited to 30 requests per minute. It is read-only: no key can send funds. New in the API on November 20, 2026, and in CLI 0.8.0.
+
+```bash
+curl https://app.hive3.tech/api/v1/wallets/hive3/balances \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. The address is the same on every network. `tokens` lists the network's own token first (`isNative: true`), then USDC where Hive3 knows its contract (`tokenAddress`). `amount` is a decimal string, already divided by `decimals`. When one network cannot be read, its `tokens` is empty and `error` says why; the other networks are still returned. Without a Hive3 wallet, `address` is `null` and `chains` is empty.
+
+```json
+{
+  "data": {
+    "address": "0x1111111111111111111111111111111111111111",
+    "chains": [
+      {
+        "chainId": 8453,
+        "chainName": "Base",
+        "nativeSymbol": "ETH",
+        "tokens": [
+          { "symbol": "ETH", "amount": "0.0042", "decimals": 18, "isNative": true },
+          { "symbol": "USDC", "amount": "25.5", "decimals": 6, "isNative": false, "tokenAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" }
+        ],
+        "error": null
       }
     ]
   }
@@ -204,6 +239,48 @@ Returns `200`.
 
 - `403 forbidden`: `Circle wallets cannot be removed from My Wallets`, or `Cannot remove your only sign-in method`.
 - `404 not_found`: `Wallet not found`.
+
+</Endpoint>
+
+## List your NFTs
+
+<Endpoint method="GET" path="/api/v1/nfts/mine" scopes={["account:read"]}>
+
+Lists the NFTs held by your linked wallets, as **My NFTs** shows them, whether or not NFT exposure is on. Up to 10 wallets are read. Results come from a 5-minute cache, or live from the NFT provider within the same per-account budget as the app. Limited to 30 requests per minute. New in the API on November 20, 2026, and in CLI 0.8.0.
+
+| Name | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `limit` | query | number | No | 1 to 200 (default 50). Other values return `400` (`limit must be an integer from 1 to 200`). |
+
+```bash
+curl "https://app.hive3.tech/api/v1/nfts/mine?limit=20" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200` with no `page` object. `total` counts every NFT found and `truncated` is `true` when more than `limit` were found. Each NFT carries at most 20 `attributes`; text fields the collection does not set are `null`. When a network could not be refreshed, for example because the provider budget is used up, it is listed in `errors` and its NFTs come from the last cached read.
+
+```json
+{
+  "data": {
+    "nfts": [
+      {
+        "chainId": 8453,
+        "contractAddress": "0x2222222222222222222222222222222222222222",
+        "tokenId": "42",
+        "tokenType": "ERC721",
+        "name": "Hive Pass #42",
+        "collectionName": "Hive Pass",
+        "description": null,
+        "imageUrl": "https://example.com/hive-pass/42.png",
+        "attributes": [{ "trait_type": "Tier", "value": "Gold" }]
+      }
+    ],
+    "total": 1,
+    "truncated": false,
+    "errors": []
+  }
+}
+```
 
 </Endpoint>
 
