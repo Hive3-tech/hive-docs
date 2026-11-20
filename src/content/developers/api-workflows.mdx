@@ -56,6 +56,46 @@ Quest evidence and job applications take files as attachment objects:
 
 An event RSVP is the participant record for an event. Use these endpoints to RSVP on behalf of the key owner and to let organizers approve RSVPs and record attendance.
 
+<Endpoint method="GET" path="/api/v1/workflows/events/rsvps" scopes={["resources:read"]}>
+
+Lists the key owner's own RSVPs, newest first, up to 200 rows and no `page` object. Approved, waiting and declined RSVPs are all listed. Archived events and events the key owner can no longer see are left out. An event they can still see but no longer open (a plan or ticket ended) is listed with `locked: true`.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `upcoming` | query | boolean | No | `true` leaves out events whose every session has ended. |
+
+```bash
+curl "https://app.hive3.tech/api/v1/workflows/events/rsvps?upcoming=true" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `status` is `approved`, `pending` (waiting for the organizer) or `declined`, and `accepted` is the same as `true`, `null` or `false`. `startsAt` and `endsAt` span all of the event's `slots`. `venue` is set only for in-person events. `attendedAt` is present once attendance is recorded. To withdraw, `POST` to [`/rsvp`](#post-api-v1-workflows-events-eventid-rsvp) with `enroll: false`.
+
+```json
+{
+  "data": [
+    {
+      "eventId": "event_123",
+      "enrollmentId": "enrollment_789",
+      "title": "Builders meetup",
+      "status": "approved",
+      "accepted": true,
+      "locked": false,
+      "location": "irl",
+      "venue": { "address": "1 Market St, San Francisco", "city": "San Francisco", "name": "Hive3 House" },
+      "startsAt": "2026-12-04T02:00:00.000Z",
+      "endsAt": "2026-12-04T04:00:00.000Z",
+      "slots": [{ "name": null, "startsAt": "2026-12-04T02:00:00.000Z", "endsAt": "2026-12-04T04:00:00.000Z" }],
+      "organizer": { "accountId": "account_456", "handle": "hive3", "name": "Hive3" },
+      "rsvpdAt": "2026-11-20T18:30:00.000Z",
+      "attendedAt": null
+    }
+  ]
+}
+```
+
+</Endpoint>
+
 <Endpoint method="GET" path="/api/v1/workflows/events/{eventId}/participants" scopes={["resources:read"]}>
 
 Lists RSVPs for an event with approval state and attendance. Only owners, admins and moderators of the event's account can call it.

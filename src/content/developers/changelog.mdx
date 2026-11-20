@@ -6,6 +6,14 @@ accent: developer
 
 This page lists changes that can affect an integration: new endpoints and scopes, changed behavior, and corrections to earlier documentation. Each entry ends with what you need to do. The API stays at `/api/v1`: existing paths, scopes and field names are unchanged unless an entry says otherwise.
 
+## November 20, 2026: API update and CLI 0.8.0
+
+- **Your own RSVPs.** `GET /api/v1/workflows/events/rsvps` lists the key owner's RSVPs with `status` `approved`, `pending` or `declined`; `?upcoming=true` leaves out events that have ended. See [List your RSVPs](/developers/api-workflows#get-api-v1-workflows-events-rsvps).
+- **Your own course enrollments.** `GET /api/v1/workflows/courses/enrollments` lists the key owner's enrollments with progress; `?active=true` leaves out completed courses. See [List your enrollments](/developers/api-workflows-courses-jobs#get-api-v1-workflows-courses-enrollments).
+- **CLI 0.8.0:** `hive3 events rsvps [--upcoming]` and `hive3 courses enrollments [--active]` (without a course ID).
+
+**What to do:** nothing for existing integrations. To use the new commands, run `hive3 update`, then `hive3 skill install --force` with the options you installed the skill with.
+
 ## November 7, 2026: API update and CLI 0.7.0
 
 Events now have a stored type: in person, virtual or metaverse, with a venue, a meeting link or a world. Quests count the three types separately, and account page tabs can be hidden. Items in the CLI pages marked "(0.7+)" need CLI 0.7.0 or later; run `hive3 update --check` to see your version.

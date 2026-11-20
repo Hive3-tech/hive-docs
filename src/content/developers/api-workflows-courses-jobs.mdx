@@ -76,6 +76,40 @@ Returns `201` for a new enrollment, `200` otherwise. Unenrolling returns `{ "cou
 
 </Endpoint>
 
+<Endpoint method="GET" path="/api/v1/workflows/courses/enrollments" scopes={["resources:read"]}>
+
+Lists the key owner's own course enrollments, newest first, up to 200 rows and no `page` object. Archived courses and courses the key owner can no longer see are left out. A course they can still see but no longer open is listed with `locked: true` and no `progress`.
+
+| Name | In | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `active` | query | boolean | No | `true` leaves out completed courses. |
+
+```bash
+curl "https://app.hive3.tech/api/v1/workflows/courses/enrollments?active=true" \
+  -H "Authorization: Bearer $HIVE_API_KEY"
+```
+
+Returns `200`. `status` is `approved`, `pending` (waiting for the organizer) or `declined`. To withdraw, `POST` to [`/enrollment`](#post-api-v1-workflows-courses-courseid-enrollment) with `enroll: false`.
+
+```json
+{
+  "data": [
+    {
+      "courseId": "course_123",
+      "title": "Intro to DAOs",
+      "status": "approved",
+      "accepted": true,
+      "locked": false,
+      "organizer": { "accountId": "account_456", "handle": "hive3", "name": "Hive3" },
+      "enrolledAt": "2026-11-02T16:00:00.000Z",
+      "progress": { "completed": false, "completedAt": null, "completedLessons": 3, "totalLessons": 8, "percent": 38 }
+    }
+  ]
+}
+```
+
+</Endpoint>
+
 <Endpoint method="GET" path="/api/v1/workflows/courses/{courseId}/enrollments" scopes={["resources:read"]}>
 
 Lists enrollments with progress for course managers (owner, admin or moderator of the course's account), up to 200 rows and no `page` object.

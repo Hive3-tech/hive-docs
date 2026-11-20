@@ -137,6 +137,7 @@ QR check-in (event codes, passes and the door scanner) and Google Calendar sync 
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
+| `hive3 events rsvps` (0.8+) | Lists your own RSVPs, newest first, with `status` `approved`, `pending` or `declined`. | `--upcoming` | `resources:read` |
 | `hive3 events participants <event-id>` | Lists RSVPs. Event managers only; the list includes primary email addresses. | None | `resources:read` |
 | `hive3 events rsvp <event-id>` | Creates your RSVP, or withdraws it. | `--enroll <bool>` (`false` withdraws), `--file <path>` | `resources:write` |
 | `hive3 events approve <event-id> <enrollment-id>` | Approves an RSVP. Needs the person's current access to the event. | None | `resources:write` |
@@ -162,6 +163,7 @@ hive3 events create --file event.json --owner-type community --community-id "<ac
 
 | Command | What it does | Flags | Scopes |
 |---|---|---|---|
+| `hive3 courses enrollments` (0.8+) | Without a course ID: lists your own enrollments and progress. | `--active` (leaves out completed courses) | `resources:read` |
 | `hive3 courses enrollments <course-id>` | Lists enrollments. Course managers only. | None | `resources:read` |
 | `hive3 courses enroll <course-id>` | Enrolls you, or withdraws. | `--enroll <bool>`, `--file <path>` | `resources:write` |
 | `hive3 courses approve <course-id> <account-id>` | Approves a student's enrollment. `<account-id>` is the student's account ID. | None | `resources:write` |
